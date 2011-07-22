@@ -4,15 +4,15 @@ use strict;
 use warnings;
 use 5.010;
 
-my $RUNS = 5000;    # Number of random documents to create
-my $DEEP = 5;       # Max depth level of embedded hashes
-my $KEYS = 20;      # Number of keys per hash
+my $RUNS = 500;    # Number of random documents to create
+my $DEEP = 2;      # Max depth level of embedded hashes
+my $KEYS = 20;     # Number of keys per hash
 
 use Test::More;
 
 plan tests => $RUNS;
 
-use lib '../lib'; #TODO
+use lib '../lib';    #TODO
 use BSON qw/encode decode/;
 
 srand;
@@ -23,23 +23,23 @@ my @codex = (
     \&re,    \&oid,   \&min,  \&max, \&ts,   \&null, \&bool, \&code
 );
 
-for my $count (1 .. $RUNS) {
-    my $ar = hash($KEYS);
+for my $count ( 1 .. $RUNS ) {
+    my $ar   = hash($KEYS);
     my $bson = encode($ar);
-    my $ar1 = decode($bson);
+    my $ar1  = decode($bson);
     is_deeply( $ar, $ar1 );
 }
 
 sub int32 {
-    return int( rand( 2**32 / 2 ) ) * ( int(rand(2)) ? -1 : 1 );
+    return int( rand( 2**32 / 2 ) ) * ( int( rand(2) ) ? -1 : 1 );
 }
 
 sub int64 {
-    return int( rand( 2**32 / 2 ) + 2**32 ) * ( int(rand(2)) ? -1 : 1 );
+    return int( rand( 2**32 / 2 ) + 2**32 ) * ( int( rand(2) ) ? -1 : 1 );
 }
 
 sub doub {
-    return rand( 2**64 ) * ( int(rand(2)) ? -1 : 1 );
+    return rand( 2**64 ) * ( int( rand(2) ) ? -1 : 1 );
 }
 
 sub str {
@@ -64,23 +64,29 @@ sub null { undef }
 sub bool { BSON::Bool->new( int( rand(2) ) ) }
 sub code { BSON::Code->new( str(), hash() ) }
 
-sub arr { 
+sub rnd {
+    my $sub = $codex[ int( rand(@codex) ) ];
+    return $sub->($level);
+}
+
+sub arr {
+    return [] if $level > $DEEP;
+    $level++;
     my $len = int( rand(20) ) + 1;
-    my @a = ();
+    my @a   = ();
     for ( 1 .. $len ) {
-        my $what = $codex[ int(rand(@codex)) ];
-        push @a, $what->();
+        push @a, rnd( $level + 1 );
     }
+    $level--;
     return \@a;
 }
 
 sub hash {
-    my $count = shift || $KEYS;
-    return {} if $level++ >= $DEEP;
+    return {} if $level > $DEEP;
+    $level++;
     my $hash = {};
-    for my $idx ( 1 .. $count ) {
-        my $what = $codex[ int(rand(@codex)) ];
-        $hash->{"key_$idx"} = $what->();
+    for my $idx ( 1 .. $KEYS ) {
+        $hash->{"key_$idx"} = rnd( $level + 1 );
     }
     $level--;
     return $hash;
