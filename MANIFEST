@@ -21,3 +21,4 @@ t/06-timestamp.t
 t/07-minmaxkey.t
 t/10-bson.t
 t/11-random.t
+t/12-exception.t
