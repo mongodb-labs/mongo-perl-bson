@@ -22,7 +22,8 @@ use BSON::ObjectId;
 use BSON::Code;
 use BSON::Bool;
 
-our $DEFAULT_MAX_BSON_SIZE = 16 * 1024 * 1024;
+# Maximum size of a BSON record
+our $MAX_SIZE = 16 * 1024 * 1024;
 
 sub e_name {
     pack 'CZ*', @_;
@@ -266,7 +267,7 @@ sub d_hash {
             $value = BSON::MaxKey->new;
         }
 
-        # Meh
+        # ???
         else {
             croak "Unsupported type $type";
         }
@@ -330,7 +331,6 @@ The module does not export anything. You have to request C<encode> and/or
 C<decode> maually.
 
     use BSON qw/encode decode/;
-
     
 =head1 SUBROUTINES
 
@@ -345,6 +345,10 @@ Takes a hashref and returns the serialized BSON string.
 Takes a BSON string and returns deserialized hashref.
 
     my $hash = decode( $bson );
+
+=head1 THREADS
+
+This module is thread safe.
 
 =head1 SEE ALSO
 
