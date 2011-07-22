@@ -6,14 +6,6 @@ use Carp;
 use Sys::Hostname;
 use Digest::MD5 'md5';
 
-BEGIN {
-    use Config;
-    if ( $Config{useithreads} ) {
-        use threads;
-        use threads::shared;
-    }
-}
-
 use overload
   '""' => \&to_s,
   '==' => \&op_eq,
@@ -88,9 +80,9 @@ BSON::ObjectId - ObjectId data element for BSON
 
     use BSON;
 
-    my $oid = BSON::ObjectId->new;
-    my $oid2 = BSON::ObjectId->new( $string );
-    my $oid3 = BSON::ObjectId->new( $binary_string );
+    my $oid  = BSON::ObjectId->new;
+    my $oid2 = BSON::ObjectId->new($string);
+    my $oid3 = BSON::ObjectId->new($binary_string);
 
 =head1 DESCRIPTION
 
@@ -129,6 +121,10 @@ Returns true if the 24 character string passed matches an ObjectId.
 
 The string operator is overloaded so any string operations will actually use
 the 24-character value of the ObjectId.
+
+=head1 THREADS
+
+This module is thread safe.
 
 =head1 SEE ALSO
 

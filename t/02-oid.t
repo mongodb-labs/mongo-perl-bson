@@ -2,7 +2,14 @@
 
 use strict;
 use warnings;
-use threads;
+
+BEGIN {
+    use Config;
+    if ( $Config{useithreads} ) {
+        use threads;
+        use threads::shared;
+    }
+}
 
 use Config;
 use Test::More tests => 44;
