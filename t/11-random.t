@@ -45,7 +45,7 @@ sub doub {
 sub str {
     my $len = int( rand(255) ) + 1;
     my @a   = map {
-        ( 'a' .. 'z', 'A' .. 'Z', '0' .. '9', ' ' )[ rand( 26 + 26 + 10 + 1 ) ]
+        ( 'A' .. 'Z', 'a' .. 'z', ' ' )[ rand( 26 + 26 + 1 ) ]
     } 1 .. $len;
     return join '', @a;
 }
