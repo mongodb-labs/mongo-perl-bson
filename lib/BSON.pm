@@ -10,7 +10,6 @@ our @EXPORT_OK = qw/encode decode/;
 our $VERSION = 0.01;
 
 use Carp;
-use Regexp::Common 'number';
 use Tie::IxHash;
 
 use BSON::Time;
@@ -24,6 +23,15 @@ use BSON::Bool;
 
 # Maximum size of a BSON record
 our $MAX_SIZE = 16 * 1024 * 1024;
+
+#<<<
+my $int_re     = qr/^(?:(?:[+-]?)(?:[0123456789]+))$/;
+my $doub_re    = qr/^(?:(?i)(?:[+-]?)(?:(?=[0123456789]|[.])(?:[0123456789]*)(?:(?:[.])(?:[0123456789]{0,}))?)(?:(?:[E])(?:(?:[+-]?)(?:[0123456789]+))|))$/;
+my $min_int_32 = -2**32 / 2;
+my $max_int_32 = 2**32 / 2 - 1;
+my $min_int_64 = -2**64 / 2;
+my $max_int_64 = 2**64 / 2 - 1;
+#>>>
 
 sub e_name {
     pack 'CZ*', @_;
@@ -43,10 +51,10 @@ sub s_arr {
 
 sub s_int {
     my ( $key, $value ) = @_;
-    if ( $value > 2**64 / 2 - 1 || $value < -2**64 / 2 ) {
+    if ( $value > $max_int_64 || $value < $min_int_64 ) {
         confess("MongoDB can only handle 8-byte integers");
     }
-    return $value > 2**32 / 2 - 1 || $value < -2**32 / 2
+    return $value > $max_int_32 || $value < $min_int_32
       ? e_name( 0x12, $key ) . pack( 'q', $value )
       : e_name( 0x10, $key ) . pack( 'l', $value );
 }
@@ -146,12 +154,12 @@ sub s_hash {
         }
 
         # Int (32 and 64)
-        elsif ( $value =~ /^$RE{num}{int}$/ ) {
+        elsif ( $value =~ $int_re ) {
             $bson .= s_int( $key, $value );
         }
 
         # Double
-        elsif ( $value =~ /^$RE{num}{real}$/ ) {
+        elsif ( $value =~ $doub_re ) {
             $bson .= e_name( 0x01, $key ) . pack( 'd', $value );
         }
 
@@ -165,7 +173,9 @@ sub s_hash {
 
 sub d_hash {
     my $bson = shift;
-    tie( my %hash, 'Tie::IxHash' );
+    my %opt  = @_;
+    my %hash = ();
+    if ( $opt{ixhash} ) { tie( %hash, 'Tie::IxHash' ) }
     while ($bson) {
         my $value;
         ( my $type, my $key, $bson ) = unpack( 'CZ*a*', $bson );
@@ -183,9 +193,11 @@ sub d_hash {
         # Document and Array
         elsif ( $type == 0x03 || $type == 0x04 ) {
             my $len = unpack( 'L', $bson );
-            $value = decode( substr( $bson, 0, $len ) );
+            $value = decode( substr( $bson, 0, $len ), %opt );
             if ( $type == 0x04 ) {
-                $value = [ values(%$value) ];
+                my @a =
+                  map { $value->{$_} } ( 0 .. scalar( keys %$value ) - 1 );
+                $value = \@a;
             }
             $bson = substr( $bson, $len, length($bson) - $len );
         }
@@ -237,7 +249,7 @@ sub d_hash {
         elsif ( $type == 0x0F ) {
             my $len = unpack( 'L', $bson );
             my @a = unpack( 'L2Z*a*', substr( $bson, 0, $len ) );
-            $value = BSON::Code->new( $a[2], decode( $a[3] ) );
+            $value = BSON::Code->new( $a[2], decode( $a[3], %opt ) );
             $bson = substr( $bson, $len, length($bson) - $len );
         }
 
@@ -248,7 +260,7 @@ sub d_hash {
 
         # Timestamp
         elsif ( $type == 0x11 ) {
-            (my $sec, my $inc, $bson) = unpack( 'LLa*', $bson );
+            ( my $sec, my $inc, $bson ) = unpack( 'LLa*', $bson );
             $value = BSON::Timestamp->new( $inc, $sec );
         }
 
@@ -289,7 +301,7 @@ sub decode {
     if ( length($bson) != $len ) {
         croak("Incorrect length of the bson string");
     }
-    return d_hash( substr( $bson, 4, -1 ) );
+    return d_hash( substr( $bson, 4, -1 ), @_ );
 }
 
 1;
@@ -318,7 +330,7 @@ Version 0.01
     };
 
     my $bson = encode( $document );
-    my $doc2 = decode( $bson );
+    my $doc2 = decode( $bson, %options );
 
 =head1 DESCRIPTION 
 
@@ -344,7 +356,22 @@ Takes a hashref and returns the serialized BSON string.
 
 Takes a BSON string and returns deserialized hashref.
 
-    my $hash = decode( $bson );
+    my $hash = decode( $bson, ixhash => 1 );
+
+The parameters after C<$bson> are optional and they can be any of the following:
+
+=head3 options
+
+=over
+
+=item 1
+
+ixhash => 1|0
+
+If set to 1 C<decode> will return a L<Tie::IxHash> ordered hash. Otherwise,
+a regular unordered hash will be returned. The default value is 0.
+
+=back
 
 =head1 THREADS
 
@@ -352,9 +379,9 @@ This module is thread safe.
 
 =head1 SEE ALSO
 
-L<MongoDB>, L<BSON::Time>, L<BSON::ObjectId>, L<BSON::Code>,
+L<BSON::Time>, L<BSON::ObjectId>, L<BSON::Code>,
 L<BSON::Binary>, L<BSON::Bool>, L<BSON::MinKey>, L<BSON::MaxKey>,
-L<BSON::Timestamp>
+L<BSON::Timestamp>, L<Tie::IxHash>, L<MongoDB>
 
 =head1 AUTHOR
 
