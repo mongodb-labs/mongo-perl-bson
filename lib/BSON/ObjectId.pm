@@ -5,13 +5,15 @@ use warnings;
 use Carp;
 use Sys::Hostname;
 use Digest::MD5 'md5';
+use threads;
+use threads::shared;
 
 use overload
   '""' => \&to_s,
   '==' => \&op_eq,
   'eq' => \&op_eq;
 
-our $_inc = 0;
+my $_inc : shared = 0;
 
 sub new {
     my ( $class, $value ) = @_;
