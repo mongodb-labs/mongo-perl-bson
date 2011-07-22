@@ -20,3 +20,4 @@ t/05-code.t
 t/06-timestamp.t
 t/07-minmaxkey.t
 t/10-bson.t
+t/11-random.t
