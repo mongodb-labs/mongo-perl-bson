@@ -1,55 +1,64 @@
-BSON
+NAME
+    BSON - Pure Perl implementation of MonogoDB's BSON serialization
 
-The README is used to introduce the module and provide instructions on
-how to install the module, any machine dependencies it may have (for
-example C compilers and installed libraries) and any other information
-that should be provided before the module is installed.
+VERSION
+    Version 0.01
 
-A README file is required for CPAN modules since CPAN extracts the README
-file from a module distribution so that people browsing the archive
-can use it to get an idea of the module's uses. It is usually a good idea
-to provide version information here so that people can decide whether
-fixes for the module are worth downloading.
+SYNOPSIS
+        use BSON qw/encode decode/;
 
+        my $document = {
+            _id    => BSON::ObjectId->new,
+            date   => BSON::Time->new,
+            name   => 'James Bond',
+            age    => 45,
+            amount => 24587.45,
+            badass => BSON::Bool->true
+        };
 
-INSTALLATION
+        my $bson = encode( $document );
+        my $doc2 = decode( $bson );
 
-To install this module, run the following commands:
+DESCRIPTION
+    This module implements BSON serialization and deserialization as
+    described at <http://bsonspec.org>. BSON is the primary data
+    representation for MongoDB.
 
-	perl Makefile.PL
-	make
-	make test
-	make install
+EXPORT
+    The module does not export anything. You have to request "encode" and/or
+    "decode" maually.
 
-SUPPORT AND DOCUMENTATION
+        use BSON qw/encode decode/;
 
-After installing, you can find documentation for this module with the
-perldoc command.
+SUBROUTINES
+  encode
+    Takes a hashref and returns the serialized BSON string.
 
-    perldoc BSON
+        my $bson = encode({ bar => 'foo' });
 
-You can also look for information at:
+  decode
+    Takes a BSON string and returns deserialized hashref.
 
-    RT, CPAN's request tracker
-        http://rt.cpan.org/NoAuth/Bugs.html?Dist=BSON
+        my $hash = decode( $bson );
 
-    AnnoCPAN, Annotated CPAN documentation
-        http://annocpan.org/dist/BSON
+SEE ALSO
+    MongoDB, BSON::Time, BSON::ObjectId, BSON::Code, BSON::Binary,
+    BSON::Bool, BSON::MinKey, BSON::MaxKey, BSON::Timestamp
 
-    CPAN Ratings
-        http://cpanratings.perl.org/d/BSON
+AUTHOR
+    minimalist, "<minimalist at lavabit.com>"
 
-    Search CPAN
-        http://search.cpan.org/dist/BSON/
+BUGS
+    Bug reports and patches are welcome. Reports which include a failing
+    Test::More style test are helpful and will receive priority.
 
+DEVELOPMENT
+    The source code of this module is available on GitHub:
+    https://github.com/naturalist/Perl-BSON
 
 LICENSE AND COPYRIGHT
+    Copyright 2011 minimalist.
 
-Copyright (C) 2011 minimalist
-
-This program is free software; you can redistribute it and/or modify it
-under the terms of either: the GNU General Public License as published
-by the Free Software Foundation; or the Artistic License.
-
-See http://dev.perl.org/licenses/ for more information.
+    This program is free software; you can redistribute it and/or modify it
+    under the terms as perl itself.
 
