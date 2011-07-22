@@ -5,8 +5,14 @@ use warnings;
 use Carp;
 use Sys::Hostname;
 use Digest::MD5 'md5';
-use threads;
-use threads::shared;
+
+BEGIN {
+    use Config;
+    if ( $Config{useithreads} ) {
+        use threads;
+        use threads::shared;
+    }
+}
 
 use overload
   '""' => \&to_s,

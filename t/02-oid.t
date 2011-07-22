@@ -2,11 +2,13 @@
 
 use strict;
 use warnings;
-use lib '../lib'; # TODO
-
-use Test::More tests => 44;
-use BSON;
 use threads;
+
+use Config;
+use Test::More tests => 44;
+
+use lib '../lib'; # TODO
+use BSON;
 
 my $o1 = BSON::ObjectId->new();
 ok( $o1->is_legal($o1), 'oid generate' );
@@ -24,7 +26,8 @@ is_deeply(
 my $o4 = BSON::ObjectId->new( $o3->value );
 is( "$o4", "$o3", 'value' );
 
-if (1) {
+SKIP: {
+    skip "No threads", 40 unless $Config{useithreads};
     my @threads = map {
         threads->create(
             sub {
