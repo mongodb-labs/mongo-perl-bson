@@ -1,0 +1,19 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+use lib '../lib'; # TODO
+
+use Test::More tests => 5;
+use BSON;
+
+ok(BSON::Bool->new(1));
+ok(!BSON::Bool->new(0));
+ok(BSON::Bool->true);
+ok(!BSON::Bool->false);
+
+my $t = BSON::Bool->true;
+my $f = BSON::Bool->false;
+
+ok( $t && !$f );
