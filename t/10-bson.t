@@ -3,13 +3,12 @@
 use strict;
 use warnings;
 
-use lib '../lib'; # TODO
-
-use BSON qw/encode decode/;
-
 use Test::More tests => 16;
 use Tie::IxHash;
 use DateTime;
+
+use lib '../lib'; # TODO
+use BSON qw/encode decode/;
 
 my $a;
 tie( my %h, 'Tie::IxHash' );

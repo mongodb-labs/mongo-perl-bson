@@ -6,7 +6,8 @@ use Carp;
 
 use overload
   '==' => \&op_eq,
-  'eq' => \&op_eq;
+  'eq' => \&op_eq,
+  '""' => sub { $_[0]->epoch };
 
 sub new {
     my ( $class, $value ) = @_;
