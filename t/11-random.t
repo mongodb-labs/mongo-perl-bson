@@ -12,7 +12,6 @@ use Test::More;
 
 plan tests => $RUNS;
 
-use lib '../lib';    #TODO
 use BSON qw/encode decode/;
 
 srand;

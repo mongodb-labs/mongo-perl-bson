@@ -7,7 +7,6 @@ use Test::More tests => 16;
 use Tie::IxHash;
 use DateTime;
 
-use lib '../lib'; # TODO
 use BSON qw/encode decode/;
 
 my $a;

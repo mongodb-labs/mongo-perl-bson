@@ -13,6 +13,10 @@ WriteMakefile(
     PL_FILES            => {},
     PREREQ_PM => {
         'Test::More' => 0,
+        'Tie::IxHash' => 0
+    },
+    BUILD_REQUIRES => {
+        'DateTime' => 0
     },
     dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean               => { FILES => 'BSON-*' },

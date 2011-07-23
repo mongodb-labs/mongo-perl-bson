@@ -14,7 +14,6 @@ BEGIN {
 use Config;
 use Test::More tests => 44;
 
-use lib '../lib'; # TODO
 use BSON;
 
 my $o1 = BSON::ObjectId->new();

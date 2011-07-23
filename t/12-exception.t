@@ -12,7 +12,6 @@ else {
     plan skip_all => 'No Test::Exception installed'
 }
 
-use lib '../lib'; # TODO
 use BSON qw/encode decode/;
 
 dies_ok( sub{ decode("something") }, "Incorrect BSON");

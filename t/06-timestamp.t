@@ -3,8 +3,6 @@
 use strict;
 use warnings;
 
-use lib '../lib'; # TODO
-
 use Test::More tests => 3;
 use BSON;
 
