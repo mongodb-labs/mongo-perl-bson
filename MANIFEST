@@ -2,6 +2,7 @@ Changes
 MANIFEST
 Makefile.PL
 README
+META.yml
 lib/BSON.pm
 lib/BSON/Binary.pm
 lib/BSON/Bool.pm

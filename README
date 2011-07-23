@@ -17,7 +17,7 @@ SYNOPSIS
         };
 
         my $bson = encode( $document );
-        my $doc2 = decode( $bson );
+        my $doc2 = decode( $bson, %options );
 
 DESCRIPTION
     This module implements BSON serialization and deserialization as
@@ -39,11 +39,24 @@ SUBROUTINES
   decode
     Takes a BSON string and returns deserialized hashref.
 
-        my $hash = decode( $bson );
+        my $hash = decode( $bson, ixhash => 1 );
+
+    The parameters after $bson are optional and they can be any of the
+    following:
+
+   options
+    1   ixhash => 1|0
+
+        If set to 1 "decode" will return a Tie::IxHash ordered hash.
+        Otherwise, a regular unordered hash will be returned. The default
+        value is 0.
+
+THREADS
+    This module is thread safe.
 
 SEE ALSO
-    MongoDB, BSON::Time, BSON::ObjectId, BSON::Code, BSON::Binary,
-    BSON::Bool, BSON::MinKey, BSON::MaxKey, BSON::Timestamp
+    BSON::Time, BSON::ObjectId, BSON::Code, BSON::Binary, BSON::Bool,
+    BSON::MinKey, BSON::MaxKey, BSON::Timestamp, Tie::IxHash, MongoDB
 
 AUTHOR
     minimalist, "<minimalist at lavabit.com>"
