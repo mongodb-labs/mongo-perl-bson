@@ -23,5 +23,5 @@ requires:
   Tie::IxHash: 0
 resources:
   repository: git://github.com/naturalist/Perl-BSON.git
-  bigtracker: https://github.com/naturalist/Perl-BSON/issues
+  bugtracker: https://github.com/naturalist/Perl-BSON/issues
 version: 0.01

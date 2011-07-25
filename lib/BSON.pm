@@ -340,7 +340,7 @@ L<http://bsonspec.org>. BSON is the primary data representation for MongoDB.
 =head1 EXPORT
 
 The module does not export anything. You have to request C<encode> and/or
-C<decode> maually.
+C<decode> manually.
 
     use BSON qw/encode decode/;
     
@@ -348,17 +348,17 @@ C<decode> maually.
 
 =head2 encode
 
-Takes a hashref and returns the serialized BSON string.
+Takes a hashref and returns a BSON string.
 
     my $bson = encode({ bar => 'foo' });
 
 =head2 decode
 
-Takes a BSON string and returns deserialized hashref.
+Takes a BSON string and returns a hashref.
 
     my $hash = decode( $bson, ixhash => 1 );
 
-The parameters after C<$bson> are optional and they can be any of the following:
+The options after C<$bson> are optional and they can be any of the following:
 
 =head3 options
 
@@ -369,7 +369,9 @@ The parameters after C<$bson> are optional and they can be any of the following:
 ixhash => 1|0
 
 If set to 1 C<decode> will return a L<Tie::IxHash> ordered hash. Otherwise,
-a regular unordered hash will be returned. The default value is 0.
+a regular unordered hash will be returned. Turning this option on entails a 
+significant speed penalty as Tie::IxHash is slower than a regular Perl hash.
+The default value for this option is 0.
 
 =back
 
@@ -395,7 +397,7 @@ Test::More style test are helpful and will receive priority.
 =head1 DEVELOPMENT
 
 The source code of this module is available on GitHub:
-https://github.com/naturalist/Perl-BSON
+L<https://github.com/naturalist/Perl-BSON>
 
 =head1 LICENSE AND COPYRIGHT
 
