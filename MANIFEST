@@ -23,3 +23,5 @@ t/07-minmaxkey.t
 t/10-bson.t
 t/11-random.t
 t/12-exception.t
+t/20-spelling.t
+t/25-manifest.t
