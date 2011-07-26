@@ -1,8 +1,8 @@
 NAME
-    BSON - Pure Perl implementation of MonogoDB's BSON serialization
+    BSON - Pure Perl implementation of MongoDB's BSON serialization
 
 VERSION
-    Version 0.01
+    Version 0.02
 
 SYNOPSIS
         use BSON qw/encode decode/;

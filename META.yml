@@ -1,5 +1,5 @@
 ---
-abstract: "Pure Perl implementation of MonogoDB's BSON serialization"
+abstract: "Pure Perl implementation of MongoDB's BSON serialization"
 author:
   - 'minimalist <minimalist@lavabit.com>'
 build_requires:
@@ -24,4 +24,4 @@ requires:
 resources:
   repository: git://github.com/naturalist/Perl-BSON.git
   bugtracker: https://github.com/naturalist/Perl-BSON/issues
-version: 0.01
+version: 0.02

@@ -67,7 +67,7 @@ in which case it will be converted to an array ref.
     my $bin = BSON::Binary->new("classic\x20string\0", 0);
 
 The different types are described in the BSON specification. A type is
-one of the follwoing:
+one of the following:
 
     0x00  Binary / Generic
     0x01  Function

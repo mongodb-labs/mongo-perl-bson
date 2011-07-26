@@ -7,7 +7,7 @@ use warnings;
 use base 'Exporter';
 our @EXPORT_OK = qw/encode decode/;
 
-our $VERSION = 0.01;
+our $VERSION = 0.02;
 
 use Carp;
 use Tie::IxHash;
@@ -310,11 +310,11 @@ __END__
 
 =head1 NAME
 
-BSON - Pure Perl implementation of MonogoDB's BSON serialization
+BSON - Pure Perl implementation of MongoDB's BSON serialization
 
 =head1 VERSION
 
-Version 0.01
+Version 0.02
 
 =head1 SYNOPSIS
 
