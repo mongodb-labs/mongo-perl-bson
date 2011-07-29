@@ -2,7 +2,6 @@
 
 use strict;
 use warnings;
-use 5.010;
 
 my $RUNS = 500;    # Number of random documents to create
 my $DEEP = 2;      # Max depth level of embedded hashes
