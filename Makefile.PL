@@ -12,8 +12,9 @@ WriteMakefile(
       : ()),
     PL_FILES            => {},
     PREREQ_PM => {
-        'Test::More' => 0,
-        'Tie::IxHash' => 0
+        'Tie::IxHash' => 0,
+        'Test::More'  => 0,
+        'Carp'        => 0
     },
     BUILD_REQUIRES => {
         'DateTime' => 0

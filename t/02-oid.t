@@ -5,10 +5,8 @@ use warnings;
 
 BEGIN {
     use Config;
-    if ( $Config{useithreads} ) {
-        use threads;
-        use threads::shared;
-    }
+    use if $Config{useithreads}, 'threads';
+    use if $Config{useithreads}, 'threads::shared';
 }
 
 use Config;

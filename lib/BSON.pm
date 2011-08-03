@@ -7,7 +7,7 @@ use warnings;
 use base 'Exporter';
 our @EXPORT_OK = qw/encode decode/;
 
-our $VERSION = 0.02;
+our $VERSION = 0.03;
 
 use Carp;
 use Tie::IxHash;
@@ -59,11 +59,18 @@ sub s_int {
       : e_name( 0x10, $key ) . pack( 'l', $value );
 }
 
-sub s_re {
-    my ( $key, $value ) = @_;
-    $value =~ s/^\(\?\^//;
+sub _split_re {
+    my $value = shift;
+    $value =~ s/^\(\?\^?//;
     $value =~ s/\)$//;
     my ( $opt, $re ) = split( /:/, $value, 2 );
+    $opt =~ s/\-\w+$//;
+    return ( $re, $opt );
+}
+
+sub s_re {
+    my ( $key, $value ) = @_;
+    my ( $re, $opt ) = _split_re( $value );
     my @o = sort grep /^(i|m|x|l|s|u)$/, split( //, $opt );
     e_name( 0x0B, $key ) . pack( 'Z*', $re ) . pack( 'a*', @o ) . "\0";
 }
@@ -314,7 +321,7 @@ BSON - Pure Perl implementation of MongoDB's BSON serialization
 
 =head1 VERSION
 
-Version 0.02
+Version 0.03
 
 =head1 SYNOPSIS
 

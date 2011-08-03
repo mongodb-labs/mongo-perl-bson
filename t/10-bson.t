@@ -215,7 +215,15 @@ subtest hash => sub {
 
 # Regex
 subtest regex => sub {
-    plan tests => 5;
+    plan tests => 9;
+
+    my @sp = BSON::_split_re('(?i-xsm:\w)');
+    is_deeply(\@sp, ['\w', 'i']);
+
+    # Perl 5.14 stringifies regexps differently
+    @sp = BSON::_split_re('(?^ui:\w)');
+    is_deeply(\@sp, ['\w', 'ui']);
+
     %h = ( a => qr/"(?:[^"\\]++|\\.)*+"/, b => qr/"(?>(?:(?>[^"\\]+)|\\.)*)"/ );
     my $bson = encode( \%h );
     is_deeply(
@@ -257,6 +265,9 @@ subtest regex => sub {
         ],
         'real num regex'
     );
+    $hash = decode( $bson );
+    is(ref $hash->{a}, 'Regexp');
+    is_deeply( $hash, \%h, 'Regex decode 2' );
 };
 
 # Datetime

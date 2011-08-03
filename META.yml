@@ -24,4 +24,4 @@ requires:
 resources:
   repository: git://github.com/naturalist/Perl-BSON.git
   bugtracker: https://github.com/naturalist/Perl-BSON/issues
-version: 0.02
+version: 0.03
