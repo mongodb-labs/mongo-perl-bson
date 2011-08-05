@@ -124,7 +124,7 @@ subtest double => sub {
 
 # String
 subtest string => sub {
-    plan tests => 2;
+    plan tests => 5;
     %h = ( a => 'bar', b => 'foo' );
     my $bson = encode( \%h );
     is_deeply(
@@ -138,6 +138,26 @@ subtest string => sub {
 
     my $hash = decode( $bson );
     is_deeply( $hash, \%h, 'String decode' );
+
+    # String object
+    %h = (
+        a => BSON::String->new(123456),
+        b => BSON::String->new(-11.99)
+    );
+    $bson = encode( \%h );
+    is_deeply(
+        [ unpack "C*", $bson ],
+        [
+            33, 0,  0,  0,  2,  97, 0,  7,  0, 0, 0, 49,
+            50, 51, 52, 53, 54, 0,  2,  98, 0, 7, 0, 0,
+            0,  45, 49, 49, 46, 57, 57, 0,  0
+        ],
+        'String object encode'
+    );
+
+    $hash = decode( $bson );
+    is( $hash->{a}, 123456, 'String object decode' );
+    is( $hash->{b}, -11.99, 'String object decode 2' );
 };
 
 # Array

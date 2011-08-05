@@ -1,5 +1,8 @@
 Revision history for BSON
 
+0.04    2011-08-04 17:30 PST
+        Add BSON::String type
+
 0.03    2011-08-02 14:00:00 PST
         Fix regex parsing for Perl<5.14
         Fix thread dependency in oid.t

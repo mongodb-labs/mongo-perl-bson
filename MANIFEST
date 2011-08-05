@@ -12,6 +12,7 @@ lib/BSON/MinKey.pm
 lib/BSON/ObjectId.pm
 lib/BSON/Time.pm
 lib/BSON/Timestamp.pm
+lib/BSON/String.pm
 t/00-load.t
 t/01-bool.t
 t/02-oid.t
@@ -20,6 +21,7 @@ t/04-binary.t
 t/05-code.t
 t/06-timestamp.t
 t/07-minmaxkey.t
+t/08-string.t
 t/10-bson.t
 t/11-random.t
 t/12-exception.t

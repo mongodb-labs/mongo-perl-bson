@@ -7,7 +7,7 @@ use warnings;
 use base 'Exporter';
 our @EXPORT_OK = qw/encode decode/;
 
-our $VERSION = 0.03;
+our $VERSION = 0.04;
 
 use Carp;
 use Tie::IxHash;
@@ -20,6 +20,7 @@ use BSON::Binary;
 use BSON::ObjectId;
 use BSON::Code;
 use BSON::Bool;
+use BSON::String;
 
 # Maximum size of a BSON record
 our $MAX_SIZE = 16 * 1024 * 1024;
@@ -158,6 +159,11 @@ sub s_hash {
         # Boolean
         elsif ( ref $value eq 'BSON::Bool' ) {
             $bson .= e_name( 0x08, $key ) . ( $value ? "\1" : "\0" );
+        }
+
+        # String (explicit)
+        elsif ( ref $value eq 'BSON::String' ) {
+            $bson .= e_name( 0x02, $key ) . string($value);
         }
 
         # Int (32 and 64)
@@ -321,7 +327,7 @@ BSON - Pure Perl implementation of MongoDB's BSON serialization
 
 =head1 VERSION
 
-Version 0.03
+Version 0.04
 
 =head1 SYNOPSIS
 
@@ -388,7 +394,7 @@ This module is thread safe.
 
 =head1 SEE ALSO
 
-L<BSON::Time>, L<BSON::ObjectId>, L<BSON::Code>,
+L<BSON::String>, L<BSON::Time>, L<BSON::ObjectId>, L<BSON::Code>,
 L<BSON::Binary>, L<BSON::Bool>, L<BSON::MinKey>, L<BSON::MaxKey>,
 L<BSON::Timestamp>, L<Tie::IxHash>, L<MongoDB>
 

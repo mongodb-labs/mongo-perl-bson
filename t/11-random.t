@@ -43,9 +43,9 @@ sub doub {
 sub str {
     my $len = int( rand(255) ) + 1;
     my @a   = map {
-        ( 'A' .. 'Z', 'a' .. 'z', ' ' )[ rand( 26 + 26 + 1 ) ]
+        ( 'A' .. 'Z', 'a' .. 'z', ' ', '0' .. '9' )[ rand( 26 + 26 + 11 ) ]
     } 1 .. $len;
-    return join '', @a;
+    return BSON::String->new( join( '', @a ) );
 }
 
 sub dt  { BSON::Time->new( abs( int32() ) ) }

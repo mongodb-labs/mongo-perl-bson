@@ -19,9 +19,10 @@ no_index:
     - t
     - inc
 requires:
-  Test::More: 0
   Tie::IxHash: 0
+  Test::More: 0
+  Carp: 0
 resources:
   repository: git://github.com/naturalist/Perl-BSON.git
   bugtracker: https://github.com/naturalist/Perl-BSON/issues
-version: 0.03
+version: 0.04
