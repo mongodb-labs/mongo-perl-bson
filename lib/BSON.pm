@@ -334,12 +334,13 @@ Version 0.04
     use BSON qw/encode decode/;
 
     my $document = {
-        _id    => BSON::ObjectId->new,
-        date   => BSON::Time->new,
-        name   => 'James Bond',
-        age    => 45,
-        amount => 24587.45,
-        badass => BSON::Bool->true
+        _id      => BSON::ObjectId->new,
+        date     => BSON::Time->new,
+        name     => 'James Bond',
+        age      => 45,
+        amount   => 24587.45,
+        badass   => BSON::Bool->true,
+        password => BSON::String->new('12345')
     };
 
     my $bson = encode( $document );
