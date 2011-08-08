@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 16;
+use Test::More tests => 17;
 use Tie::IxHash;
 use DateTime;
 
@@ -496,4 +496,14 @@ subtest timestamp => sub {
     is( $hash->{a}->seconds, $ts->seconds, 'timestamp seconds' );
 };
 
+subtest options => sub {
+    plan tests => 2;
 
+    # ixhash
+    my $hash = { a => 1, b => 2 };
+    my $bson = encode($hash);
+    my $h1   = decode($bson);
+    my $h2   = decode( $bson, ixhash => 1 );
+    is( ref tied %$h1, '',            'regular hash' );
+    is( ref tied %$h2, 'Tie::IxHash', 'Tie::IxHash' );
+};

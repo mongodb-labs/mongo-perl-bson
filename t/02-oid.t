@@ -10,7 +10,7 @@ BEGIN {
 }
 
 use Config;
-use Test::More tests => 44;
+use Test::More tests => 46;
 
 use BSON;
 
@@ -29,6 +29,13 @@ is_deeply(
 
 my $o4 = BSON::ObjectId->new( $o3->value );
 is( "$o4", "$o3", 'value' );
+
+my $try = eval { my $o5 = BSON::ObjectId->new('abcde'); 1 };
+isnt( $try, 1, 'Dies 1' );
+
+$try = eval { my $o5 = BSON::ObjectId->new('12345678901234567890123$'); 1 };
+isnt( $try, 1, 'Dies 2' );
+
 
 SKIP: {
     skip "No threads", 40 unless $Config{useithreads};

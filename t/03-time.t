@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 6;
+use Test::More tests => 7;
 use BSON;
 
 my $n = time;
@@ -19,4 +19,8 @@ isnt( $t2->value, $t->value );
 
 my $t3 = BSON::Time->new($n);
 is( $t3, $t );
+
+my $try = eval { $t = BSON::Time->new('abcde'); 1 };
+isnt($try, 1, 'Dies ok');
+
 

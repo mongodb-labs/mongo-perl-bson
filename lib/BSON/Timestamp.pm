@@ -40,6 +40,9 @@ BSON::Timestamp - Timestamp data for BSON
 =head1 DESCRIPTION
 
 This module is needed for L<BSON> and it manages BSON's timestamp element.
+C<Timestamp> is an internal MongoDB type used in replication and sharding.
+The first four bytes are increment and the second four bytes are a timestamp.
+A timestamp value of 0 has special semantics.
 
 =head1 METHODS
 

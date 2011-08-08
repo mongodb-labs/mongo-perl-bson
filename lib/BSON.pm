@@ -1,13 +1,13 @@
 package BSON;
 
-use 5.008;
+use 5.010;
 use strict;
 use warnings;
 
 use base 'Exporter';
 our @EXPORT_OK = qw/encode decode/;
 
-our $VERSION = 0.04;
+our $VERSION = 0.05;
 
 use Carp;
 use Tie::IxHash;
@@ -25,13 +25,15 @@ use BSON::String;
 # Maximum size of a BSON record
 our $MAX_SIZE = 16 * 1024 * 1024;
 
+# Max integer sizes
+our $min_int_32 = -2**32 / 2;
+our $max_int_32 = 2**32 / 2 - 1;
+our $min_int_64 = -2**64 / 2;
+our $max_int_64 = 2**64 / 2 - 1;
+
 #<<<
 my $int_re     = qr/^(?:(?:[+-]?)(?:[0123456789]+))$/;
 my $doub_re    = qr/^(?:(?i)(?:[+-]?)(?:(?=[0123456789]|[.])(?:[0123456789]*)(?:(?:[.])(?:[0123456789]{0,}))?)(?:(?:[E])(?:(?:[+-]?)(?:[0123456789]+))|))$/;
-my $min_int_32 = -2**32 / 2;
-my $max_int_32 = 2**32 / 2 - 1;
-my $min_int_64 = -2**64 / 2;
-my $max_int_64 = 2**64 / 2 - 1;
 #>>>
 
 sub e_name {
@@ -53,7 +55,7 @@ sub s_arr {
 sub s_int {
     my ( $key, $value ) = @_;
     if ( $value > $max_int_64 || $value < $min_int_64 ) {
-        confess("MongoDB can only handle 8-byte integers");
+        croak("MongoDB can only handle 8-byte integers");
     }
     return $value > $max_int_32 || $value < $min_int_32
       ? e_name( 0x12, $key ) . pack( 'q', $value )
@@ -185,10 +187,9 @@ sub s_hash {
 }
 
 sub d_hash {
-    my $bson = shift;
-    my %opt  = @_;
+    my ($bson, %opt) = @_;
     my %hash = ();
-    if ( $opt{ixhash} ) { tie( %hash, 'Tie::IxHash' ) }
+    tie( %hash, 'Tie::IxHash' ) if $opt{ixhash};
     while ($bson) {
         my $value;
         ( my $type, my $key, $bson ) = unpack( 'CZ*a*', $bson );
@@ -327,7 +328,7 @@ BSON - Pure Perl implementation of MongoDB's BSON serialization
 
 =head1 VERSION
 
-Version 0.04
+Version 0.05
 
 =head1 SYNOPSIS
 
@@ -350,6 +351,12 @@ Version 0.04
 
 This module implements BSON serialization and deserialization as described at
 L<http://bsonspec.org>. BSON is the primary data representation for MongoDB.
+
+=head1 LIMITATION
+
+MongoDB sets a limit for any BSON record to 16MB. This module does not enforce this 
+limit and you can use it to C<encode> and C<decode> structures as large as you 
+please.
 
 =head1 EXPORT
 
