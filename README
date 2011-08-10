@@ -2,18 +2,19 @@ NAME
     BSON - Pure Perl implementation of MongoDB's BSON serialization
 
 VERSION
-    Version 0.02
+    Version 0.05
 
 SYNOPSIS
         use BSON qw/encode decode/;
 
         my $document = {
-            _id    => BSON::ObjectId->new,
-            date   => BSON::Time->new,
-            name   => 'James Bond',
-            age    => 45,
-            amount => 24587.45,
-            badass => BSON::Bool->true
+            _id      => BSON::ObjectId->new,
+            date     => BSON::Time->new,
+            name     => 'James Bond',
+            age      => 45,
+            amount   => 24587.45,
+            badass   => BSON::Bool->true,
+            password => BSON::String->new('12345')
         };
 
         my $bson = encode( $document );
@@ -23,6 +24,11 @@ DESCRIPTION
     This module implements BSON serialization and deserialization as
     described at <http://bsonspec.org>. BSON is the primary data
     representation for MongoDB.
+
+LIMITATION
+    MongoDB sets a limit for any BSON record to 16MB. This module does not
+    enforce this limit and you can use it to "encode" and "decode"
+    structures as large as you please.
 
 EXPORT
     The module does not export anything. You have to request "encode" and/or
@@ -57,8 +63,9 @@ THREADS
     This module is thread safe.
 
 SEE ALSO
-    BSON::Time, BSON::ObjectId, BSON::Code, BSON::Binary, BSON::Bool,
-    BSON::MinKey, BSON::MaxKey, BSON::Timestamp, Tie::IxHash, MongoDB
+    BSON::String, BSON::Time, BSON::ObjectId, BSON::Code, BSON::Binary,
+    BSON::Bool, BSON::MinKey, BSON::MaxKey, BSON::Timestamp, Tie::IxHash,
+    MongoDB
 
 AUTHOR
     minimalist, "<minimalist at lavabit.com>"
