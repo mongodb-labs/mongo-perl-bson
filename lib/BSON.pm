@@ -352,12 +352,6 @@ Version 0.05
 This module implements BSON serialization and deserialization as described at
 L<http://bsonspec.org>. BSON is the primary data representation for MongoDB.
 
-=head1 LIMITATION
-
-MongoDB sets a limit for any BSON record to 16MB. This module does not enforce this 
-limit and you can use it to C<encode> and C<decode> structures as large as you 
-please.
-
 =head1 EXPORT
 
 The module does not export anything. You have to request C<encode> and/or
@@ -399,6 +393,18 @@ The default value for this option is 0.
 =head1 THREADS
 
 This module is thread safe.
+
+=head1 LIMITATION
+
+MongoDB sets a limit for any BSON record to 16MB. This module does not enforce this 
+limit and you can use it to C<encode> and C<decode> structures as large as you 
+please.
+
+=head1 CAVEATS
+
+BSON uses zero terminated strings and Perl allows the \0 caracter to be anywhere
+in a string. If you expect your strings to contain \0 characters, use L<BSON::Binary>
+instead.
 
 =head1 SEE ALSO
 
