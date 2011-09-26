@@ -347,7 +347,7 @@ Version 0.05
     my $bson = encode( $document );
     my $doc2 = decode( $bson, %options );
 
-=head1 DESCRIPTION 
+=head1 DESCRIPTION
 
 This module implements BSON serialization and deserialization as described at
 L<http://bsonspec.org>. BSON is the primary data representation for MongoDB.
@@ -358,7 +358,7 @@ The module does not export anything. You have to request C<encode> and/or
 C<decode> manually.
 
     use BSON qw/encode decode/;
-    
+
 =head1 SUBROUTINES
 
 =head2 encode
@@ -384,7 +384,7 @@ The options after C<$bson> are optional and they can be any of the following:
 ixhash => 1|0
 
 If set to 1 C<decode> will return a L<Tie::IxHash> ordered hash. Otherwise,
-a regular unordered hash will be returned. Turning this option on entails a 
+a regular unordered hash will be returned. Turning this option on entails a
 significant speed penalty as Tie::IxHash is slower than a regular Perl hash.
 The default value for this option is 0.
 
@@ -396,13 +396,13 @@ This module is thread safe.
 
 =head1 LIMITATION
 
-MongoDB sets a limit for any BSON record to 16MB. This module does not enforce this 
-limit and you can use it to C<encode> and C<decode> structures as large as you 
+MongoDB sets a limit for any BSON record to 16MB. This module does not enforce this
+limit and you can use it to C<encode> and C<decode> structures as large as you
 please.
 
 =head1 CAVEATS
 
-BSON uses zero terminated strings and Perl allows the \0 caracter to be anywhere
+BSON uses zero terminated strings and Perl allows the \0 character to be anywhere
 in a string. If you expect your strings to contain \0 characters, use L<BSON::Binary>
 instead.
 
@@ -418,7 +418,7 @@ minimalist, C<< <minimalist at lavabit.com> >>
 
 =head1 BUGS
 
-Bug reports and patches are welcome. Reports which include a failing 
+Bug reports and patches are welcome. Reports which include a failing
 Test::More style test are helpful and will receive priority.
 
 =head1 DEVELOPMENT
@@ -430,7 +430,7 @@ L<https://github.com/naturalist/Perl-BSON>
 
 Copyright 2011 minimalist.
 
-This program is free software; you can redistribute it and/or modify 
+This program is free software; you can redistribute it and/or modify
 it under the terms as perl itself.
 
 =cut
