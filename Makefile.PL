@@ -19,7 +19,7 @@ WriteMakefile(
     BUILD_REQUIRES => {
         'DateTime' => 0
     },
-    MIN_PERL_VERSION    => '5.010',
+    MIN_PERL_VERSION    => '5.008',
     dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean               => { FILES => 'BSON-*' },
 );

@@ -21,7 +21,7 @@ requires:
   Carp: 0
   Test::More: 0
   Tie::IxHash: 0
-  perl: 5.010
+  perl: 5.008
 resources:
   bugtracker: https://github.com/naturalist/Perl-BSON/issues
   repository: git://github.com/naturalist/Perl-BSON.git
