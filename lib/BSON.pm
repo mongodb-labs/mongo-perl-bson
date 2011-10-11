@@ -7,7 +7,7 @@ use warnings;
 use base 'Exporter';
 our @EXPORT_OK = qw/encode decode/;
 
-our $VERSION = 0.05;
+our $VERSION = 0.06;
 
 use Carp;
 use Tie::IxHash;
