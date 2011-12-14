@@ -7,8 +7,9 @@ use warnings;
 use base 'Exporter';
 our @EXPORT_OK = qw/encode decode/;
 
-our $VERSION = 0.06;
+our $VERSION = 0.10;
 
+use Config;
 use Carp;
 use Tie::IxHash;
 
@@ -54,12 +55,20 @@ sub s_arr {
 
 sub s_int {
     my ( $key, $value ) = @_;
-    if ( $value > $max_int_64 || $value < $min_int_64 ) {
-        croak("MongoDB can only handle 8-byte integers");
+    if ( $Config{'use64bitint'} ) {
+        if ( $value > $max_int_64 || $value < $min_int_64 ) {
+            croak("MongoDB can only handle 8-byte integers");
+        }
+        return $value > $max_int_32 || $value < $min_int_32
+          ? e_name( 0x12, $key ) . pack( 'q', $value )
+          : e_name( 0x10, $key ) . pack( 'l', $value );
     }
-    return $value > $max_int_32 || $value < $min_int_32
-      ? e_name( 0x12, $key ) . pack( 'q', $value )
-      : e_name( 0x10, $key ) . pack( 'l', $value );
+    else {
+        if ( $value > $max_int_32 || $value < $min_int_32 ) {
+            croak("Can't serialize 64-bit int with a 32-bit Perl");
+        }
+        return e_name( 0x10, $key ) . pack( 'l', $value );
+    }
 }
 
 sub _split_re {
@@ -328,7 +337,7 @@ BSON - Pure Perl implementation of MongoDB's BSON serialization
 
 =head1 VERSION
 
-Version 0.05
+Version 0.10
 
 =head1 SYNOPSIS
 

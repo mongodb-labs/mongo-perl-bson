@@ -7,6 +7,7 @@ my $RUNS = 500;    # Number of random documents to create
 my $DEEP = 2;      # Max depth level of embedded hashes
 my $KEYS = 20;     # Number of keys per hash
 
+use Config;
 use Test::More;
 
 plan tests => $RUNS;
@@ -17,9 +18,14 @@ srand;
 
 my $level = 0;
 my @codex = (
-    \&int32, \&int64, \&doub, \&str, \&hash, \&arr,  \&dt,   \&bin,
+    \&int32, \&doub, \&str, \&hash, \&arr,  \&dt,   \&bin,
     \&re,    \&oid,   \&min,  \&max, \&ts,   \&null, \&bool, \&code
 );
+
+# If Perl is 64-bit then add 64 integers
+if ( $Config{'use64bitint'} ) {
+    push @codex, \&int64;
+}
 
 for my $count ( 1 .. $RUNS ) {
     my $ar   = hash($KEYS);

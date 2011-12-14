@@ -1,5 +1,11 @@
 Revision history for BSON
 
+0.10    2011-12-14
+        Address the 32-bit only Perl support
+
+0.06    2011-09-26
+        Lower the required Perl version to 5.8
+
 0.04    2011-08-04 17:30 PST
         Add BSON::String type
 

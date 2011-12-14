@@ -2,7 +2,7 @@ NAME
     BSON - Pure Perl implementation of MongoDB's BSON serialization
 
 VERSION
-    Version 0.05
+    Version 0.10
 
 SYNOPSIS
         use BSON qw/encode decode/;
@@ -24,11 +24,6 @@ DESCRIPTION
     This module implements BSON serialization and deserialization as
     described at <http://bsonspec.org>. BSON is the primary data
     representation for MongoDB.
-
-LIMITATION
-    MongoDB sets a limit for any BSON record to 16MB. This module does not
-    enforce this limit and you can use it to "encode" and "decode"
-    structures as large as you please.
 
 EXPORT
     The module does not export anything. You have to request "encode" and/or
@@ -61,6 +56,16 @@ SUBROUTINES
 
 THREADS
     This module is thread safe.
+
+LIMITATION
+    MongoDB sets a limit for any BSON record to 16MB. This module does not
+    enforce this limit and you can use it to "encode" and "decode"
+    structures as large as you please.
+
+CAVEATS
+    BSON uses zero terminated strings and Perl allows the \0 character to be
+    anywhere in a string. If you expect your strings to contain \0
+    characters, use BSON::Binary instead.
 
 SEE ALSO
     BSON::String, BSON::Time, BSON::ObjectId, BSON::Code, BSON::Binary,
