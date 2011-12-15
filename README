@@ -2,7 +2,7 @@ NAME
     BSON - Pure Perl implementation of MongoDB's BSON serialization
 
 VERSION
-    Version 0.10
+    Version 0.11
 
 SYNOPSIS
         use BSON qw/encode decode/;
@@ -74,6 +74,9 @@ SEE ALSO
 
 AUTHOR
     minimalist, "<minimalist at lavabit.com>"
+
+CONTRIBUTORS
+    Oleg Kostyuk "<cub@cpan.org>"
 
 BUGS
     Bug reports and patches are welcome. Reports which include a failing

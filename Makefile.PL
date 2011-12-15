@@ -12,6 +12,7 @@ WriteMakefile(
       : ()),
     PL_FILES            => {},
     PREREQ_PM => {
+        'Math::Int64' => 0,
         'Tie::IxHash' => 0,
         'Test::More'  => 0,
         'Carp'        => 0

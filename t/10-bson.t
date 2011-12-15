@@ -6,7 +6,7 @@ use warnings;
 use Test::More tests => 17;
 use Tie::IxHash;
 use DateTime;
-use Config;
+use Math::Int64 qw/:native_if_available int64/;
 
 use BSON qw/encode decode/;
 
@@ -33,15 +33,10 @@ subtest int32 => sub {
 
 # Int64
 subtest int64 => sub {
-    if ($Config{'use64bitint'}) {
-        plan tests => 2;
-    }
-    else {
-        plan skip_all => "No 64-bit support";
-    }
+    plan tests => 2;
     %h = ( a => 1, b => 2147483647, c => -2147483648 );
     %h =
-      ( a => 2147483648, b => 9223372036854775807, c => -9223372036854775808 );
+      ( a => int64('2147483648'), b => int64('9223372036854775807'), c => int64('-9223372036854775808') );
     my $bson = encode( \%h );
     is_deeply(
         [ unpack "C*", $bson ],
@@ -58,14 +53,9 @@ subtest int64 => sub {
 
 # Mixed ints
 subtest mix_ints => sub {
-    if ($Config{'use64bitint'}) {
-        plan tests => 2;
-    }
-    else {
-        plan skip_all => "No 64-bit support";
-    }
+    plan tests => 2;
     %h = ( a => 1, b => 2147483647, c => -2147483648 );
-    %h = ( a => 2147483648, b => 1, c => -20 );
+    %h = ( a => int64('2147483648'), b => 1, c => -20 );
     my $bson = encode( \%h );
     is_deeply(
         [ unpack "C*", $bson ],
@@ -342,10 +332,10 @@ subtest datetime => sub {
     my $h = { a => BSON::Time->new( $dt->epoch ) };
     my $bson = encode( $h );
     #<<<
-    is_deeply(
-        [ unpack "C*", $bson ],
+    is_deeply( 
+        [ unpack "C*", $bson ], 
         [ 16, 0, 0, 0, 9, 97, 0, 0, 149, 210, 46, 35, 0, 0, 0, 0 ],
-        'encode 1974'
+        'encode 1974' 
     );
     #>>>
     is_deeply( decode($bson), $h, 'decode 1974' );
@@ -362,10 +352,10 @@ subtest datetime => sub {
     $h = { a => BSON::Time->new( $dt->epoch ) };
     $bson = encode( $h );
     #<<<
-    is_deeply(
-        [ unpack "C*", $bson ],
+    is_deeply( 
+        [ unpack "C*", $bson ], 
         [16, 0, 0, 0, 9, 97, 0, 0, 37, 154, 183, 217, 255, 255, 255, 0],
-        'encode 1964'
+        'encode 1964' 
     );
     #>>>
     is_deeply( decode($bson), $h, 'decode 1964' );
@@ -382,10 +372,10 @@ subtest datetime => sub {
     $h = { a => BSON::Time->new( $dt->epoch ) };
     $bson = encode( $h );
     #<<<
-    is_deeply(
-        [ unpack "C*", $bson ],
+    is_deeply( 
+        [ unpack "C*", $bson ], 
         [16, 0, 0, 0, 9, 97, 0, 0, 229, 74, 246, 175, 1, 0, 0, 0],
-        'encode 2028'
+        'encode 2028' 
     );
     #>>>
     is_deeply( decode($bson), $h, 'decode 2028' );
@@ -395,20 +385,20 @@ subtest min_max_key => sub {
     plan tests => 4;
     my $bson = encode( { a => BSON::MinKey->new } );
     #<<<
-    is_deeply(
+    is_deeply( 
         [ unpack "C*", $bson ],
         [8, 0, 0, 0, 255, 97, 0, 0],
-        'MinKey encode'
+        'MinKey encode' 
     );
     #>>>
     isa_ok( decode($bson)->{a}, 'BSON::MinKey', 'MinKey decode' );
 
     $bson = encode( { a => BSON::MaxKey->new } );
     #<<<
-    is_deeply(
+    is_deeply( 
         [ unpack "C*", $bson ],
         [8, 0, 0, 0, 127, 97, 0, 0],
-        'MaxKey'
+        'MaxKey' 
     );
     #>>>
     isa_ok( decode($bson)->{a}, 'BSON::MaxKey', 'MaxKey decode' );
@@ -420,10 +410,10 @@ subtest binary => sub {
     my $bin = BSON::Binary->new( [ 1, 2, 3, 4, 5 ] );
     my $bson = encode( { a => $bin } );
     #<<<
-    is_deeply(
+    is_deeply( 
         [ unpack "C*", $bson ],
         [18, 0, 0, 0, 5, 97, 0, 5, 0, 0, 0, 0, 1, 2, 3, 4, 5, 0],
-        'Binary 1 encode'
+        'Binary 1 encode' 
     );
     #>>>
     my $hash = decode($bson);
