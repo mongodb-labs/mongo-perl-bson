@@ -14,7 +14,8 @@ WriteMakefile(
     PREREQ_PM => {
         'Math::Int64' => 0,
         'Tie::IxHash' => 0,
-        'Test::More'  => 0,
+        'Test::More'  => 0.94,
+        'Test::Deep'  => 0,
         'Carp'        => 0
     },
     BUILD_REQUIRES => {
