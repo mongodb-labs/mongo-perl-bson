@@ -7,11 +7,11 @@ use warnings;
 use base 'Exporter';
 our @EXPORT_OK = qw/encode decode/;
 
-our $VERSION = 0.10;
+our $VERSION = 0.11;
 
-use Config;
 use Carp;
 use Tie::IxHash;
+use Math::Int64 qw/:native_if_available int64 int64_to_native native_to_int64/;
 
 use BSON::Time;
 use BSON::Timestamp;
@@ -27,10 +27,10 @@ use BSON::String;
 our $MAX_SIZE = 16 * 1024 * 1024;
 
 # Max integer sizes
-our $min_int_32 = -2**32 / 2;
-our $max_int_32 = 2**32 / 2 - 1;
-our $min_int_64 = -2**64 / 2;
-our $max_int_64 = 2**64 / 2 - 1;
+our $min_int_32 = -(1<<31);
+our $max_int_32 =  (1<<31) - 1;
+our $min_int_64 = -(int64(1)<<63);
+our $max_int_64 =  (int64(1)<<63) - 1;
 
 #<<<
 my $int_re     = qr/^(?:(?:[+-]?)(?:[0123456789]+))$/;
@@ -45,6 +45,16 @@ sub string {
     pack 'V/Z*', shift;
 }
 
+sub pack_q {
+    return int64_to_native(shift);
+}
+
+sub unpack_qastar {
+    my ($bson, $l1, $l2) = @_;
+    ($l1, $l2, $bson) = unpack('L2a*',$bson);
+    return (native_to_int64(pack('L2',$l1, $l2)), $bson);
+}
+
 sub s_arr {
     my ( $key, $value ) = @_;
     my $i = 0;
@@ -55,20 +65,12 @@ sub s_arr {
 
 sub s_int {
     my ( $key, $value ) = @_;
-    if ( $Config{'use64bitint'} ) {
-        if ( $value > $max_int_64 || $value < $min_int_64 ) {
-            croak("MongoDB can only handle 8-byte integers");
-        }
-        return $value > $max_int_32 || $value < $min_int_32
-          ? e_name( 0x12, $key ) . pack( 'q', $value )
-          : e_name( 0x10, $key ) . pack( 'l', $value );
+    if ( $value > $max_int_64 || $value < $min_int_64 ) {
+        croak("MongoDB can only handle 8-byte integers");
     }
-    else {
-        if ( $value > $max_int_32 || $value < $min_int_32 ) {
-            croak("Can't serialize 64-bit int with a 32-bit Perl");
-        }
-        return e_name( 0x10, $key ) . pack( 'l', $value );
-    }
+    return $value > $max_int_32 || $value < $min_int_32
+      ? e_name( 0x12, $key ) . pack_q( $value )
+      : e_name( 0x10, $key ) . pack( 'l', $value );
 }
 
 sub _split_re {
@@ -89,7 +91,7 @@ sub s_re {
 
 sub s_dt {
     my ( $key, $value ) = @_;
-    e_name( 0x09, $key ) . pack( 'q', $value->epoch * 1000 );
+    e_name( 0x09, $key ) . pack_q( $value->epoch * int64(1000) );
 }
 
 sub s_code {
@@ -137,7 +139,7 @@ sub s_hash {
 
         # Datetime
         elsif ( ref $value eq 'BSON::Time' ) {
-            $bson .= e_name( 0x09, $key ) . pack( 'q', $value->value );
+            $bson .= e_name( 0x09, $key ) . pack_q( $value->value );
         }
 
         # Timestamp
@@ -178,7 +180,7 @@ sub s_hash {
         }
 
         # Int (32 and 64)
-        elsif ( $value =~ $int_re ) {
+        elsif ( ref $value eq 'Math::Int64' || $value =~ $int_re ) {
             $bson .= s_int( $key, $value );
         }
 
@@ -247,7 +249,7 @@ sub d_hash {
 
         # Datetime
         elsif ( $type == 0x09 ) {
-            ( my $dt, $bson ) = unpack( 'qa*', $bson );
+            ( my $dt, $bson ) = unpack_qastar( $bson );
             $value = BSON::Time->new( int( $dt / 1000 ) );
         }
 
@@ -289,7 +291,7 @@ sub d_hash {
 
         # Int64
         elsif ( $type == 0x12 ) {
-            ( $value, $bson ) = unpack( 'qa*', $bson );
+            ( $value, $bson ) = unpack_qastar( $bson );
         }
 
         # MinKey
@@ -337,7 +339,7 @@ BSON - Pure Perl implementation of MongoDB's BSON serialization
 
 =head1 VERSION
 
-Version 0.10
+Version 0.11
 
 =head1 SYNOPSIS
 
@@ -424,6 +426,10 @@ L<BSON::Timestamp>, L<Tie::IxHash>, L<MongoDB>
 =head1 AUTHOR
 
 minimalist, C<< <minimalist at lavabit.com> >>
+
+=head1 CONTRIBUTORS
+
+Oleg Kostyuk C<< <cub@cpan.org> >>
 
 =head1 BUGS
 

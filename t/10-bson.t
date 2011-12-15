@@ -4,9 +4,10 @@ use strict;
 use warnings;
 
 use Test::More tests => 17;
+use Test::Deep;
 use Tie::IxHash;
 use DateTime;
-use Config;
+use Math::Int64 qw/:native_if_available int64/;
 
 use BSON qw/encode decode/;
 
@@ -33,19 +34,16 @@ subtest int32 => sub {
 
 # Int64
 subtest int64 => sub {
-    if ($Config{'use64bitint'}) {
-        plan tests => 2;
-    }
-    else {
-        plan skip_all => "No 64-bit support";
-    }
+    plan tests => 2;
     %h = (
-        a => 2147483648,
-        b => 9223372036854775807,
-        c => -9223372036854775808
+        a => int64('2147483648'),
+        b => int64('9223372036854775807'),
+        c => int64('-9223372036854775808')
     );
     my $bson = encode( \%h );
-    is_deeply(
+
+    # is_deeply fails to compare int64 properly
+    cmp_deeply(
         [ unpack "C*", $bson ],
         [
             38,  0,   0,   0,   18,  97,  0,   0,  0,   0,
@@ -55,21 +53,20 @@ subtest int64 => sub {
         ],
         'Int64 encode'
     );
-    is_deeply( decode($bson), \%h, 'Int64 decode' );
+
+    # is_deeply fails to compare int64 properly
+    cmp_deeply( decode($bson), \%h, 'Int64 decode' );
 };
 
 # Mixed ints
 subtest mix_ints => sub {
-    if ($Config{'use64bitint'}) {
-        plan tests => 2;
-    }
-    else {
-        plan skip_all => "No 64-bit support";
-    }
+    plan tests => 2;
     %h = ( a => 1, b => 2147483647, c => -2147483648 );
-    %h = ( a => 2147483648, b => 1, c => -20 );
+    %h = ( a => int64('2147483648'), b => 1, c => -20 );
     my $bson = encode( \%h );
-    is_deeply(
+
+    # is_deeply fails to compare int64 properly
+    cmp_deeply(
         [ unpack "C*", $bson ],
         [
             30,  0, 0,  0,  18, 97,  0,   0,   0,   0,
@@ -78,7 +75,9 @@ subtest mix_ints => sub {
         ],
         'Mixints encode'
     );
-    is_deeply( decode($bson), \%h, 'Mixints decode' );
+
+    # is_deeply fails to compare int64 properly
+    cmp_deeply( decode($bson), \%h, 'Mixints decode' );
 };
 
 subtest boolean => sub {
