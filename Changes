@@ -2,6 +2,11 @@ Revision history for BSON
 
 {{$NEXT}}
 
+    [OPTIMIZATION]
+
+    - Inlined most functions for 10-20% performance increase measured
+      on a sample of Twitter tweets.
+
     [META]
 
     - Switched repository to Dist::Zilla structure using @DAGOLDEN plugin
