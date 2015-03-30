@@ -235,6 +235,11 @@ sub d_hash {
             $bson = substr( $bson, $len, length($bson) - $len );
         }
 
+        # Undef
+        elsif ( $type == 0x06 ) {
+            $value = undef;
+        }
+
         # ObjectId
         elsif ( $type == 0x07 ) {
             ( my $oid, $bson ) = unpack( 'a12a*', $bson );
