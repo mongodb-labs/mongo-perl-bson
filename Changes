@@ -2,6 +2,11 @@ Revision history for BSON
 
 {{$NEXT}}
 
+    [BUG FIXES]
+
+    - added decoding support for BSON type 0x06 (Javascript "undefined");
+      treated like type 0x0A (null value) and decoded as Perl undef
+
     [OPTIMIZATION]
 
     - Inlined most functions for 10-20% performance increase measured
