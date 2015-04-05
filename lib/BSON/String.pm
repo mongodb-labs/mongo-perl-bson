@@ -1,7 +1,11 @@
-package BSON::String;
-
+use 5.008001;
 use strict;
 use warnings;
+
+package BSON::String;
+# ABSTRACT: String data for BSON
+
+our $VERSION = '0.12';
 
 use overload '""' => \&value;
 
@@ -17,10 +21,6 @@ sub value {
 1;
 
 __END__
-
-=head1 NAME
-
-BSON::String - String data for BSON
 
 =head1 SYNOPSIS
 
@@ -66,21 +66,5 @@ comparison on a BSON::String instance.
 =head1 SEE ALSO
 
 L<BSON>
-
-=head1 AUTHOR
-
-minimalist, C<< <minimalist at lavabit.com> >>
-
-=head1 BUGS
-
-Bug reports and patches are welcome. Reports which include a failing 
-Test::More style test are helpful and will receive priority.
-
-=head1 LICENSE AND COPYRIGHT
-
-Copyright 2011 minimalist.
-
-This program is free software; you can redistribute it and/or modify 
-it under the terms as perl itself.
 
 =cut

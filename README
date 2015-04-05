@@ -1,4 +1,0 @@
-MongoDB is adopting the pure-perl BSON perl library.
-
-This library is a clone of the existing BSON library repository and will
-be used for future development.

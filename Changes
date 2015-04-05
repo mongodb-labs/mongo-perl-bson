@@ -1,5 +1,12 @@
 Revision history for BSON
 
+{{$NEXT}}
+
+    [META]
+
+    - Switched repository to Dist::Zilla structure using @DAGOLDEN plugin
+      bundle and associated file layout
+
 0.11    2011-12-14
         use Math::Int64 to address the 32-bit only Perl support
 

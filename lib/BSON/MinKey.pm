@@ -1,7 +1,11 @@
-package BSON::MinKey;
-
+use 5.008001;
 use strict;
 use warnings;
+
+package BSON::MinKey;
+# ABSTRACT: MinKey data for BSON
+
+our $VERSION = '0.12';
 
 sub new {
     bless {}, $_[0];
@@ -10,10 +14,6 @@ sub new {
 1;
 
 __END__
-
-=head1 NAME
-
-BSON::MinKey - MinKey data for BSON
 
 =head1 SYNOPSIS
 
@@ -34,21 +34,5 @@ Object constructor, takes no parameters.
 =head1 SEE ALSO
 
 L<BSON>
-
-=head1 AUTHOR
-
-minimalist, C<< <minimalist at lavabit.com> >>
-
-=head1 BUGS
-
-Bug reports and patches are welcome. Reports which include a failing 
-Test::More style test are helpful and will receive priority.
-
-=head1 LICENSE AND COPYRIGHT
-
-Copyright 2011 minimalist.
-
-This program is free software; you can redistribute it and/or modify 
-it under the terms as perl itself.
 
 =cut

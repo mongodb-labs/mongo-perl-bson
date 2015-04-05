@@ -1,13 +1,14 @@
-package BSON;
-
-use 5.008;
+use 5.008001;
 use strict;
 use warnings;
+
+package BSON;
+# ABSTRACT: Pure Perl implementation of MongoDB's BSON serialization
 
 use base 'Exporter';
 our @EXPORT_OK = qw/encode decode/;
 
-our $VERSION = 0.11;
+our $VERSION = '0.12';
 
 use Carp;
 use Tie::IxHash;
@@ -266,7 +267,7 @@ sub d_hash {
         # Regex
         elsif ( $type == 0x0B ) {
             ( my $re, my $op, $bson ) = unpack( 'Z*Z*a*', $bson );
-            $value = eval "qr/$re/$op";
+            $value = eval "qr/$re/$op"; ## no critic
         }
 
         # Code
@@ -338,13 +339,8 @@ sub decode {
 
 __END__
 
-=head1 NAME
-
-BSON - Pure Perl implementation of MongoDB's BSON serialization
-
-=head1 VERSION
-
-Version 0.11
+=for Pod::Coverage
+d_hash e_name pack_q s_arr s_code s_dt s_hash s_int s_re string unpack_qastar
 
 =head1 SYNOPSIS
 
@@ -427,30 +423,5 @@ instead.
 L<BSON::String>, L<BSON::Time>, L<BSON::ObjectId>, L<BSON::Code>,
 L<BSON::Binary>, L<BSON::Bool>, L<BSON::MinKey>, L<BSON::MaxKey>,
 L<BSON::Timestamp>, L<Tie::IxHash>, L<MongoDB>
-
-=head1 AUTHOR
-
-minimalist, C<< <minimalist at lavabit.com> >>
-
-=head1 CONTRIBUTORS
-
-Oleg Kostyuk C<< <cub@cpan.org> >>
-
-=head1 BUGS
-
-Bug reports and patches are welcome. Reports which include a failing
-Test::More style test are helpful and will receive priority.
-
-=head1 DEVELOPMENT
-
-The source code of this module is available on GitHub:
-L<https://github.com/naturalist/Perl-BSON>
-
-=head1 LICENSE AND COPYRIGHT
-
-Copyright 2011 minimalist.
-
-This program is free software; you can redistribute it and/or modify
-it under the terms as perl itself.
 
 =cut

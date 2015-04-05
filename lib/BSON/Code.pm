@@ -1,7 +1,11 @@
-package BSON::Code;
-
+use 5.008001;
 use strict;
 use warnings;
+
+package BSON::Code;
+# ABSTRACT: JavaScript code data for BSON
+
+our $VERSION = '0.12';
 
 sub new {
     my ( $class, $code, $scope ) = @_;
@@ -23,10 +27,6 @@ sub length {
 1;
 
 __END__
-
-=head1 NAME
-
-BSON::Code - JavaScript code data for BSON
 
 =head1 SYNOPSIS
 
@@ -71,21 +71,5 @@ Returns the length of the JavaScript code.
 =head1 SEE ALSO
 
 L<BSON>
-
-=head1 AUTHOR
-
-minimalist, C<< <minimalist at lavabit.com> >>
-
-=head1 BUGS
-
-Bug reports and patches are welcome. Reports which include a failing 
-Test::More style test are helpful and will receive priority.
-
-=head1 LICENSE AND COPYRIGHT
-
-Copyright 2011 minimalist.
-
-This program is free software; you can redistribute it and/or modify 
-it under the terms as perl itself.
 
 =cut
