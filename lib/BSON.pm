@@ -384,6 +384,16 @@ BSON uses zero terminated strings and Perl allows the \0 character to be anywher
 in a string. If you expect your strings to contain \0 characters, use L<BSON::Binary>
 instead.
 
+=head1 HISTORY AND ROADMAP
+
+This module was originally written by minimalist.  In 2014, he graciously
+transfered ongoing maintenance to MongoDB, Inc.
+
+Going forward, work will focus on restoration of a pure-Perl dependency chain,
+harmonization with L<MongoDB driver|MongoDB> BSON classes and some API
+enhancements so this can provide a pure-Perl alternative serializer for the
+MongoDB driver.
+
 =head1 SEE ALSO
 
 L<BSON::String>, L<BSON::Time>, L<BSON::ObjectId>, L<BSON::Code>,
