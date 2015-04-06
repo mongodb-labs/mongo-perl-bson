@@ -387,7 +387,7 @@ instead.
 =head1 HISTORY AND ROADMAP
 
 This module was originally written by minimalist.  In 2014, he graciously
-transfered ongoing maintenance to MongoDB, Inc.
+transferred ongoing maintenance to MongoDB, Inc.
 
 Going forward, work will focus on restoration of a pure-Perl dependency chain,
 harmonization with L<MongoDB driver|MongoDB> BSON classes and some API
