@@ -2,6 +2,8 @@ Revision history for BSON
 
 {{$NEXT}}
 
+0.12      2015-04-06 16:11:59-04:00 America/New_York
+
     [BUG FIXES]
 
     - added decoding support for BSON type 0x06 (Javascript "undefined");

@@ -5,7 +5,7 @@ use warnings;
 package BSON::Binary;
 # ABSTRACT: Binary data for BSON
 
-our $VERSION = '0.12';
+our $VERSION = '0.13';
 
 use overload '""' => \&to_s;
 
