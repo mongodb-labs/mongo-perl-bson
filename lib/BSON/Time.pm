@@ -5,7 +5,7 @@ use warnings;
 package BSON::Time;
 # ABSTRACT: Date and time data for BSON
 
-our $VERSION = '0.13';
+our $VERSION = '0.14'; # TRIAL
 
 use Carp;
 

@@ -2,6 +2,8 @@ Revision history for BSON
 
 {{$NEXT}}
 
+0.13      2015-04-07 12:02:29-04:00 America/New_York (TRIAL RELEASE)
+
     [BUG FIXES]
 
     - Fix t/10-bson.t bug comparing floating point values; now using

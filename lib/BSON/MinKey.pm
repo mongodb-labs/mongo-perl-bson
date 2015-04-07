@@ -5,7 +5,7 @@ use warnings;
 package BSON::MinKey;
 # ABSTRACT: MinKey data for BSON
 
-our $VERSION = '0.13';
+our $VERSION = '0.14'; # TRIAL
 
 sub new {
     bless {}, $_[0];

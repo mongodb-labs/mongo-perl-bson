@@ -5,7 +5,7 @@ use warnings;
 package BSON::ObjectId;
 # ABSTRACT: ObjectId data element for BSON
 
-our $VERSION = '0.13';
+our $VERSION = '0.14'; # TRIAL
 
 use Carp;
 use Sys::Hostname;
