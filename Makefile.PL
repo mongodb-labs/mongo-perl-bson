@@ -36,6 +36,7 @@ my %WriteMakefileArgs = (
     "File::Spec" => 0,
     "Test::Deep" => 0,
     "Test::More" => 0,
+    "Test::Number::Delta" => 0,
     "if" => 0
   },
   "VERSION" => "0.13",
@@ -56,6 +57,7 @@ my %FallbackPrereqs = (
   "Sys::Hostname" => 0,
   "Test::Deep" => 0,
   "Test::More" => 0,
+  "Test::Number::Delta" => 0,
   "Tie::IxHash" => 0,
   "base" => 0,
   "constant" => 0,

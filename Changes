@@ -2,6 +2,11 @@ Revision history for BSON
 
 {{$NEXT}}
 
+    [BUG FIXES]
+
+    - Fix t/10-bson.t bug comparing floating point values; now using
+      Test::Number::Delta for comparison
+
 0.12      2015-04-06 16:11:59-04:00 America/New_York
 
     [BUG FIXES]

@@ -5,6 +5,7 @@ use warnings;
 
 use Test::More tests => 17;
 use Test::Deep;
+use Test::Number::Delta;
 use Tie::IxHash;
 use DateTime;
 use Math::Int64 qw/:native_if_available int64/;
@@ -116,7 +117,7 @@ subtest boolean => sub {
 
 # Double
 subtest double => sub {
-    plan tests => 2;
+    plan tests => 4;
     %h = ( a => 0.12345, b => -0.1234, c => 123456.789 );
     my $bson = encode( \%h );
     is_deeply(
@@ -131,7 +132,9 @@ subtest double => sub {
     );
 
     my $hash = decode( $bson );
-    is_deeply( $hash, \%h, 'Double decode' );
+    for my $k ( sort keys %$hash ) {
+        delta_ok( $hash->{$k}, $h{$k}, "Double decode $h{$k}" );
+    }
 };
 
 # String
