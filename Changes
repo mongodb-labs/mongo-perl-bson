@@ -2,6 +2,10 @@ Revision history for BSON
 
 {{$NEXT}}
 
+    [CHANGES]
+
+    - Improved diagnostic output if integers are too big
+
     [BUG FIXES]
 
     - Improved OID counter thread-safety

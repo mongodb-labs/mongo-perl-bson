@@ -8,7 +8,7 @@ my $DEEP = 2;      # Max depth level of embedded hashes
 my $KEYS = 20;     # Number of keys per hash
 
 use Config;
-use Test::More;
+use Test::More 0.86;
 
 plan tests => $RUNS;
 
@@ -29,17 +29,23 @@ if ( $Config{'use64bitint'} ) {
 
 for my $count ( 1 .. $RUNS ) {
     my $ar   = hash($KEYS);
-    my $bson = encode($ar);
-    my $ar1  = decode($bson);
-    is_deeply( $ar, $ar1 );
+    my $bson = eval { encode($ar) };
+    if ( my $err = $@ ) {
+        chomp $err;
+        fail("Encoding error: $err");
+    }
+    else {
+        my $ar1  = decode($bson);
+        is_deeply( $ar, $ar1 );
+    }
 }
 
 sub int32 {
-    return int( rand( 2**32 / 2 ) ) * ( int( rand(2) ) ? -1 : 1 );
+    return int( rand( 2**31-1 ) ) * ( int( rand(2) ) ? -1 : 1 );
 }
 
 sub int64 {
-    return int( rand( 2**32 / 2 ) + 2**32 ) * ( int( rand(2) ) ? -1 : 1 );
+    return int( rand( 2**63-1 ) ) * ( int( rand(2) ) ? -1 : 1 );
 }
 
 sub doub {

@@ -152,7 +152,7 @@ sub encode {
         # Int (32 and 64)
         elsif ( ref $value eq 'Math::Int64' || $value =~ $int_re ) {
             if ( $value > $max_int_64 || $value < $min_int_64 ) {
-                croak("MongoDB can only handle 8-byte integers");
+                croak("MongoDB can only handle 8-byte integers. Key '$key' is '$value'");
             }
             $bson .= $value > $max_int_32 || $value < $min_int_32 ? pack( BSON_TYPE_NAME.BSON_REMAINING, 0x12, $key, int64_to_native( $value ))
                                                                   : pack( BSON_TYPE_NAME.BSON_INT32, 0x10, $key, $value );
