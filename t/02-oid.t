@@ -10,7 +10,7 @@ BEGIN {
 }
 
 use Config;
-use Test::More tests => 46;
+use Test::More tests => 45;
 
 use BSON;
 
@@ -38,7 +38,7 @@ isnt( $try, 1, 'Dies 2' );
 
 
 SKIP: {
-    skip "No threads", 40 unless $Config{useithreads};
+    skip "No threads", 39 unless $Config{useithreads};
     my @threads = map {
         threads->create(
             sub {
@@ -51,13 +51,14 @@ SKIP: {
 
     my @inc =
       sort { $a <=> $b }
-      map { unpack 'v', ( pack( 'H*', $_ ) . '\0' ) }
-      map { substr $_, 20 } @oids;
+      map { hex }
+      map { substr $_, 18 } @oids; # just counters
 
-    my $prev = -1;
-    for (@inc) {
-        ok( $prev < $_ );
-        $prev = $_;
+    my $prev = shift @inc;
+    while (@inc) {
+        my $next = shift @inc;
+        ok( $next - $prev == 1, "thread counter sequential ($next)" );
+        $prev = $next;
     }
 };
 

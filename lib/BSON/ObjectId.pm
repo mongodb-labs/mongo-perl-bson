@@ -7,6 +7,11 @@ package BSON::ObjectId;
 
 our $VERSION = '0.14'; # TRIAL
 
+# if threads are in use, we need threads::shared loaded, too
+if ( $INC{"threads.pm"} ) {
+    require threads::shared;
+}
+
 use Carp;
 use Sys::Hostname;
 use Digest::MD5 'md5';
@@ -16,7 +21,11 @@ use overload
   '==' => \&op_eq,
   'eq' => \&op_eq;
 
-my $_inc : shared = 0;
+my $_inc : shared;
+{
+    lock($_inc);
+    $_inc = int(rand(0xFFFFFF));
+}
 
 sub new {
     my ( $class, $value ) = @_;
@@ -60,7 +69,7 @@ sub _generate {
     my $time = pack( 'N', shift || time );
     my $host = substr( md5(hostname), 0, 3 );
     my $proc = pack( 'n', $$ % 0xFFFF );
-    my $inc  = substr( pack( 'N', $_inc++ % 0xFFFFFF ), 1, 3 );
+    my $inc  = substr( pack( 'N', do { lock($_inc); $_inc = ($_inc + 1) % 0xFFFFFF} ), 1, 3 );
     return $time . $host . $proc . $inc;
 }
 
