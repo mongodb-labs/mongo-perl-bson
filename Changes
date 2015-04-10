@@ -6,6 +6,10 @@ Revision history for BSON
 
     - Improved OID counter thread-safety
 
+    [OPTIMIZATION]
+
+    - BSON::ObjectId generation now ~ 1.9x faster
+
 0.13      2015-04-07 12:02:29-04:00 America/New_York (TRIAL RELEASE)
 
     [BUG FIXES]

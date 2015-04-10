@@ -27,10 +27,21 @@ my $_inc : shared;
     $_inc = int(rand(0xFFFFFF));
 }
 
+my $_host = substr( md5(hostname), 0, 3 );
+
 sub new {
     my ( $class, $value ) = @_;
     my $self = bless {}, $class;
-    $self->value( $value || _generate() );
+    if ( $value ) {
+        $self->value( $value || _generate() );
+    }
+    else {
+        $self->{value} =
+            pack( 'N', time )
+          . $_host
+          . pack( 'n', $$ % 0xFFFF )
+          . substr( pack( 'N', do { lock($_inc); $_inc++; $_inc %= 0xFFFFFF }), 1, 3);
+    }
     return $self;
 }
 
@@ -62,15 +73,6 @@ sub to_s {
 sub op_eq {
     my ( $self, $other ) = @_;
     return ref($self) eq ref($other) && $self->value eq $other->value;
-}
-
-sub _generate {
-    my $self = shift;
-    my $time = pack( 'N', shift || time );
-    my $host = substr( md5(hostname), 0, 3 );
-    my $proc = pack( 'n', $$ % 0xFFFF );
-    my $inc  = substr( pack( 'N', do { lock($_inc); $_inc = ($_inc + 1) % 0xFFFFFF} ), 1, 3 );
-    return $time . $host . $proc . $inc;
 }
 
 sub _from_s {
