@@ -5,7 +5,7 @@ use warnings;
 package BSON::String;
 # ABSTRACT: String data for BSON
 
-our $VERSION = '0.16'; # TRIAL
+our $VERSION = '0.17';
 
 use overload '""' => \&value;
 

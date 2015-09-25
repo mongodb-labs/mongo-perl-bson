@@ -8,7 +8,7 @@ package BSON;
 use base 'Exporter';
 our @EXPORT_OK = qw/encode decode/;
 
-our $VERSION = '0.16'; # TRIAL
+our $VERSION = '0.17';
 
 use Carp;
 use Tie::IxHash;

@@ -38,7 +38,7 @@ my %WriteMakefileArgs = (
     "Test::Number::Delta" => 0,
     "if" => 0
   },
-  "VERSION" => "0.16",
+  "VERSION" => "0.17",
   "test" => {
     "TESTS" => "t/*.t"
   }

@@ -5,7 +5,7 @@ use warnings;
 package BSON::ObjectId;
 # ABSTRACT: ObjectId data element for BSON
 
-our $VERSION = '0.16'; # TRIAL
+our $VERSION = '0.17';
 
 # if threads are in use, we need threads::shared loaded, too
 if ( $INC{"threads.pm"} ) {
