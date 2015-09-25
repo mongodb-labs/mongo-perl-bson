@@ -5,7 +5,7 @@ use warnings;
 package BSON::MaxKey;
 # ABSTRACT: MaxKey data for BSON
 
-our $VERSION = '0.14'; # TRIAL
+our $VERSION = '0.16'; # TRIAL
 
 sub new {
     bless {}, $_[0];

@@ -5,7 +5,7 @@ use warnings;
 package BSON::Bool;
 # ABSTRACT: Boolean data for BSON
 
-our $VERSION = '0.14'; # TRIAL
+our $VERSION = '0.16'; # TRIAL
 
 use overload
   bool => \&value,

@@ -5,7 +5,7 @@ use warnings;
 package BSON::Code;
 # ABSTRACT: JavaScript code data for BSON
 
-our $VERSION = '0.14'; # TRIAL
+our $VERSION = '0.16'; # TRIAL
 
 sub new {
     my ( $class, $code, $scope ) = @_;
