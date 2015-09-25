@@ -49,7 +49,7 @@ sub int64 {
 }
 
 sub doub {
-    return rand( 2**64 ) * ( int( rand(2) ) ? -1 : 1 );
+    return rand() * 2**63-1 * ( int( rand(2) ) ? -1 : 1 );
 }
 
 sub str {

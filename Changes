@@ -10,6 +10,8 @@ Revision history for BSON
 
     - Improved OID counter thread-safety
 
+    - Fix tests for perls with long doubles
+
     [OPTIMIZATION]
 
     - BSON::ObjectId generation now ~ 1.9x faster
