@@ -174,9 +174,10 @@ sub encode {
 
 sub decode {
     my $bson = shift;
+    my $blen= length($bson);
     my $len = unpack( BSON_INT32, $bson );
     if ( length($bson) != $len ) {
-        croak("Incorrect length of the bson string");
+        croak("Incorrect length of the bson string (got $blen, wanted $len)");
     }
     my %opt = @_;
     $bson = substr( $bson, 4, -1 );
