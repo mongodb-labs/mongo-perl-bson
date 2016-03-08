@@ -1,5 +1,6 @@
 {
-    "description": "Corrupted BSON",
+    "description": "Top-level document validity",
+    "bson_type": "0x00",
     "decodeErrors": [
         {
             "description": "basic",

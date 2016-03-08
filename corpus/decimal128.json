@@ -1,5 +1,6 @@
 {
     "description": "Decimal128",
+    "bson_type": "0x13",
     "valid": [
         {
             "description": "Special - Canonical NaN",

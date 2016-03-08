@@ -1,5 +1,6 @@
 {
     "description": "Int32 type",
+    "bson_type": "0x10",
     "valid": [
         {
             "description": "MinValue",

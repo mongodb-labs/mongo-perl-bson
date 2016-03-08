@@ -1,5 +1,6 @@
 {
     "description": "Boolean",
+    "bson_type": "0x08",
     "valid": [
         {
             "description": "True",
