@@ -3,43 +3,43 @@
     "bson_type": "0x00",
     "decodeErrors": [
         {
-            "description": "basic",
+            "description": "Byte count less than minimum valid length",
             "subject": "0400000000"
         },
         {
-            "description": "basic",
+            "description": "Object not null terminated",
             "subject": "0500000001"
         },
         {
-            "description": "basic",
+            "description": "Byte count exceeds input length; shorter than minimum size",
             "subject": "05000000"
         },
         {
-            "description": "basic",
+            "description": "Input length exceeds byte count",
             "subject": "0700000002610078563412"
         },
         {
-            "subject": "090000001061000500",
-            "description": "basic"
+            "description": "Bad int32 field; valid envelope",
+            "subject": "090000001061000500"
         },
         {
-            "description": "basic",
+            "description": "Byte count is zero (with non-zero input length)",
             "subject": "00000000000000000000"
         },
         {
-            "description": "basic",
+            "description": "Byte count exceeds input length",
             "subject": "1300000002666f6f00040000006261720000"
         },
         {
-            "description": "basic",
+            "description": "Bad document field; valid envelope",
             "subject": "1800000003666f6f000f0000001062617200ffffff7f0000"
         },
         {
-            "description": "basic",
+            "description": "Bad document field; valid envelope",
             "subject": "1500000003666f6f000c0000000862617200010000"
         },
         {
-            "description": "basic",
+            "description": "String length too long; valid envelope",
             "subject": "1c00000003666f6f001200000002626172000500000062617a000000"
         },
         {
@@ -63,7 +63,7 @@
             "subject": "120000000e00ffffffff666f6f6261720000"
         },
         {
-            "description": "",
+            "description": "bad_string_length",
             "subject": "180000000c00fa5bd841d6585d9900"
         },
         {
