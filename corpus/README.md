@@ -16,15 +16,14 @@ Top level keys include:
 Valid test case keys include:
 
 * `description`: human-readable test case label.
-* `subject`: a big-endian hex representation of a BSON string.
+* `subject`: a big-endian hex representation of a BSON byte string.
 * `string`: a human-readable reprentation of an element under test.
+* `extjson`: a document representing the decoded extended JSON
+  document equivalent to the subject.
 * `decodeOnly` (optional): if true, indicates that the BSON can not roundtrip; decoding
   the BSON in 'subject' and re-encoding the result will not generate
   identical BSON; otherwise, encode(decode(subject)) should be the same as
   the subject.
-* `extjson` (optional): a document representing a decoded extended JSON
-  document equivalent to the subject.  If there is no extended JSON
-  representation, this field will be omitted.
 
 Decode error cases provide an invalid BSON document or field that
 should result in an error. For each case, keys include:
