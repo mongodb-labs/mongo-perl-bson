@@ -1,0 +1,22 @@
+{
+    "description": "String",
+    "bson_type": "0x02",
+    "valid": [
+        {
+            "description": "Empty string",
+            "subject": "0d000000026100010000000000",
+            "string": "''",
+            "extjson": {
+                "a": ""
+            }
+        },
+        {
+            "description": "Single character",
+            "subject": "0e00000002610002000000620000",
+            "string": "'b'",
+            "extjson": {
+                "a": "b"
+            }
+        },
+    ]
+}
