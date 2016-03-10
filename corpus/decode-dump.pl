@@ -6,6 +6,8 @@ use warnings;
 use Data::Dumper qw/Dumper/;
 use BSON qw/decode/;
 use MongoDB::BSON;
+use MongoDB::OID;
+use MongoDB::BSON::Binary;
 
 my $codec = MongoDB::BSON->new;
 
@@ -28,6 +30,7 @@ while (1) {
     $pp = Dumper($pp);
 
     my $xs = eval { $codec->decode_one($s) };
+    warn "after decode";
     warn "XS error: $@\n" if $@;
     $xs = Dumper($xs);
 
