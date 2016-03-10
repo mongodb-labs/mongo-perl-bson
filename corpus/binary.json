@@ -1,0 +1,83 @@
+{
+    "description": "Binary type",
+    "bson_type": "0x05",
+    "valid": [
+        {
+            "description": "subtype 0x00 (Zero-length)",
+            "subject": "0d000000057800000000000000",
+            "string": "zero-length",
+            "extjson": {
+                "x": {
+                    "$binary": "",
+                    "$type": "00"
+                }
+            }
+        },
+        {
+            "description": "subtype 0x00",
+            "subject": "0f0000000578000200000000ffff00",
+            "string": "0xffff",
+            "extjson": {
+                "x": {
+                    "$binary": "//8=",
+                    "$type": "00"
+                }
+            }
+        },
+        {
+            "description": "subtype 0x02",
+            "subject": "13000000057800060000000202000000ffff00",
+            "string": "0xffff",
+            "extjson": {
+                "x": {
+                    "$binary": "//8=",
+                    "$type": "02"
+                }
+            }
+        },
+        {
+            "description": "subtype 0x03",
+            "subject": "1d000000057800100000000373ffd26444b34c6990e8e7d1dfc035d400",
+            "string": "0x73ffd26444b34c6990e8e7d1dfc035d4",
+            "extjson": {
+                "x": {
+                    "$binary": "c//SZESzTGmQ6OfR38A11A==",
+                    "$type": "03"
+                }
+            }
+        },
+        {
+            "description": "subtype 0x04",
+            "subject": "1d000000057800100000000373ffd26444b34c6990e8e7d1dfc035d400",
+            "string": "0x73ffd26444b34c6990e8e7d1dfc035d4",
+            "extjson": {
+                "x": {
+                    "$binary": "c//SZESzTGmQ6OfR38A11A==",
+                    "$type": "04"
+                }
+            }
+        },
+        {
+            "description": "subtype 0x05",
+            "subject": "1d000000057800100000000373ffd26444b34c6990e8e7d1dfc035d400",
+            "string": "0x73ffd26444b34c6990e8e7d1dfc035d4",
+            "extjson": {
+                "x": {
+                    "$binary": "c//SZESzTGmQ6OfR38A11A==",
+                    "$type": "05"
+                }
+            }
+        },
+        {
+            "description": "subtype 0x80",
+            "subject": "0f0000000578000200000080ffff00",
+            "string": "0xffff",
+            "extjson": {
+                "x": {
+                    "$binary": "//8=",
+                    "$type": "80"
+                }
+            }
+        },
+    ]
+}
