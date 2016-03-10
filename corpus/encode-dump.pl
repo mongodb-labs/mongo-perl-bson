@@ -34,4 +34,5 @@ while (1) {
 
     say "PP\n" . unpack("H*",$pp) . "\n";
     say "XS\n" . unpack("H*",$xs) . "\n";
+    say "PP and XS are " . ($pp eq $xs ? "the same" : "NOT the same");
 }

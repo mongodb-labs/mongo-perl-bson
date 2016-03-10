@@ -25,10 +25,13 @@ while (1) {
 
     my $pp = eval { decode($s) };
     warn "PP error: $@\n" if $@;
+    $pp = Dumper($pp);
 
     my $xs = eval { $codec->decode_one($s) };
     warn "XS error: $@\n" if $@;
+    $xs = Dumper($xs);
 
-    say "PP\n" . Dumper($pp) . "\n";
-    say "XS\n" . Dumper($xs) . "\n";
+    say "PP\n$pp\n";
+    say "XS\n$xs\n";
+    say "PP and XS are " . ($pp eq $xs ? "the same" : "NOT the same");
 }
