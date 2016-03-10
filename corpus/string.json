@@ -18,5 +18,13 @@
                 "a": "b"
             }
         },
+        {
+            "description": "Multi-character",
+            "subject": "190000000261000d0000006162616261626162616261620000",
+            "string": "'bababababab'",
+            "extjson": {
+                "a": "abababababab"
+            }
+        },
     ]
 }
