@@ -1,0 +1,14 @@
+{
+    "description": "Undefined type (deprecated)",
+    "bson_type": "0x06",
+    "valid": [
+        {
+            "description": "Undefined",
+            "subject": "0800000006610000",
+            "string": "undefined",
+            "extjson": {
+                "a": { "$undefined": true }
+            }
+        },
+    ]
+}
