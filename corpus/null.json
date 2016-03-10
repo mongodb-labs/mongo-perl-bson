@@ -1,0 +1,14 @@
+{
+    "description": "Null type",
+    "bson_type": "0x0A",
+    "valid": [
+        {
+            "description": "Null",
+            "subject": "080000000a610000",
+            "string": "null",
+            "extjson": {
+                "a": null
+            }
+        },
+    ]
+}
