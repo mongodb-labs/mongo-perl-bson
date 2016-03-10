@@ -1,0 +1,31 @@
+{
+    "description": "ObjectId",
+    "bson_type": "0x07",
+    "valid": [
+        {
+            "description": "All zeroes",
+            "subject": "1400000007610000000000000000000000000000",
+            "string": "000000000000000000000000",
+            "extjson": {
+                "a": { "$oid": "000000000000000000000000" }
+            }
+        },
+        {
+            "description": "All ones",
+            "subject": "14000000076100ffffffffffffffffffffffff00",
+            "string": "ffffffffffffffffffffffff",
+            "extjson": {
+                "a": { "$oid": "ffffffffffffffffffffffff" }
+            }
+        },
+        {
+            "description": "Random",
+            "subject": "1400000007610056e1fc72e0c917e9c471416100",
+            "string": "56e1fc72e0c917e9c4714161",
+            "extjson": {
+                "a": { "$oid": "56e1fc72e0c917e9c4714161" }
+            }
+        },
+
+    ]
+}
