@@ -1,0 +1,30 @@
+{
+    "description": "Double type",
+    "bson_type": "0x01",
+    "valid": [
+        {
+            "description": "0.0",
+            "subject": "10000000016400000000000000000000",
+            "string": "0",
+            "extjson": {
+                "d": 0.0
+            }
+        },
+        {
+            "description": "+1.0",
+            "subject": "10000000016400000000000000f03f00",
+            "string": "1.0",
+            "extjson": {
+                "d": 1.0
+            }
+        },
+        {
+            "description": "-1.0",
+            "subject": "10000000016400000000000000f0bf00",
+            "string": "-1.0",
+            "extjson": {
+                "d": -1.0
+            }
+        },
+    ]
+}
