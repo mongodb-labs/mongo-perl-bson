@@ -1,0 +1,30 @@
+{
+    "description": "Document type (sub-documents)",
+    "bson_type": "0x03",
+    "valid": [
+        {
+            "description": "Empty subdoc",
+            "subject": "0d000000037800050000000000",
+            "string": "{}",
+            "extjson": {
+                "x": {}
+            }
+        },
+        {
+            "description": "Empty-string key subdoc",
+            "subject": "150000000378000d00000002000200000062000000",
+            "string": "{ \"\":\"b\" }",
+            "extjson": {
+                "x": { "":"b" }
+            }
+        },
+        {
+            "description": "Single-character key subdoc",
+            "subject": "160000000378000e0000000261000200000062000000",
+            "string": "{ \"a\":\"b\" }",
+            "extjson": {
+                "x": { "a":"b" }
+            }
+        },
+    ]
+}
