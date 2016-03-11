@@ -1,0 +1,14 @@
+{
+    "description": "Maxkey type",
+    "bson_type": "0xFF",
+    "valid": [
+        {
+            "description": "Maxkey",
+            "subject": "080000007f610000",
+            "string": "Maxkey",
+            "extjson": {
+                "a": { "$maxkey": 1 }
+            }
+        },
+    ]
+}
