@@ -39,3 +39,17 @@ be encoded to the `bson_type` under test.  For each case, keys include:
 * `subject`: a text or numeric representation of an input that can't be
   encoded.
 
+## Extended JSON extensions
+
+The extended JSON documentation doesn't include extensions for all BSON
+types.  This corpus extends it to include the following:
+
+    # Javascript
+    { "$javascript": "<code here>" }
+
+    # Javascript with scope
+    { "$javascript": "<code here>": "$scope": { "x":1, "y":1 } }
+
+    # DBpointer (deprecated): <id> is 24 hex chars
+    { "$dbpointer": "<id>", "$ns":"<namespace>" }
+
