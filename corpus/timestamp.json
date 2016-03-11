@@ -1,0 +1,14 @@
+{
+    "description": "Timestamp type",
+    "bson_type": "0x11",
+    "valid": [
+        {
+            "description": "Timestamp: (123456789, 42)",
+            "subject": "100000001161002a00000015cd5b0700",
+            "string": "(123456789, 42)",
+            "extjson": {
+                "a": { "$timestamp": { "t": 123456789, "i": 42 } }
+            }
+        }
+    ]
+}
