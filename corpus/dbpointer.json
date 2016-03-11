@@ -1,0 +1,15 @@
+{
+    "description": "DBPointer type (deprecated)",
+    "bson_type": "0x0C",
+    "deprecated": true,
+    "valid": [
+        {
+            "description": "DBpointer",
+            "subject": "180000000C02000000610056e1fc72e0c917e9c471416100",
+            "string": "ns:a, id:56e1fc72e0c917e9c4714161",
+            "extjson": {
+                "a": { "$dbpointer": "56e1fc72e0c917e9c4714161", "$ns":"a" }
+            }
+        },
+    ]
+}
