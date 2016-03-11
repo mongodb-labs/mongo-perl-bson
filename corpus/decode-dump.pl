@@ -30,7 +30,6 @@ while (1) {
     $pp = Dumper($pp);
 
     my $xs = eval { $codec->decode_one($s) };
-    warn "after decode";
     warn "XS error: $@\n" if $@;
     $xs = Dumper($xs);
 
