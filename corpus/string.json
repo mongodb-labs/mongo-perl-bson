@@ -5,7 +5,7 @@
         {
             "description": "Empty string",
             "subject": "0d000000026100010000000000",
-            "string": "''",
+            "string": "\"\"",
             "extjson": {
                 "a": ""
             }
@@ -13,7 +13,7 @@
         {
             "description": "Single character",
             "subject": "0e00000002610002000000620000",
-            "string": "'b'",
+            "string": "\"b\"",
             "extjson": {
                 "a": "b"
             }
@@ -21,7 +21,7 @@
         {
             "description": "Multi-character",
             "subject": "190000000261000d0000006162616261626162616261620000",
-            "string": "'bababababab'",
+            "string": "\"bababababab\"",
             "extjson": {
                 "a": "abababababab"
             }
