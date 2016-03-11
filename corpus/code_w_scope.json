@@ -1,0 +1,22 @@
+{
+    "description": "Javascript Code with Scope",
+    "bson_type": "0x0F",
+    "valid": [
+        {
+            "description": "Empty string, non-empty scope",
+            "subject": "1d0000000f61001500000001000000000c000000107800010000000000",
+            "string": "{ code: \"\", scope: { \"x\":1 } }",
+            "extjson": {
+                "a": { "$code": "" }
+            }
+        },
+        {
+            "description": "code and scope",
+            "subject": "280000000f6100200000000500000061626364001300000010780001000000107900010000000000",
+            "string": "{ code: \"abcd\", scope: { x:1, y:1 } }",
+            "extjson": {
+                "a": { "$code": "abcd", "$scope": { "x":1, "y":1 } }
+            }
+        },
+    ]
+}

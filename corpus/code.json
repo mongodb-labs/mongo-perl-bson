@@ -1,0 +1,30 @@
+{
+    "description": "Javascript Code",
+    "bson_type": "0x0D",
+    "valid": [
+        {
+            "description": "Empty string",
+            "subject": "0d0000000D6100010000000000",
+            "string": "\"\"",
+            "extjson": {
+                "a": { "$javascript": "" }
+            }
+        },
+        {
+            "description": "Single character",
+            "subject": "0e0000000D610002000000620000",
+            "string": "\"b\"",
+            "extjson": {
+                "a": { "$javascript": "b" }
+            }
+        },
+        {
+            "description": "Multi-character",
+            "subject": "190000000D61000d0000006162616261626162616261620000",
+            "string": "\"bababababab\"",
+            "extjson": {
+                "a": { "$javascript": "abababababab" }
+            }
+        },
+    ]
+}
