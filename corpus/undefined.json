@@ -1,6 +1,7 @@
 {
     "description": "Undefined type (deprecated)",
     "bson_type": "0x06",
+    "deprecated": true,
     "valid": [
         {
             "description": "Undefined",
