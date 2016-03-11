@@ -1,0 +1,46 @@
+{
+    "description": "Int64 type",
+    "bson_type": "0x12",
+    "valid": [
+        {
+            "description": "MinValue",
+            "subject": "10000000126100000000000000008000",
+            "string": "−9223372036854775808",
+            "extjson": {
+                "a": { "$numberLong": "−9223372036854775808" }
+            }
+        },
+        {
+            "description": "MaxValue",
+            "subject": "10000000126100ffffffffffffff7f00",
+            "string": "9223372036854775807",
+            "extjson": {
+                "a": { "$numberLong": "9223372036854775807" }
+            }
+        },
+        {
+            "description": "-1",
+            "subject": "10000000126100ffffffffffffffff00",
+            "string": "-1",
+            "extjson": {
+                "a": { "$numberLong": "-1" }
+            }
+        },
+        {
+            "description": "0",
+            "subject": "10000000126100000000000000000000",
+            "string": "0",
+            "extjson": {
+                "a": { "$numberLong": "0" }
+            }
+        },
+        {
+            "description": "1",
+            "subject": "10000000126100010000000000000000",
+            "string": "1",
+            "extjson": {
+                "a": { "$numberLong": "1" }
+            }
+        }
+    ]
+}
