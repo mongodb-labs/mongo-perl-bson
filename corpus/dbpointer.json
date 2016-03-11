@@ -10,6 +10,6 @@
             "extjson": {
                 "a": { "$dbpointer": "56e1fc72e0c917e9c4714161", "$ns":"a" }
             }
-        },
+        }
     ]
 }

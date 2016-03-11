@@ -25,6 +25,6 @@
             "extjson": {
                 "a": { "$javascript": "abababababab" }
             }
-        },
+        }
     ]
 }

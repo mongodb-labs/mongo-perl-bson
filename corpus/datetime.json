@@ -3,7 +3,7 @@
     "bson_type": "0x09",
     "valid": [
         {
-            "description": "epoch (ISO-8601)"
+            "description": "epoch (ISO-8601)",
             "subject": "10000000096100000000000000000000",
             "string": "epoch",
             "extjson": {
@@ -11,7 +11,7 @@
             }
         },
         {
-            "description": "epoch (numberLong)"
+            "description": "epoch (numberLong)",
             "subject": "10000000096100000000000000000000",
             "string": "epoch",
             "extjson": {
@@ -19,7 +19,7 @@
             }
         },
         {
-            "description": "positive ms (ISO-8601)"
+            "description": "positive ms (ISO-8601)",
             "subject": "10000000096100c4d8d6cc3b01000000",
             "string": "2012-12-24T12:15:30.500Z",
             "extjson": {
@@ -27,7 +27,7 @@
             }
         },
         {
-            "description": "positive ms (numberLong)"
+            "description": "positive ms (numberLong)",
             "subject": "10000000096100c4d8d6cc3b01000000",
             "string": "2012-12-24T12:15:30.500Z",
             "extjson": {
@@ -35,7 +35,7 @@
             }
         },
         {
-            "description": "negative ms (ISO-8601)"
+            "description": "negative ms (ISO-8601)",
             "subject": "10000000096100c43ce7b9bdffffff00",
             "string": "1960-12-24T12:15:30.500Z",
             "extjson": {
@@ -43,12 +43,12 @@
             }
         },
         {
-            "description": "negative ms (numberLong)"
+            "description": "negative ms (numberLong)",
             "subject": "10000000096100c43ce7b9bdffffff00",
             "string": "1960-12-24T12:15:30.500Z",
             "extjson": {
                 "a": { "$date": { "$numberLong": "-284643869500" } }
             }
-        },
+        }
     ]
 }
