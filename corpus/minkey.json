@@ -1,0 +1,14 @@
+{
+    "description": "Minkey type",
+    "bson_type": "0xFF",
+    "valid": [
+        {
+            "description": "Minkey",
+            "subject": "08000000ff610000",
+            "string": "Minkey",
+            "extjson": {
+                "a": { "$minkey": 1 }
+            }
+        },
+    ]
+}
