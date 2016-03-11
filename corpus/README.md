@@ -53,3 +53,6 @@ types.  This corpus extends it to include the following:
     # DBpointer (deprecated): <id> is 24 hex chars
     { "$dbpointer": "<id>", "$ns":"<namespace>" }
 
+    # Symbol (deprecated)
+    { "$symbol": "<text>" }
+

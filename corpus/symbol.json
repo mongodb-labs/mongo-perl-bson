@@ -1,0 +1,34 @@
+{
+    "description": "Symbol",
+    "bson_type": "0x0E",
+    "deprecated": true,
+    "valid": [
+        {
+            "description": "Empty string",
+            "subject": "0d0000000E6100010000000000",
+            "string": "\"\"",
+            "decodeOnly": true,
+            "extjson": {
+                "a": ""
+            }
+        },
+        {
+            "description": "Single character",
+            "subject": "0e0000000E610002000000620000",
+            "string": "\"b\"",
+            "decodeOnly": true,
+            "extjson": {
+                "a": "b"
+            }
+        },
+        {
+            "description": "Multi-character",
+            "subject": "190000000E61000d0000006162616261626162616261620000",
+            "string": "\"bababababab\"",
+            "decodeOnly": true,
+            "extjson": {
+                "a": "bababababab"
+            }
+        },
+    ]
+}
