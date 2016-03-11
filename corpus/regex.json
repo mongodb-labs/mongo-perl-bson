@@ -1,0 +1,38 @@
+{
+    "description": "Regular Expression type",
+    "bson_type": "0x0b",
+    "valid": [
+        {
+            "description": "empty regex with no options",
+            "subject": "0a0000000b6100000000",
+            "string": "//",
+            "extjson": {
+                "a": { "$regex": "", "$options": "" }
+            }
+        },
+        {
+            "description": "regex without options",
+            "subject": "0d0000000b6100616263000000",
+            "string": "/abc/",
+            "extjson": {
+                "a": { "$regex": "abc", "$options": "im" }
+            }
+        },
+        {
+            "description": "regex with options",
+            "subject": "0f0000000b610061626300696d0000",
+            "string": "/abc/im",
+            "extjson": {
+                "a": { "$regex": "abc", "$options": "im" }
+            }
+        },
+        {
+            "description": "regex with slash",
+            "subject": "110000000b610061622f636400696d0000",
+            "string": "/ab\/cd/im",
+            "extjson": {
+                "a": { "$regex": "ab/cd", "$options": "im" }
+            }
+        }
+    ]
+}
