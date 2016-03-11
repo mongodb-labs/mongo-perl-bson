@@ -3,14 +3,6 @@
     "bson_type": "0x01",
     "valid": [
         {
-            "description": "0.0",
-            "subject": "10000000016400000000000000000000",
-            "string": "0",
-            "extjson": {
-                "d": 0.0
-            }
-        },
-        {
             "description": "+1.0",
             "subject": "10000000016400000000000000f03f00",
             "string": "1.0",
@@ -24,6 +16,47 @@
             "string": "-1.0",
             "extjson": {
                 "d": -1.0
+            }
+        },
+        {
+            "description": "0.0",
+            "subject": "10000000016400000000000000000000",
+            "string": "0.0",
+            "extjson": {
+                "d": 0.0
+            }
+        },
+        {
+            "description": "-0.0",
+            "subject": "10000000016400000000000000008000",
+            "string": "-0.0",
+            "decodeOnly": true,
+            "extjson": {
+                "d": { "$numberDouble": "-0.0" }
+            }
+        },
+        {
+            "description": "NaN",
+            "subject": "10000000016400000000000000f87f00",
+            "string": "NaN",
+            "extjson": {
+                "d": { "$numberDouble": "NaN" }
+            }
+        },
+        {
+            "description": "Inf",
+            "subject": "10000000016400000000000000f07f00",
+            "string": "Inf",
+            "extjson": {
+                "d": { "$numberDouble": "Inf" }
+            }
+        },
+        {
+            "description": "-Inf",
+            "subject": "10000000016400000000000000f0ff00",
+            "string": "-Inf",
+            "extjson": {
+                "d": { "$numberDouble": "-Inf" }
             }
         }
     ]

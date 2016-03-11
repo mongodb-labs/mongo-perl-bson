@@ -44,6 +44,9 @@ be encoded to the `bson_type` under test.  For each case, keys include:
 The extended JSON documentation doesn't include extensions for all BSON
 types.  This corpus extends it to include the following:
 
+    # Double (needed for NaN, etc.)
+    { "$numberDouble": "<value|NaN|Inf|-Inf>" }
+
     # Javascript
     { "$javascript": "<code here>" }
 
