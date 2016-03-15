@@ -7,8 +7,10 @@ package BSON::MaxKey;
 
 our $VERSION = '0.17';
 
+my $singleton = bless \(my $x), __PACKAGE__;
+
 sub new {
-    bless {}, $_[0];
+    return $singleton;
 }
 
 1;

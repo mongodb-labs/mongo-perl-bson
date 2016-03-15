@@ -14,15 +14,10 @@ use Carp;
 use Tie::IxHash;
 use Math::Int64 qw/:native_if_available int64 int64_to_native native_to_int64/;
 
-use BSON::Time;
-use BSON::Timestamp;
-use BSON::MinKey;
-use BSON::MaxKey;
-use BSON::Binary;
-use BSON::ObjectId;
-use BSON::Code;
-use BSON::Bool;
-use BSON::String;
+use BSON::Types ();
+use boolean;
+
+require re; # don't "use" or we get a "useless pragma" warning on old perls
 
 # Maximum size of a BSON record
 our $MAX_SIZE = 16 * 1024 * 1024;
@@ -38,13 +33,15 @@ my $int_re     = qr/^(?:(?:[+-]?)(?:[0123456789]+))$/;
 my $doub_re    = qr/^(?:(?i)(?:[+-]?)(?:(?=[0123456789]|[.])(?:[0123456789]*)(?:(?:[.])(?:[0123456789]{0,}))?)(?:(?:[E])(?:(?:[+-]?)(?:[0123456789]+))|))$/;
 #>>>
 
+my $bools_re = qr/::(?:Boolean|_Bool|Bool)\z/;
+
 use constant {
 
     BSON_TYPE_NAME => "CZ*",
     BSON_DOUBLE => "d",
     BSON_STRING => "V/Z*",
     BSON_BOOLEAN => "C",
-    BSON_REGEX => "Z*a*",
+    BSON_REGEX => "Z*Z*",
     BSON_JSCODE => "",
     BSON_INT32 => "l",
     BSON_INT64 => "LL",
@@ -59,11 +56,16 @@ use constant {
 
 sub _split_re {
     my $value = shift;
-    $value =~ s/^\(\?\^?//;
-    $value =~ s/\)$//;
-    my ( $opt, $re ) = split( /:/, $value, 2 );
-    $opt =~ s/\-\w+$//;
-    return ( $re, $opt );
+    if ( $] ge 5.010 ) {
+        return re::regexp_pattern($value);
+    }
+    else {
+        $value =~ s/^\(\?\^?//;
+        $value =~ s/\)$//;
+        my ( $opt, $re ) = split( /:/, $value, 2 );
+        $opt =~ s/\-\w+$//;
+        return ( $re, $opt );
+    }
 }
 
 sub encode {
@@ -72,13 +74,15 @@ sub encode {
     my $bson = '';
     while ( my ( $key, $value ) = each %$doc ) {
 
+        my $type = ref $value;
+
         # Null
         if ( !defined $value ) {
             $bson .= pack( BSON_TYPE_NAME, 0x0A, $key );
         }
 
         # Array
-        elsif ( ref $value eq 'ARRAY' ) {
+        elsif ( $type eq 'ARRAY' ) {
             my $i = 0;
             tie( my %h, 'Tie::IxHash' );
             %h = map { $i++ => $_ } @$value;
@@ -86,71 +90,98 @@ sub encode {
         }
 
         # Document
-        elsif ( ref $value eq 'HASH' ) {
+        elsif ( $type eq 'HASH' ) {
             $bson .= pack( BSON_TYPE_NAME, 0x03, $key ) . encode($value);
         }
 
         # Regex
-        elsif ( ref $value eq 'Regexp' ) {
-            my ( $re, $opt ) = _split_re($value);
-            $bson .= pack( BSON_TYPE_NAME.BSON_REGEX, 0x0B, $key, $re, sort grep /^(i|m|x|l|s|u)$/, split( //, $opt ) ) . "\0";
+        elsif ( $type eq 'Regexp' ) {
+            my ( $re, $flags ) = _split_re($value);
+            $bson .= pack( BSON_TYPE_NAME.BSON_REGEX, 0x0B, $key, $re, join( "", sort grep /^(i|m|x|l|s|u)$/, split( //, $flags ) ));
+        }
+        elsif ( $type eq 'BSON::Regex' ) {
+            my ( $re, $flags ) = @{$value}{qw/pattern flags/};
+            $bson .= pack( BSON_TYPE_NAME.BSON_REGEX, 0x0B, $key, $re, $flags) ;
         }
 
         # ObjectId
-        elsif ( ref $value eq 'BSON::ObjectId' ) {
+        elsif ( $type eq 'BSON::ObjectId' ) {
             $bson .= pack( BSON_TYPE_NAME.BSON_OBJECTID, 0x07, $key, $value->value );
         }
 
         # Datetime
-        elsif ( ref $value eq 'BSON::Time' ) {
+        elsif ( $type eq 'BSON::Time' ) {
             $bson .= pack( BSON_TYPE_NAME, 0x09, $key ) . int64_to_native( $value->value );
         }
 
         # Timestamp
-        elsif ( ref $value eq 'BSON::Timestamp' ) {
+        elsif ( $type eq 'BSON::Timestamp' ) {
             $bson .= pack( BSON_TYPE_NAME.BSON_TIMESTAMP, 0x11, $key, $value->increment, $value->seconds );
         }
 
         # MinKey
-        elsif ( ref $value eq 'BSON::MinKey' ) {
+        elsif ( $type eq 'BSON::MinKey' ) {
             $bson .= pack( BSON_TYPE_NAME, 0xFF, $key );
         }
 
         # MaxKey
-        elsif ( ref $value eq 'BSON::MaxKey' ) {
+        elsif ( $type eq 'BSON::MaxKey' ) {
             $bson .= pack( BSON_TYPE_NAME, 0x7F, $key );
         }
 
-        # Binary
-        elsif ( ref $value eq 'BSON::Binary' ) {
-            $bson .= pack( BSON_TYPE_NAME, 0x05, $key ) . $value;
+        # Binary (XXX need to add string ref support)
+        elsif ( $type eq 'BSON::Bytes' || $type eq 'BSON::Binary' ) {
+            my $data = $type eq 'BSON::Bytes' ? $value->data : pack("C*", @{$value->data});
+            my $subtype = $value->type;
+            my $len = length($data);
+            if ( $subtype == 2 ) {
+                $bson .= pack( BSON_TYPE_NAME.BSON_INT32.BSON_BINARY_TYPE.BSON_INT32.BSON_REMAINING , 0x05, $key, $len+4, $subtype, $len, $data );
+            }
+            else {
+                $bson .= pack( BSON_TYPE_NAME.BSON_INT32.BSON_BINARY_TYPE.BSON_REMAINING , 0x05, $key, $len, $subtype, $data );
+            }
         }
 
         # Code
-        elsif ( ref $value eq 'BSON::Code' ) {
-            if ( ref $value->scope eq 'HASH' ) {
+        elsif ( $type eq 'BSON::Code' ) {
+            my $code = $value->code;
+            utf8::encode($code);
+            $code = pack(BSON_STRING,$code);
+            if ( ref( $value->scope ) eq 'HASH' ) {
                 my $scope = encode( $value->scope );
-                my $code  = pack( BSON_STRING, $value->code );
                 $bson .= 
                     pack( BSON_TYPE_NAME.BSON_CODE_W_SCOPE, 0x0F, $key, (4 + length($scope) + length($code)) ) . $code . $scope;
             }
             else {
-                $bson .= pack( BSON_TYPE_NAME.BSON_STRING, 0x0D, $key, $value->code );
+                $bson .= pack( BSON_TYPE_NAME, 0x0D, $key) . $code;
             }
         }
 
         # Boolean
-        elsif ( ref $value eq 'BSON::Bool' ) {
+        elsif ( $type eq 'boolean' || $type =~ $bools_re ) {
             $bson .= pack( BSON_TYPE_NAME.BSON_BOOLEAN, 0x08, $key, ( $value ? 1 : 0 ) );
         }
 
         # String (explicit)
-        elsif ( ref $value eq 'BSON::String' ) {
+        elsif ( $type eq 'BSON::String' ) {
             $bson .= pack( BSON_TYPE_NAME.BSON_STRING, 0x02, $key, $value );
         }
 
-        # Int (32 and 64)
-        elsif ( ref $value eq 'Math::Int64' || $value =~ $int_re ) {
+        # Int64 (XXX and eventually BigInt)
+        elsif ( $type eq 'BSON::Int64' ) {
+            if ( $value > $max_int_64 || $value < $min_int_64 ) {
+                croak("BSON can only handle 8-byte integers. Key '$key' is '$value'");
+            }
+            $bson .= pack( BSON_TYPE_NAME.BSON_REMAINING, 0x12, $key, int64_to_native( $value ) );
+        }
+
+        # Double (explicit)
+        elsif ( $type eq 'BSON::Double' ) {
+            $bson .= pack( BSON_TYPE_NAME.BSON_DOUBLE, 0x01, $key, $value/1.0 );
+        }
+
+        # Int (Int32 or arbitrary)
+        elsif ( $type eq 'Math::Int64' || $value =~ $int_re ) {
             if ( $value > $max_int_64 || $value < $min_int_64 ) {
                 croak("MongoDB can only handle 8-byte integers. Key '$key' is '$value'");
             }
@@ -165,11 +196,49 @@ sub encode {
 
         # String
         else {
+            utf8::encode($value);
             $bson .= pack( BSON_TYPE_NAME.BSON_STRING, 0x02, $key, $value );
         }
     }
 
     return pack( BSON_INT32, length($bson) + 5 ) . $bson . "\0";
+}
+
+my %FIELD_SIZES = (
+    0x01 => 8,
+    0x02 => 5,
+    0x03 => 5,
+    0x04 => 5,
+    0x05 => 5,
+    0x06 => 0,
+    0x07 => 12,
+    0x08 => 1,
+    0x09 => 8,
+    0x0A => 0,
+    0x0B => 2,
+    0x0C => 17,
+    0x0D => 5,
+    0x0E => 5,
+    0x0F => 11,
+    0x10 => 4,
+    0x11 => 8,
+    0x12 => 8,
+    0x7F => 0,
+    0xFF => 0,
+);
+
+my $ERR_UNSUPPORTED = "Unsupported BSON type 0x%x for key '%s'.  Are you using the latest driver version?";
+my $ERR_TRUNCATED = "Premature end of BSON field '%s' (type 0x%x)";
+my $ERR_LENGTH = "BSON field '%s' (type 0x%x) has invalid length: wanted %d, got %d";
+my $ERR_MISSING_NULL = "BSON field '%s' (type 0x%x) missing null terminator";
+my $ERR_BAD_UTF8 = "BSON field '%s' (type 0x%x) contains invalid UTF-8";
+my $ERR_NEG_LENGTH = "BSON field '%s' (type 0x%x) contains negative length";
+my $ERR_BAD_OLDBINARY = "BSON field '%s' (type 0x%x, subtype 0x02) is invalid";
+
+sub __dump_bson {
+    my $bson = unpack("H*", shift);
+    my @pairs = $bson=~ m/(..)/g;
+    return join(" ", @pairs);
 }
 
 sub decode {
@@ -179,45 +248,84 @@ sub decode {
     if ( length($bson) != $len ) {
         croak("Incorrect length of the bson string (got $blen, wanted $len)");
     }
+    if ( chop($bson) ne "\x00" ) {
+        croak("BSON document not null terminated");
+    }
     my %opt = @_;
-    $bson = substr( $bson, 4, -1 );
+    $bson = substr $bson, 4;
+    my @array = ();
     my %hash = ();
     tie( %hash, 'Tie::IxHash' ) if $opt{ixhash};
+    my ($type, $key, $value);
     while ($bson) {
-        my $value;
-        ( my $type, my $key, $bson ) = unpack( BSON_TYPE_NAME.BSON_REMAINING, $bson );
+        ( $type, $key, $bson ) = unpack( BSON_TYPE_NAME.BSON_REMAINING, $bson );
+
+        # Check type and truncation
+        my $min_size = $FIELD_SIZES{$type};
+        if ( !defined $min_size ) {
+            croak( sprintf( $ERR_UNSUPPORTED, $type, $key ) );
+        }
+        if ( length($bson) < $min_size ) {
+            croak( sprintf( $ERR_TRUNCATED, $key, $type ) );
+        }
 
         # Double
         if ( $type == 0x01 ) {
             ( $value, $bson ) = unpack( BSON_DOUBLE.BSON_REMAINING, $bson );
+            $value = BSON::Double->new( value => $value ) if $opt{wrap_numbers};
         }
 
-        # String and Symbol
+        # String and Symbol (deprecated)
         elsif ( $type == 0x02 || $type == 0x0E ) {
-            ( $value, $bson ) = unpack( BSON_SKIP_4_BYTES.BSON_CSTRING.BSON_REMAINING, $bson );
+            ( $len, $bson ) = unpack( BSON_INT32 . BSON_REMAINING, $bson );
+            if ( length($bson) < $len || substr( $bson, $len - 1, 1 ) ne "\x00" ) {
+                croak( sprintf( $ERR_MISSING_NULL, $key, $type ) );
+            }
+            ( $value, $bson ) = unpack( "a$len" . BSON_REMAINING, $bson );
+            chop($value); # remove trailing \x00
+            if ( !utf8::decode($value) ) {
+                croak( sprintf( $ERR_BAD_UTF8, $key, $type ) );
+            }
         }
 
         # Document and Array
         elsif ( $type == 0x03 || $type == 0x04 ) {
             my $len = unpack( BSON_INT32, $bson );
-            $value = decode( substr( $bson, 0, $len ), %opt );
-            if ( $type == 0x04 ) {
-                my @a =
-                  map { $value->{$_} } ( 0 .. scalar( keys %$value ) - 1 );
-                $value = \@a;
-            }
+            $value = decode( substr( $bson, 0, $len ), %opt, _decode_array => $type == 0x04 );
             $bson = substr( $bson, $len, length($bson) - $len );
         }
 
         # Binary
         elsif ( $type == 0x05 ) {
-            my $len = unpack( BSON_INT32, $bson ) + 5;
-            my @a = unpack( BSON_SKIP_4_BYTES.BSON_BINARY_TYPE.BSON_REMAINING, substr( $bson, 0, $len ) );
-            $value = BSON::Binary->new( $a[1], $a[0] );
-            $bson = substr( $bson, $len, length($bson) - $len );
+            my ( $len, $btype ) = unpack( BSON_INT32 . BSON_BINARY_TYPE, $bson );
+            substr( $bson, 0, 5, '' );
+
+            if ( $len < 0 ) {
+                croak( sprintf( $ERR_NEG_LENGTH, $key, $type ) );
+            }
+            if ( $len > length($bson) ) {
+                croak( sprintf( $ERR_TRUNCATED, $key, $type ) );
+            }
+
+            my $binary = substr( $bson, 0, $len, '' );
+
+            if ( $btype == 2 ) {
+                if ( $len < 4 ) {
+                    croak( sprintf( $ERR_BAD_OLDBINARY, $key, $type ) );
+                }
+
+                my $sublen = unpack( BSON_INT32, $binary );
+                if ( $sublen != length($binary) - 4 ) {
+                    croak( sprintf( $ERR_BAD_OLDBINARY, $key, $type ) );
+                }
+
+                substr( $binary, 0, 4, '' );
+            }
+
+            $value = BSON::Bytes->new( subtype => $btype, data => $binary );
         }
 
-        # Undef
+        # Undef (deprecated)
         elsif ( $type == 0x06 ) {
             $value = undef;
         }
@@ -231,7 +339,9 @@ sub decode {
         # Boolean
         elsif ( $type == 0x08 ) {
             ( my $bool, $bson ) = unpack( BSON_BOOLEAN.BSON_REMAINING, $bson );
-            $value = BSON::Bool->new($bool);
+            croak("BSON boolean must be 0 or 1. Key '$key' is $bool")
+                unless $bool == 0 || $bool == 1;
+            $value = boolean( $bool );
         }
 
         # Datetime
@@ -239,7 +349,7 @@ sub decode {
             my ($l1, $l2) = @_;
             ($l1, $l2, $bson) = unpack(BSON_INT64.BSON_REMAINING,$bson);
             my $dt = native_to_int64(pack(BSON_INT64,$l1, $l2));
-            $value = BSON::Time->new( int( $dt / 1000 ) );
+            $value = BSON::Time->new( value => $dt );
         }
 
         # Null
@@ -250,26 +360,91 @@ sub decode {
         # Regex
         elsif ( $type == 0x0B ) {
             ( my $re, my $op, $bson ) = unpack( BSON_CSTRING.BSON_CSTRING.BSON_REMAINING, $bson );
-            $value = eval "qr/$re/$op"; ## no critic
+            $value = BSON::Regex->new( pattern => $re, flags => $op );
+        }
+
+        # DBPointer (deprecated)
+        elsif ( $type == 0x0C ) {
+            ( $len, $bson ) = unpack( BSON_INT32 . BSON_REMAINING, $bson );
+            if ( length($bson) < $len || substr( $bson, $len - 1, 1 ) ne "\x00" ) {
+                croak( sprintf( $ERR_MISSING_NULL, $key, $type ) );
+            }
+            ( my ($ref), $bson ) = unpack( "a$len" . BSON_REMAINING, $bson );
+            chop($ref); # remove trailing \x00
+            if ( !utf8::decode($ref) ) {
+                croak( sprintf( $ERR_BAD_UTF8, $key, $type ) );
+            }
+
+            ( my ($oid), $bson ) = unpack( BSON_OBJECTID . BSON_REMAINING, $bson );
+            $value = { '$ref' => $ref, '$id' => BSON::ObjectId->new( unpack( "H*", $oid ) ) };
         }
 
         # Code
         elsif ( $type == 0x0D ) {
-            ( my $len, my $code, $bson ) = unpack( BSON_INT32.BSON_CSTRING.BSON_REMAINING, $bson );
-            $value = BSON::Code->new($code);
+            ( $len, $bson ) = unpack( BSON_INT32 . BSON_REMAINING, $bson );
+            if ( length($bson) < $len || substr( $bson, $len - 1, 1 ) ne "\x00" ) {
+                croak( sprintf( $ERR_MISSING_NULL, $key, $type ) );
+            }
+            ( $value, $bson ) = unpack( "a$len" . BSON_REMAINING, $bson );
+            chop($value); # remove trailing \x00
+            if ( !utf8::decode($value) ) {
+                croak( sprintf( $ERR_BAD_UTF8, $key, $type ) );
+            }
+            $value = BSON::Code->new( code => $value );
         }
 
         # Code with scope
         elsif ( $type == 0x0F ) {
             my $len = unpack( BSON_INT32, $bson );
-            my @a = unpack( BSON_SKIP_4_BYTES.BSON_SKIP_4_BYTES.BSON_CSTRING.BSON_REMAINING, substr( $bson, 0, $len ) );
-            $value = BSON::Code->new( $a[0], decode( $a[1], %opt ) );
-            $bson = substr( $bson, $len, length($bson) - $len );
+
+            # validate length
+            if ( $len < 0 ) {
+                croak( sprintf( $ERR_NEG_LENGTH, $key, $type ) );
+            }
+            if ( $len > length($bson) ) {
+                croak( sprintf( $ERR_TRUNCATED, $key, $type ) );
+            }
+            if ( $len < 5 ) {
+                croak( sprintf( $ERR_LENGTH, $key, $type, 5, $len ) );
+            }
+
+            # extract code and scope and chop off leading length
+            my $codewscope = substr( $bson, 0, $len, '' );
+            substr( $codewscope, 0, 4, '' );
+
+            # extract code ( i.e. string )
+            my $strlen = unpack( BSON_INT32, $codewscope );
+            substr( $codewscope, 0, 4, '' );
+
+            if ( length($codewscope) < $strlen || substr( $codewscope, -1, 1 ) ne "\x00" ) {
+                croak( sprintf( $ERR_MISSING_NULL, $key, $type ) );
+            }
+
+            my $code = substr($codewscope, 0, $strlen, '' );
+            chop($code); # remove trailing \x00
+            if ( !utf8::decode($code) ) {
+                croak( sprintf( $ERR_BAD_UTF8, $key, $type ) );
+            }
+
+            if ( length($codewscope) < 5 ) {
+                croak( sprintf( $ERR_TRUNCATED, $key, $type ) );
+            }
+
+            # extract scope
+            my $scopelen = unpack( BSON_INT32, $codewscope );
+            if ( length($codewscope) < $scopelen || substr( $codewscope, $scopelen - 1, 1 ) ne "\x00" ) {
+                croak( sprintf( $ERR_MISSING_NULL, $key, $type ) );
+            }
+
+            my $scope = decode( $codewscope, %opt, _decode_array => 0 );
+
+            $value = BSON::Code->new( code => $code, scope => $scope );
         }
 
         # Int32
         elsif ( $type == 0x10 ) {
             ( $value, $bson ) = unpack( BSON_INT32.BSON_REMAINING, $bson );
+            $value = BSON::Int32->new( value => $value ) if $opt{wrap_numbers};
         }
 
         # Timestamp
@@ -283,6 +458,7 @@ sub decode {
             my ($l1, $l2) = @_;
             ($l1, $l2, $bson) = unpack(BSON_INT64.BSON_REMAINING,$bson);
             $value = native_to_int64(pack(BSON_INT64,$l1, $l2));
+            $value = BSON::Int64->new( value => $value ) if $opt{wrap_numbers};
         }
 
         # MinKey
@@ -300,9 +476,162 @@ sub decode {
             croak "Unsupported type $type";
         }
 
-        $hash{$key} = $value;
+        if ( $opt{_decode_array} ) {
+            push @array, $value;
+        }
+        else {
+            $hash{$key} = $value;
+        }
     }
-    return \%hash;
+    return $opt{_decode_array} ? \@array : \%hash;
+}
+
+sub inflate_extjson {
+    my ( $class, $hash ) = @_;
+
+    for my $k ( keys %$hash ) {
+        my $v = $hash->{$k};
+        if ( substr( $k, 0, 1 ) eq '$' ) {
+            croak "Dollar-prefixed key '$k' is not legal in top-level hash";
+        }
+        my $type = ref($v);
+        $hash->{$k} =
+            $type eq 'HASH'    ? $class->_inflate_hash($v)
+          : $type eq 'ARRAY'   ? $class->_inflate_array($v)
+          : $type =~ $bools_re ? boolean($v)
+          :                      $v;
+    }
+
+    return $hash;
+}
+
+sub _inflate_hash {
+    my ( $class, $hash ) = @_;
+
+    if ( exists $hash->{'$oid'} ) {
+        return BSON::ObjectId->new( $hash->{'$oid'} );
+    }
+
+    if ( exists $hash->{'$numberInt'} ) {
+        return BSON::Int32->new( value => $hash->{'$numberInt'} );
+    }
+
+    if ( exists $hash->{'$numberLong'} ) {
+        return BSON::Int64->new( value => $hash->{'$numberLong'} );
+    }
+
+    if ( exists $hash->{'$binary'} ) {
+        require MIME::Base64;
+        return BSON::Bytes->new(
+            data    => MIME::Base64::decode_base64($hash->{'$binary'}),
+            subtype => hex( $hash->{'$type'} || 0 )
+        );
+    }
+
+    if ( exists $hash->{'$date'} ) {
+        my $v = $hash->{'$date'};
+        $v = ref($v) eq 'HASH' ? BSON->_inflate_hash($v) : _iso8601_to_epochms($v);
+        return BSON::Time->new( value => $v );
+    }
+
+    if ( exists $hash->{'$minKey'} ) {
+        return BSON::MinKey->new;
+    }
+
+    if ( exists $hash->{'$maxKey'} ) {
+        return BSON::MaxKey->new;
+    }
+
+    if ( exists $hash->{'$timestamp'} ) {
+        return BSON::Timestamp->new(
+            seconds   => $hash->{'$timestamp'}{t},
+            increment => $hash->{'$timestamp'}{i},
+        );
+    }
+
+    if ( exists $hash->{'$regex'} ) {
+        return BSON::Regex->new(
+            pattern => $hash->{'$regex'},
+            ( exists $hash->{'$options'} ? ( flags => $hash->{'$options'} ) : () ),
+        );
+    }
+
+    if ( exists $hash->{'$code'} ) {
+        return BSON::Code->new(
+            code => $hash->{'$code'},
+            ( exists $hash->{'$scope'} ? ( scope => $hash->{'$scope'} ) : () ),
+        );
+    }
+
+    if ( exists $hash->{'$undefined'} ) {
+        return undef;
+    }
+
+    if ( exists $hash->{'$ref'} ) {
+        my $id = $hash->{'$id'};
+        $id = BSON->_inflate_hash($id) if ref($id) eq 'HASH';
+        return { '$ref' => $hash->{'$ref'}, '$id' => $id };
+    }
+
+    # Following extended JSON is non-standard
+
+    if ( exists $hash->{'$numberDouble'} ) {
+        return BSON::Double->new( value => $hash->{'$numberDouble'} );
+    }
+
+    if ( exists $hash->{'$symbol'} ) {
+        return $hash->{'$symbol'};
+    }
+
+    return $hash;
+}
+
+sub _inflate_array {
+    my ($class, $array) = @_;
+    if (@$array) {
+        for my $i ( 0 .. $#$array ) {
+            my $v = $array->[$i];
+            $array->[$i] =
+                ref($v) eq 'HASH'  ? BSON->_inflate_hash($v)
+              : ref($v) eq 'ARRAY' ? _inflate_array($v)
+              :                       $v;
+        }
+    }
+    return $array;
+}
+
+my $iso8601_re = qr{
+    (\d{4}) - (\d{2}) - (\d{2}) T               # date
+    (\d{2}) : (\d{2}) : ( \d+ (?:\. \d+ )? )    # time
+    (?: Z | ([+-] \d{2} :? (?: \d{2} )? ) )?    # maybe TZ
+}x;
+
+sub _iso8601_to_epochms {
+    my ($date) = shift;
+    require Time::Local;
+
+    my $zone_offset = 0;;
+    if ( substr($date,-1,1) eq 'Z' ) {
+        chop($date);
+    }
+
+    if ( $date =~ /\A$iso8601_re\z/ ) {
+        my ($Y,$M,$D,$h,$m,$s,$z) = ($1,$2-1,$3,$4,$5,$6,$7);
+        if (length($z))  {
+            $z =~ tr[:][];
+            $z .= "00" if length($z) < 5;
+            my $zd = substr($z,0,1);
+            my $zh = substr($z,1,2);
+            my $zm = substr($z,3,2);
+            $zone_offset = ($zd eq '-' ? -1 : 1 ) * (3600 * $zh + 60 * $zm);
+        }
+        my $frac = $s - int($s);
+        my $epoch = Time::Local::timegm(int($s), $m, $h, $D, $M, $Y);
+        return int( 1000 * ( $epoch - $zone_offset + $frac ) );
+    }
+    else {
+        Carp::croak("Couldn't parse '\$date' field: $date\n");
+    }
 }
 
 1;
@@ -312,6 +641,7 @@ __END__
 =head1 SYNOPSIS
 
     use BSON qw/encode decode/;
+    use boolean;
 
     my $document = {
         _id      => BSON::ObjectId->new,
@@ -319,7 +649,7 @@ __END__
         name     => 'James Bond',
         age      => 45,
         amount   => 24587.45,
-        badass   => BSON::Bool->true,
+        badass   => true,
         password => BSON::String->new('12345')
     };
 

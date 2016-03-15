@@ -7,24 +7,41 @@ package BSON::Timestamp;
 
 our $VERSION = '0.17';
 
-sub new {
-    my ( $class, $seconds, $increment ) = @_;
-    bless {
-        seconds   => $seconds,
-        increment => $increment
-    }, $class;
+use Carp ();
+
+use Class::Tiny {
+    seconds   => sub { time },
+    increment => 0,
+};
+
+# Support back-compat 'secs' and inc' and legacy constructor shortcut
+sub BUILDARGS {
+    my ($class) = shift;
+
+    my %args;
+    if ( @_ && $_[0] !~ /^[s|i]/ ) {
+        $args{seconds}   = $_[0];
+        $args{increment} = $_[1];
+    }
+    else {
+        Carp::croak( __PACKAGE__ . "::new called with an odd number of elements\n" )
+          unless @_ % 2 == 0;
+
+        %args = @_;
+        $args{seconds}   = $args{secs} if exists $args{secs} && !exists $args{seconds};
+        $args{increment} = $args{inc}  if exists $args{inc}  && !exists $args{increment};
+    }
+
+    $args{seconds}   = time unless defined $args{seconds};
+    $args{increment} = 0    unless defined $args{increment};
+    $args{$_} = int( $args{$_} ) for qw/seconds increment/;
+
+    return \%args;
 }
 
-sub increment {
-    my ( $self, $value ) = @_;
-    $self->{increment} = $value if defined $value;
-    return $self->{increment};
-}
-
-sub seconds {
-    my ( $self, $value ) = @_;
-    $self->{seconds} = $value if defined $value;
-    return $self->{seconds};
+BEGIN {
+    *sec = \&seconds;
+    *inc = \&increment;
 }
 
 1;
@@ -35,7 +52,10 @@ __END__
 
     use BSON;
 
-    my $ts = BSON::Timestamp->new( $seconds, $increment );
+    my $ts = BSON::Timestamp->new(
+        seconds   => $seconds,
+        increment => $increment,
+    );
 
 =head1 DESCRIPTION
 
@@ -45,10 +65,6 @@ The first four bytes are increment and the second four bytes are a timestamp.
 A timestamp value of 0 has special semantics.
 
 =head1 METHODS
-
-=head2 new
-
-Object constructor takes seconds and increment parameters.
 
 =head2 seconds
 

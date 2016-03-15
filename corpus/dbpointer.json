@@ -2,14 +2,47 @@
     "description": "DBPointer type (deprecated)",
     "bson_type": "0x0C",
     "deprecated": true,
+    "test_key": "a",
     "valid": [
         {
             "description": "DBpointer",
-            "subject": "180000000C02000000610056e1fc72e0c917e9c471416100",
-            "string": "ns:a, id:56e1fc72e0c917e9c4714161",
-            "extjson": {
-                "a": { "$dbpointer": "56e1fc72e0c917e9c4714161", "$ns":"a" }
-            }
+            "subject": "1A0000000C610002000000620056E1FC72E0C917E9C471416100",
+            "string": "ns:a, id:56E1FC72E0C917E9C4714161",
+            "decodeOnly": true,
+            "extjson": "{\"a\" : {\"$id\" : {\"$oid\" : \"56E1FC72E0C917E9C4714161\"}, \"$ref\" : \"b\"}}"
+        },
+        {
+            "description": "With two-byte UTF-8",
+            "subject": "1B0000000C610003000000C3A90056E1FC72E0C917E9C471416100",
+            "string": "ns:\u00e9, id:56E1FC72E0C917E9C4714161",
+            "decodeOnly": true,
+            "extjson": "{\"a\" : {\"$id\" : {\"$oid\" : \"56E1FC72E0C917E9C4714161\"}, \"$ref\" : \"\\u00e9\"}}"
+        }
+    ],
+    "decodeErrors": [
+        {
+            "description": "String with negative length",
+            "subject": "1A0000000C6100FFFFFFFF620056E1FC72E0C917E9C471416100"
+        },
+        {
+            "description": "String with zero length",
+            "subject": "1A0000000C610000000000620056E1FC72E0C917E9C471416100"
+        },
+        {
+            "description": "String not null terminated",
+            "subject": "1A0000000C610002000000626256E1FC72E0C917E9C471416100"
+        },
+        {
+            "description": "short OID (less than minimum length for field)",
+            "subject": "160000000C61000300000061620056E1FC72E0C91700"
+        },
+        {
+            "description": "short OID (greater than minimum, but truncated)",
+            "subject": "1A0000000C61000300000061620056E1FC72E0C917E9C4716100"
+        },
+        {
+            "description": "String with bad UTF-8",
+            "subject": "1A0000000C610002000000E90056E1FC72E0C917E9C471416100"
         }
     ]
 }

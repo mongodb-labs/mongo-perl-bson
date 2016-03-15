@@ -9,6 +9,7 @@ use Test::Number::Delta;
 use Tie::IxHash;
 use DateTime;
 use Math::Int64 qw/:native_if_available int64/;
+require re;
 
 use BSON qw/encode decode/;
 
@@ -16,6 +17,12 @@ my $a;
 tie( my %h, 'Tie::IxHash' );
 tie( my %h1, 'Tie::IxHash' );
 tie( my %h2, 'Tie::IxHash' );
+
+sub _dump_bson {
+    my $bson = unpack("H*",shift);
+    $bson =~ s/(..)/$1 /g;
+    return $bson;
+}
 
 # Int32
 subtest int32 => sub {
@@ -252,12 +259,8 @@ subtest hash => sub {
 subtest regex => sub {
     plan tests => 9;
 
-    my @sp = BSON::_split_re('(?i-xsm:\w)');
+    my @sp = BSON::_split_re(qr/\w/i);
     is_deeply(\@sp, ['\w', 'i']);
-
-    # Perl 5.14 stringifies regexps differently
-    @sp = BSON::_split_re('(?^ui:\w)');
-    is_deeply(\@sp, ['\w', 'ui']);
 
     my $re1_str = q!"(?:[^"\\\]++|\\\.)*+"!;
     my @re1_bytes = (
@@ -299,19 +302,30 @@ subtest regex => sub {
         'Regex encode'
     );
     my $hash = decode( $bson );
-    is(ref $hash->{a}, 'Regexp');
-    is(ref $hash->{b}, 'Regexp');
-    is_deeply( $hash, \%h, 'Regex decode' );
+    is(ref $hash->{a}, 'BSON::Regex');
+    is(ref $hash->{b}, 'BSON::Regex');
+
+    SKIP: {
+        skip "Comparing regexes is fragile before 5.10", 2 if $] lt 5.010;
+        $hash->{$_} = $hash->{$_}->try_compile for qw/a b/;
+        for (qw/a b/) {
+            is_deeply(
+                [ re::regexp_pattern( $hash->{$_} ) ],
+                [ re::regexp_pattern( $h{$_} ) ],
+                "Regex decode of key $_",
+            );
+        }
+    }
 
     #<<<
-    %h = ( a => qr/(?:(?i)(?:[+-]?)(?:(?=[0123456789]|[.])(?:[0123456789]*)(?:(?:[.])(?:[0123456789]{0,}))?)(?:(?:[E])(?:(?:[+-]?)(?:[0123456789]+))|))/i );
+    %h = ( a => qr/(?:(?:[+-]?)(?:(?=[0123456789]|[.])(?:[0123456789]*)(?:(?:[.])(?:[0123456789]{0,}))?)(?:(?:[E])(?:(?:[+-]?)(?:[0123456789]+))|))/i );
     #>>>
     $bson = encode(\%h);
     is_deeply(
         [ unpack "C*", $bson ],
         [
-            143, 0,  0,  0,  11,  97,  0,  40,  63,  58, 40, 63,
-            105, 41, 40, 63, 58,  91,  43, 45,  93,  63, 41, 40,
+            139, 0,  0,  0,  11,  97,  0,  40,  63,  58, 40, 63,
+            58,  91,  43, 45,  93,  63, 41, 40,
             63,  58, 40, 63, 61,  91,  48, 49,  50,  51, 52, 53,
             54,  55, 56, 57, 93,  124, 91, 46,  93,  41, 40, 63,
             58,  91, 48, 49, 50,  51,  52, 53,  54,  55, 56, 57,
@@ -326,8 +340,20 @@ subtest regex => sub {
         'real num regex'
     );
     $hash = decode( $bson );
-    is(ref $hash->{a}, 'Regexp');
-    is_deeply( $hash, \%h, 'Regex decode 2' );
+    is(ref $hash->{a}, 'BSON::Regex');
+    SKIP: {
+        skip "Comparing regexes is fragile before 5.10", 2 if $] lt 5.010;
+        $hash->{a} = $hash->{a}->try_compile;
+        # after try_compile, "i" flags are put into the regex, so we must
+        # do the same with the original
+        my ($p,$f) = re::regexp_pattern($h{a});
+        $h{a} = qr{(?$f:$p)};
+        is_deeply(
+            [ re::regexp_pattern( $hash->{a} ) ],
+            [ re::regexp_pattern( $h{a} ) ],
+            "Regex decode of key a",
+        );
+    }
 };
 
 # Datetime
@@ -428,12 +454,12 @@ subtest binary => sub {
         [ unpack "C*", $bson ],
         [18, 0, 0, 0, 5, 97, 0, 5, 0, 0, 0, 0, 1, 2, 3, 4, 5, 0],
         'Binary 1 encode'
-    );
+    ) or diag _dump_bson($bson);
     #>>>
     my $hash = decode($bson);
-    isa_ok( $hash->{a}, 'BSON::Binary' );
+    isa_ok( $hash->{a}, 'BSON::Bytes' );
     is( $hash->{a}->type, $bin->type, 'compare type' );
-    is_deeply( $hash->{a}->data, $bin->data, 'compare data' );
+    is_deeply( $hash->{a}->data, pack("C*",@{$bin->data}), 'compare data' );
 
     $bin = BSON::Binary->new( "5366a937375901366effb80511b39919", 5 );
     $bson = encode( { a => $bin } );
@@ -449,9 +475,9 @@ subtest binary => sub {
         'Binary 2 encode'
     );
     $hash = decode($bson);
-    isa_ok( $hash->{a}, 'BSON::Binary' );
+    isa_ok( $hash->{a}, 'BSON::Bytes' );
     is( $hash->{a}->type, $bin->type, 'compare type' );
-    is_deeply( $hash->{a}->data, $bin->data, 'compare data' );
+    is_deeply( $hash->{a}->data, pack("C*",@{$bin->data}), 'compare data' );
 };
 
 # ObjectId

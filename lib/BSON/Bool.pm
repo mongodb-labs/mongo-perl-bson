@@ -3,22 +3,20 @@ use strict;
 use warnings;
 
 package BSON::Bool;
-# ABSTRACT: Boolean data for BSON
+# ABSTRACT: Legacy BSON type wrapper for Booleans (DEPRECATED)
 
 our $VERSION = '0.17';
 
-use overload
-  bool => \&value,
-  '==' => \&op_eq,
-  'eq' => \&op_eq;
+use boolean ();
+our @ISA = qw/boolean/;
 
 sub new {
     my ( $class, $bool ) = @_;
-    bless { value => $bool ? 1 : 0 }, $class;
+    return bless \(my $dummy = $bool ? 1 : 0), $class;
 }
 
 sub value {
-    $_[0]->{value} ? 1 : 0;
+    ${$_[0]} ? 1 : 0;
 }
 
 sub true {
@@ -29,63 +27,27 @@ sub false {
     return $_[0]->new(0);
 }
 
-sub op_eq {
-    return ref( $_[0] ) eq ref( $_[1] ) && $_[0]->value == $_[1]->value;
-}
-
 1;
 
 __END__
 
-=for Pod::Coverage op_eq
-
-=head1 SYNOPSIS
-
-    use BSON;
-
-    my $true  = BSON::Bool->true;
-    my $false = BSON::Bool->false;
-    my $odd   = BSON::Bool->new( time % 2 )
-
-    print "Odd times!" if $odd;
+=for Pod::Coverage new value true false
 
 =head1 DESCRIPTION
 
-This module is needed for L<BSON> and it manages BSON's boolean element.
+This module has been deprecated as it was not compatible with
+other common boolean implmentations on CPAN.
 
-=head1 METHODS
+Internally, this is now a thin wrapper around L<boolean>.
 
-=head2 new
+You are strongly encouraged to use L<boolean> directly instead.
 
-Main constructor which takes a single parameter. Zero or C<undef> create
-a C<false> instance, and everything else creates a C<true> instance.
-
-    my $true  = BSON::Bool->new(255);
-    my $false = BSON::Bool->new;
-
-=head2 true
-
-As a secondary constructor it returns a C<true> instance.
-
-=head2 false
-
-As a secondary constructor it returns a C<false> instance.
-
-=head2 value
-
-Returns C<0> or C<1> for C<false> and C<true>.
-
-=head1 OVERLOAD
-
-All boolean operations are overloaded, so the class instance can
-be used as a boolean variable itself.
-
-    if ( BSON::Bool->true ) {
-        print "You kick ass!";
-    }
+Legacy methods have been preserved in as compatible a form as possible.
 
 =head1 SEE ALSO
 
-L<BSON>
+=for :list
+* L<BSON>
+* L<boolean>
 
 =cut

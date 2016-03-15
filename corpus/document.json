@@ -1,30 +1,39 @@
 {
     "description": "Document type (sub-documents)",
     "bson_type": "0x03",
+    "test_key": "x",
     "valid": [
         {
             "description": "Empty subdoc",
-            "subject": "0d000000037800050000000000",
+            "subject": "0D000000037800050000000000",
             "string": "{}",
-            "extjson": {
-                "x": {}
-            }
+            "extjson": "{\"x\" : {}}"
         },
         {
             "description": "Empty-string key subdoc",
-            "subject": "150000000378000d00000002000200000062000000",
+            "subject": "150000000378000D00000002000200000062000000",
             "string": "{ \"\":\"b\" }",
-            "extjson": {
-                "x": { "":"b" }
-            }
+            "extjson": "{\"x\" : {\"\" : \"b\"}}"
         },
         {
             "description": "Single-character key subdoc",
-            "subject": "160000000378000e0000000261000200000062000000",
+            "subject": "160000000378000E0000000261000200000062000000",
             "string": "{ \"a\":\"b\" }",
-            "extjson": {
-                "x": { "a":"b" }
-            }
+            "extjson": "{\"x\" : {\"a\" : \"b\"}}"
+        }
+    ],
+    "decodeErrors": [
+        {
+            "description": "Subdocument length too long: eats outer terminator",
+            "subject": "1800000003666F6F000F0000001062617200FFFFFF7F0000"
+        },
+        {
+            "description": "Subdocument length too short: leaks terminator",
+            "subject": "1500000003666F6F000A0000000862617200010000"
+        },
+        {
+            "description": "Invalid subdocument: bad string length in field",
+            "subject": "1C00000003666F6F001200000002626172000500000062617A000000"
         }
     ]
 }

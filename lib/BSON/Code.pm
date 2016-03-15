@@ -3,25 +3,43 @@ use strict;
 use warnings;
 
 package BSON::Code;
-# ABSTRACT: JavaScript code data for BSON
+# ABSTRACT: BSON type wrapper for Javascript code
 
 our $VERSION = '0.17';
 
-sub new {
-    my ( $class, $code, $scope ) = @_;
-    bless { code => $code, scope => $scope }, $class;
-}
+use Carp ();
 
-sub code {
-    $_[0]->{code};
-}
-
-sub scope {
-    $_[0]->{scope};
-}
+use Class::Tiny qw/scope/, {
+    code => '',
+};
 
 sub length {
     length( $_[0]->code );
+}
+
+# Support legacy constructor shortcut
+sub BUILDARGS {
+    my ($class) = shift;
+
+    my %args;
+    if ( @_ && $_[0] !~ /^[c|s]/ ) {
+        $args{code}   = $_[0];
+        $args{scope} = $_[1] if defined $_[1];
+    }
+    else {
+        Carp::croak( __PACKAGE__ . "::new called with an odd number of elements\n" )
+          unless @_ % 2 == 0;
+        %args = @_;
+    }
+
+    return \%args;
+}
+
+sub BUILD {
+    my ($self) = @_;
+    Carp::croak( __PACKAGE__ . " scope must be hash reference, not $self->{scope}")
+        if exists($self->{scope}) && ref($self->{scope}) ne 'HASH';
+    return;
 }
 
 1;

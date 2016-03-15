@@ -7,37 +7,72 @@ package BSON::Time;
 
 our $VERSION = '0.17';
 
-use Carp;
+use Carp qw/croak/;
+use Time::HiRes qw/time/;
+use Scalar::Util qw/looks_like_number/;
 
-use overload
-  '==' => \&op_eq,
-  'eq' => \&op_eq,
-  '""' => sub { $_[0]->epoch };
+use Class::Tiny qw/value/; # value stores ms since epoch as integer
 
-sub new {
-    my ( $class, $value ) = @_;
-    my $self = bless {}, $class;
-    $self->value( defined $value ? $value : time );
-    return $self;
-}
+sub BUILDARGS {
+    my $class = shift;
+    my $n     = scalar(@_);
 
-sub value {
-    my ( $self, $value ) = @_;
-    if ( defined $value ) {
-        confess '$value must be an epoch integer'
-          unless $value =~ /^-?\d+$/;
-        $self->{value} = $value * 1000;
+    my %args;
+    if ( $n == 0 ) {
+        $args{value} = 1000 * time();
     }
-    return $self->{value};
+    elsif ( $n == 1 ) {
+        croak "argument to new must be epoch seconds"
+          unless looks_like_number( $_[0] );
+        $args{value} = 1000 * shift;
+    }
+    elsif ( $n % 2 == 0 ) {
+        %args = @_;
+        if ( defined $args{value} ) {
+            croak "argument to new must be epoch seconds"
+              unless looks_like_number( $args{value} );
+        }
+        else {
+            $args{value} = 1000 * time();
+        }
+    }
+    else {
+        croak("Invalid number of arguments ($n) to BSON::Time::new");
+    }
+
+    # normalize all to integer ms
+    $args{value} = int( $args{value} );
+
+    return \%args;
 }
 
 sub epoch {
     return int( $_[0]->value / 1000 );
 }
 
-sub op_eq {
-    return ref( $_[0] ) eq ref( $_[1] ) && $_[0]->value == $_[1]->value;
+sub _num_cmp {
+    my ( $self, $other ) = @_;
+    if ( ref($other) eq ref($self) ) {
+        return $self->{value} <=> $other->{value};
+    }
+    return 0+ $self <=> 0+ $other;
 }
+
+sub _str_cmp {
+    my ( $self, $other ) = @_;
+    if ( ref($other) eq ref($self) ) {
+        return $self->{value} cmp $other->{value};
+    }
+    return "$self" cmp "$other";
+}
+
+use overload (
+    q{""}    => \&epoch,
+    q{0+}    => \&epoch,
+    q{<=>}   => \&_num_cmp,
+    q{cmp}   => \&_str_cmp,
+    fallback => 1,
+);
 
 1;
 

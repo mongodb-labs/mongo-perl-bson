@@ -1,63 +1,56 @@
 {
     "description": "Double type",
     "bson_type": "0x01",
+    "test_key": "d",
     "valid": [
         {
             "description": "+1.0",
-            "subject": "10000000016400000000000000f03f00",
+            "subject": "10000000016400000000000000F03F00",
             "string": "1.0",
-            "extjson": {
-                "d": 1.0
-            }
+            "extjson": "{\"d\" : {\"$numberDouble\" : \"1.0\"}}"
         },
         {
             "description": "-1.0",
-            "subject": "10000000016400000000000000f0bf00",
+            "subject": "10000000016400000000000000F0BF00",
             "string": "-1.0",
-            "extjson": {
-                "d": -1.0
-            }
+            "extjson": "{\"d\" : {\"$numberDouble\" : \"-1.0\"}}"
         },
         {
             "description": "0.0",
             "subject": "10000000016400000000000000000000",
             "string": "0.0",
-            "extjson": {
-                "d": 0.0
-            }
+            "extjson": "{\"d\" : {\"$numberDouble\" : \"0.0\"}}"
         },
         {
             "description": "-0.0",
             "subject": "10000000016400000000000000008000",
             "string": "-0.0",
             "decodeOnly": true,
-            "extjson": {
-                "d": { "$numberDouble": "-0.0" }
-            }
+            "extjson": "{\"d\" : {\"$numberDouble\" : \"-0.0\"}}"
         },
         {
             "description": "NaN",
-            "subject": "10000000016400000000000000f87f00",
+            "subject": "10000000016400000000000000F87F00",
             "string": "NaN",
-            "extjson": {
-                "d": { "$numberDouble": "NaN" }
-            }
+            "extjson": "{\"d\" : {\"$numberDouble\" : \"NaN\"}}"
         },
         {
             "description": "Inf",
-            "subject": "10000000016400000000000000f07f00",
+            "subject": "10000000016400000000000000F07F00",
             "string": "Inf",
-            "extjson": {
-                "d": { "$numberDouble": "Inf" }
-            }
+            "extjson": "{\"d\" : {\"$numberDouble\" : \"Inf\"}}"
         },
         {
             "description": "-Inf",
-            "subject": "10000000016400000000000000f0ff00",
+            "subject": "10000000016400000000000000F0FF00",
             "string": "-Inf",
-            "extjson": {
-                "d": { "$numberDouble": "-Inf" }
-            }
+            "extjson": "{\"d\" : {\"$numberDouble\" : \"-Inf\"}}"
+        }
+    ],
+    "decodeErrors": [
+        {
+            "description": "double truncated",
+            "subject": "0B0000000164000000F03F00"
         }
     ]
 }

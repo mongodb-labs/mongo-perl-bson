@@ -1,14 +1,13 @@
 {
     "description": "Maxkey type",
     "bson_type": "0xFF",
+    "test_key": "a",
     "valid": [
         {
             "description": "Maxkey",
-            "subject": "080000007f610000",
+            "subject": "080000007F610000",
             "string": "Maxkey",
-            "extjson": {
-                "a": { "$maxkey": 1 }
-            }
+            "extjson": "{\"a\" : {\"$maxKey\" : 1}}"
         }
     ]
 }

@@ -36,7 +36,7 @@ for my $count ( 1 .. $RUNS ) {
     }
     else {
         my $ar1  = decode($bson);
-        is_deeply( $ar, $ar1 );
+        is_deeply( $ar, $ar1 ) or diag explain $ar1;
     }
 }
 
@@ -61,8 +61,8 @@ sub str {
 }
 
 sub dt  { BSON::Time->new( abs( int32() ) ) }
-sub bin { BSON::Binary->new( str(), int( rand(5) ) ) }
-sub re  { qr/\w\a+\s$/i }
+sub bin { BSON::Bytes->new( str(), int( rand(5) ) ) }
+sub re  { BSON::Regex->new( pattern => '\w\a+\s$', flags => 'i') }
 
 sub oid { BSON::ObjectId->new }
 sub min { BSON::MinKey->new }

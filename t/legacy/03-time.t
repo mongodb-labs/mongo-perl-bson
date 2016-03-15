@@ -23,4 +23,3 @@ is( $t3, $t );
 my $try = eval { $t = BSON::Time->new('abcde'); 1 };
 isnt($try, 1, 'Dies ok');
 
-

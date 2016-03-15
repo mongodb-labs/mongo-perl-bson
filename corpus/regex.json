@@ -1,38 +1,41 @@
 {
     "description": "Regular Expression type",
-    "bson_type": "0x0b",
+    "bson_type": "0x0B",
+    "test_key": "a",
     "valid": [
         {
             "description": "empty regex with no options",
-            "subject": "0a0000000b6100000000",
+            "subject": "0A0000000B6100000000",
             "string": "//",
-            "extjson": {
-                "a": { "$regex": "", "$options": "" }
-            }
+            "extjson": "{\"a\" : {\"$options\" : \"\", \"$regex\" : \"\"}}"
         },
         {
             "description": "regex without options",
-            "subject": "0d0000000b6100616263000000",
+            "subject": "0D0000000B6100616263000000",
             "string": "/abc/",
-            "extjson": {
-                "a": { "$regex": "abc", "$options": "im" }
-            }
+            "extjson": "{\"a\" : {\"$options\" : \"\", \"$regex\" : \"abc\"}}"
         },
         {
             "description": "regex with options",
-            "subject": "0f0000000b610061626300696d0000",
+            "subject": "0F0000000B610061626300696D0000",
             "string": "/abc/im",
-            "extjson": {
-                "a": { "$regex": "abc", "$options": "im" }
-            }
+            "extjson": "{\"a\" : {\"$options\" : \"im\", \"$regex\" : \"abc\"}}"
         },
         {
             "description": "regex with slash",
-            "subject": "110000000b610061622f636400696d0000",
-            "string": "/ab\/cd/im",
-            "extjson": {
-                "a": { "$regex": "ab/cd", "$options": "im" }
-            }
+            "subject": "110000000B610061622F636400696D0000",
+            "string": "/ab/cd/im",
+            "extjson": "{\"a\" : {\"$options\" : \"im\", \"$regex\" : \"ab/cd\"}}"
+        }
+    ],
+    "decodeErrors": [
+        {
+            "description": "embedded null in pattern",
+            "subject": "0F0000000B610061006300696D0000"
+        },
+        {
+            "description": "embedded null in flags",
+            "subject": "100000000B61006162630069006D0000"
         }
     ]
 }
