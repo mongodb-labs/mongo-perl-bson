@@ -68,11 +68,33 @@ sub _split_re {
     }
 }
 
+sub _ixhash_iterator {
+    my $ixhash = shift;
+    my $started = 0;
+    return sub {
+        my $k = $started ? $ixhash->NEXTKEY : do { $started++; $ixhash->FIRSTKEY };
+        return unless defined $k;
+        return ($k, $ixhash->FETCH($k));
+    }
+}
+
 sub encode {
     my $doc = shift;
 
+    return $doc->value if ref($doc) eq 'BSON::Raw';
+    return $$doc if ref($doc) eq 'MongoDB::BSON::Raw';
+
+    # XXX works for now, but should be optimized eventually
+    $doc = $doc->_as_tied_hash if ref($doc) eq 'BSON::Doc';
+
+    my $iter =
+        ref($doc) eq 'BSON::Doc'   ? $doc->_iterator
+      : ref($doc) eq 'Tie::IxHash' ? _ixhash_iterator($doc)
+      :                              undef;
+
     my $bson = '';
-    while ( my ( $key, $value ) = each %$doc ) {
+    while ( my ( $key, $value ) = $iter ? $iter->() : (each %$doc) ) {
+        last unless defined $key;
 
         my $type = ref $value;
 
@@ -90,7 +112,12 @@ sub encode {
         }
 
         # Document
-        elsif ( $type eq 'HASH' ) {
+        elsif ($type eq 'HASH'
+            || $type eq 'BSON::Doc'
+            || $type eq 'BSON::Raw'
+            || $type eq 'Tie::IxHash'
+            || $type eq 'MongoDB::BSON::Raw' )
+        {
             $bson .= pack( BSON_TYPE_NAME, 0x03, $key ) . encode($value);
         }
 
@@ -257,7 +284,7 @@ sub decode {
     $bson = substr $bson, 4;
     my @array = ();
     my %hash = ();
-    tie( %hash, 'Tie::IxHash' ) if $opt{ixhash};
+    tie( %hash, 'Tie::IxHash' ) if $opt{ixhash} || $opt{ordered};
     my ($type, $key, $value);
     while ($bson) {
         ( $type, $key, $bson ) = unpack( BSON_TYPE_NAME.BSON_REMAINING, $bson );

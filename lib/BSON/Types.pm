@@ -10,14 +10,17 @@ our $VERSION = '0.17';
 use base 'Exporter';
 our @EXPORT_OK = qw(
     bson_bytes
+    bson_doc
     bson_double
     bson_int32
     bson_int64
     bson_maxkey
     bson_minkey
+    bson_raw
     bson_string
     bson_time
 );
+our %EXPORT_TAGS = ( 'all' => [ @EXPORT_OK ] );
 
 use Carp;
 use Tie::IxHash;
@@ -25,12 +28,14 @@ use Tie::IxHash;
 use BSON::Bool;
 use BSON::Bytes;
 use BSON::Code;
+use BSON::Doc;
 use BSON::Double;
 use BSON::Int32;
 use BSON::Int64;
 use BSON::MaxKey;
 use BSON::MinKey;
 use BSON::OID;
+use BSON::Raw;
 use BSON::Regex;
 use BSON::String;
 use BSON::Time;
@@ -42,6 +47,10 @@ use BSON::ObjectId;
 
 sub bson_bytes {
     return BSON::Bytes->new( data => $_[0], subtype => ( $_[1] || 0 ) );
+}
+
+sub bson_doc {
+    return BSON::Doc->new( @_ );
 }
 
 sub bson_double {
@@ -62,6 +71,10 @@ sub bson_maxkey {
 
 sub bson_minkey {
     return BSON::MinKey->new;
+}
+
+sub bson_raw {
+    return BSON::Raw->new( value => $_[0] );
 }
 
 sub bson_string {
