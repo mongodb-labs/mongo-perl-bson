@@ -16,6 +16,13 @@ use BSON::Types qw/bson_string/;
 
 my ($hash);
 
+# test constructor
+is( bson_string(), '', "empty bson_string() is ''" );
+is( BSON::String->new, '', "empty constructor is ''" );
+
+# test overloading
+is( bson_string('héllo wörld'), 'héllo wörld', "string overload" );
+
 # string -> string
 $hash = decode( encode( { A => 'héllo wörld' } ) );
 is( sv_type( $hash->{A} ), 'PV', "string->string" );
@@ -35,9 +42,6 @@ is( $hash->{A}->value, 'héllo wörld', "value correct" );
 $hash = decode( encode( { A => bson_string('héllo wörld') } ), wrap_strings => 1 );
 is( ref( $hash->{A} ), 'BSON::String', "BSON::String->BSON::String" );
 is( $hash->{A}->value, 'héllo wörld', "value correct" );
-
-# test overloading
-is( "$hash->{A}", 'héllo wörld', "string overload" );
 
 done_testing;
 
