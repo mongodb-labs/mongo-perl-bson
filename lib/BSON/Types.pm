@@ -10,6 +10,8 @@ our $VERSION = '0.17';
 use base 'Exporter';
 our @EXPORT_OK = qw(
     bson_bytes
+    bson_double
+    bson_int32
     bson_int64
     bson_maxkey
     bson_minkey
