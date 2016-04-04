@@ -1,0 +1,46 @@
+use 5.008001;
+use strict;
+use warnings;
+use utf8;
+
+use Test::More 0.96;
+
+binmode( Test::More->builder->$_, ":utf8" )
+  for qw/output failure_output todo_output/;
+
+use lib 't/lib';
+use TestUtils;
+
+use BSON qw/encode decode/;
+use BSON::Types qw/bson_string/;
+
+my ($hash);
+
+# string -> string
+$hash = decode( encode( { A => 'héllo wörld' } ) );
+is( sv_type( $hash->{A} ), 'PV', "string->string" );
+is( $hash->{A}, 'héllo wörld', "value correct" );
+
+# BSON::String -> string
+$hash = decode( encode( { A => bson_string('héllo wörld') } ) );
+is( sv_type( $hash->{A} ), 'PV', "BSON::String->string" );
+is( $hash->{A}, 'héllo wörld', "value correct" );
+
+# string -> BSON::String
+$hash = decode( encode( { A => 'héllo wörld' } ), wrap_strings => 1 );
+is( ref( $hash->{A} ), 'BSON::String', "string->BSON::String" );
+is( $hash->{A}->value, 'héllo wörld', "value correct" );
+
+# BSON::String -> BSON::String
+$hash = decode( encode( { A => bson_string('héllo wörld') } ), wrap_strings => 1 );
+is( ref( $hash->{A} ), 'BSON::String', "BSON::String->BSON::String" );
+is( $hash->{A}->value, 'héllo wörld', "value correct" );
+
+# test overloading
+is( "$hash->{A}", 'héllo wörld', "string overload" );
+
+done_testing;
+
+# COPYRIGHT
+#
+# vim: set ts=4 sts=4 sw=4 et tw=75:

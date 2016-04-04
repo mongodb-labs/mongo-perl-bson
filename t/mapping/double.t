@@ -15,25 +15,25 @@ my ($hash);
 # double -> double
 $hash = decode( encode( { A => 3.14159 } ) );
 is( sv_type( $hash->{A} ), 'NV', "double->double" );
-ok( pack( "d", $hash->{A} ) eq pack( "d", 3.14159 ), "value correct" );
+packed_is( "d", $hash->{A}, 3.14159, "value correct" );
 
 # BSON::Double -> double
 $hash = decode( encode( { A => bson_double(3.14159) } ) );
 is( sv_type( $hash->{A} ), 'NV', "BSON::Double->double" );
-ok( pack( "d", $hash->{A} ) eq pack( "d", 3.14159 ), "value correct" );
+packed_is( "d", $hash->{A}, 3.14159, "value correct" );
 
 # double -> BSON::Double
 $hash = decode( encode( { A => 3.14159 } ), wrap_numbers => 1 );
 is( ref( $hash->{A} ), 'BSON::Double', "double->BSON::Double" );
-ok( pack( "d", $hash->{A}->value ) eq pack( "d", 3.14159 ), "value correct" );
+packed_is( "d", $hash->{A}->value, 3.14159, "value correct" );
 
 # BSON::Double -> BSON::Double
 $hash = decode( encode( { A => bson_double(3.14159) } ), wrap_numbers => 1 );
 is( ref( $hash->{A} ), 'BSON::Double', "BSON::Double->BSON::Double" );
-ok( pack( "d", $hash->{A}->value ) eq pack( "d", 3.14159 ), "value correct" );
+packed_is( "d", $hash->{A}->value, 3.14159, "value correct" );
 
 # test overloading
-ok( pack( "d", $hash->{A} ) eq pack( "d", 3.14159 ), "0+ overload" );
+packed_is( "d", $hash->{A}, 3.14159, "value correct" );
 
 done_testing;
 
