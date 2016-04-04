@@ -7,11 +7,12 @@ package BSON::Double;
 
 our $VERSION = '0.17';
 
-use Class::Tiny qw/value/;
+use Class::Tiny { value => 0.0 };
 
 sub BUILD {
     my $self = shift;
-    $self->{value} = $self->{value}/1.0; # coerce to NV internally
+    # coerce to NV internally
+    $self->{value} = defined( $self->{value} ) ? $self->{value} / 1.0 : 0.0;
 }
 
 use overload (
