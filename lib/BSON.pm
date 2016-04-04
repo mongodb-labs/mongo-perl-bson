@@ -164,6 +164,8 @@ sub encode {
 
         # String (explicit)
         elsif ( $type eq 'BSON::String' ) {
+            $value = $value->value;
+            utf8::encode($value);
             $bson .= pack( BSON_TYPE_NAME.BSON_STRING, 0x02, $key, $value );
         }
 
@@ -275,7 +277,7 @@ sub decode {
             $value = BSON::Double->new( value => $value ) if $opt{wrap_numbers};
         }
 
-        # String and Symbol (deprecated)
+        # String and Symbol (deprecated); Symbol will be convert to String
         elsif ( $type == 0x02 || $type == 0x0E ) {
             ( $len, $bson ) = unpack( BSON_INT32 . BSON_REMAINING, $bson );
             if ( length($bson) < $len || substr( $bson, $len - 1, 1 ) ne "\x00" ) {
@@ -286,6 +288,7 @@ sub decode {
             if ( !utf8::decode($value) ) {
                 croak( sprintf( $ERR_BAD_UTF8, $key, $type ) );
             }
+            $value = BSON::String->new( value => $value ) if $opt{wrap_strings};
         }
 
         # Document and Array

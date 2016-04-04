@@ -15,6 +15,7 @@ our @EXPORT_OK = qw(
     bson_int64
     bson_maxkey
     bson_minkey
+    bson_string
     bson_time
 );
 
@@ -61,6 +62,10 @@ sub bson_maxkey {
 
 sub bson_minkey {
     return BSON::MinKey->new;
+}
+
+sub bson_string {
+    return BSON::String->new( value => $_[0] );
 }
 
 sub bson_time {

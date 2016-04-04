@@ -3,20 +3,41 @@ use strict;
 use warnings;
 
 package BSON::String;
-# ABSTRACT: String data for BSON
+# ABSTRACT: BSON type wrapper for String
 
 our $VERSION = '0.17';
 
-use overload '""' => \&value;
+use Class::Tiny qw/value/;
 
-sub new {
-    my ( $class, $value ) = @_;
-    bless { value => $value }, $class;
+sub BUILDARGS {
+    my $class = shift;
+    my $n     = scalar(@_);
+
+    my %args;
+    if ( $n == 0 ) {
+        $args{value} = '';
+    }
+    elsif ( $n == 1 ) {
+        $args{value} = shift;
+    }
+    elsif ( $n % 2 == 0 ) {
+        %args = @_;
+        $args{value} = '' unless defined $args{value};
+    }
+    else {
+        croak("Invalid number of arguments ($n) to BSON::String::new");
+    }
+
+    # normalize all to internal PV type
+    $args{value} = "$args{value}";
+
+    return \%args;
 }
 
-sub value {
-    return $_[0]->{value};
-}
+use overload (
+    q{""}    => sub { $_[0]->{value} },
+    fallback => 1,
+);
 
 1;
 
