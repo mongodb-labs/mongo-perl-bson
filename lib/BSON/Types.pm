@@ -9,6 +9,7 @@ our $VERSION = '0.17';
 
 use base 'Exporter';
 our @EXPORT_OK = qw(
+    bson_bool
     bson_bytes
     bson_doc
     bson_double
@@ -25,6 +26,7 @@ our %EXPORT_TAGS = ( 'all' => [ @EXPORT_OK ] );
 
 use Carp;
 use Tie::IxHash;
+use boolean;
 
 use BSON::Bool;
 use BSON::Bytes;
@@ -45,6 +47,10 @@ use BSON::Timestamp;
 # deprecated, but load anyway
 use BSON::Binary;
 use BSON::ObjectId;
+
+sub bson_bool {
+    return boolean($_[0]);
+}
 
 sub bson_bytes {
     return BSON::Bytes->new(
