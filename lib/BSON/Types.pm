@@ -16,6 +16,7 @@ our @EXPORT_OK = qw(
     bson_int64
     bson_maxkey
     bson_minkey
+    bson_oid
     bson_raw
     bson_string
     bson_time
@@ -74,6 +75,14 @@ sub bson_maxkey {
 
 sub bson_minkey {
     return BSON::MinKey->new;
+}
+
+sub bson_oid {
+    return BSON::OID->new unless defined $_[0];
+    return BSON::OID->new( oid => $_[0] ) if length( $_[0] ) == 12;
+    return BSON::OID->new( oid => pack( "H*", $_[0] ) )
+      if $_[0] =~ m{\A[0-9a-f]{24}\z}i;
+    croak "Arguments to bson_oid must be 12 packed bytes or 24 bytes of hex";
 }
 
 sub bson_raw {

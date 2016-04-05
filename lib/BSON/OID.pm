@@ -2,87 +2,71 @@ use 5.008001;
 use strict;
 use warnings;
 
-package BSON::OId;
-# ABSTRACT: ObjectId data element for BSON
+package BSON::OID;
+# ABSTRACT: BSON type wrapper for Object IDs
 
 our $VERSION = '0.17';
 
-# if threads are in use, we need threads::shared loaded, too
-if ( $INC{"threads.pm"} ) {
-    require threads::shared;
-}
-
 use Carp;
-use Sys::Hostname;
 use Digest::MD5 'md5';
+use Sys::Hostname;
+use threads::shared; # NOP if threads.pm not loaded
 
-use overload
-  '""' => \&to_s,
-  '==' => \&op_eq,
-  'eq' => \&op_eq;
-
-my $_inc : shared;
+# OID generation
 {
-    lock($_inc);
-    $_inc = int(rand(0xFFFFFF));
-}
-
-my $_host = substr( md5(hostname), 0, 3 );
-
-sub new {
-    my ( $class, $value ) = @_;
-    my $self = bless {}, $class;
-    if ( $value ) {
-        $self->value( $value || _generate() );
+    my $_inc : shared;
+    {
+        lock($_inc);
+        $_inc = int( rand(0xFFFFFF) );
     }
-    else {
-        $self->{value} =
-            pack( 'N', time )
-          . $_host
-          . pack( 'n', $$ % 0xFFFF )
-          . substr( pack( 'N', do { lock($_inc); $_inc++; $_inc %= 0xFFFFFF }), 1, 3);
-    }
-    return $self;
-}
 
-sub value {
-    my ( $self, $new_value ) = @_;
-    if ( defined $new_value ) {
-        if ( length($new_value) == 12 ) {
-            $self->{value} = $new_value;
-        }
-        elsif ( length($new_value) == 24 && $self->is_legal($new_value) ) {
-            $self->{value} = _from_s($new_value);
+    my $_host = substr( md5(hostname), 0, 3 );
+
+    #<<<
+    sub _packed_oid {
+        return pack(
+            'Na3na3', time, $_host, $$ % 0xFFFF,
+            substr( pack( 'N', do { lock($_inc); $_inc++; $_inc %= 0xFFFFFF }), 1, 3)
+        );
+    }
+    #>>>
+
+    # see if v1.x MongoDB::BSON can do OIDs for us
+    BEGIN {
+        if ( $INC{'MongoDB'} && MongoDB::BSON->can('generate_oid') ) {
+            *generate_oid = sub { pack( "H*", MongoDB::BSON::generate_oid() ) };
         }
         else {
-            croak("BSON::ObjectId must be a 24 char hex value");
+            *generate_oid = \&_packed_oid;
         }
     }
-    return $self->{value};
 }
 
-sub is_legal {
-    $_[1] =~ /^[0-9a-f]{24}$/i;
+use Class::Tiny { oid => \&generate_oid };
+
+sub BUILD {
+    my ($self) = @_;
+    croak "Invalid 'oid' field: OIDs must be 12 bytes"
+      unless length( $self->oid ) == 12;
+    return;
 }
 
-sub to_s {
-    my $self = shift;
-    return unpack( 'H*', $self->value );
+sub hex {
+    my ($self) = @_;
+    return defined $self->{hex}
+      ? $self->{hex}
+      : ( $self->{hex} = unpack( "H*", $self->{oid} ) );
 }
 
-sub op_eq {
-    my ( $self, $other ) = @_;
-    return ref($self) eq ref($other) && $self->value eq $other->value;
+BEGIN {
+    *to_string = \&hex;
+    *value = \&hex;
 }
 
-sub _from_s {
-    my @a = split( //, shift );
-    my $oid = '';
-    while ( my ( $x, $y ) = splice( @a, 0, 2 ) ) {
-        $oid .= pack( 'C', hex("$x$y") );
-    }
-    return $oid;
-}
+use overload (
+    '""'     => \&hex,
+    fallback => 1,
+);
 
 1;
 
@@ -92,49 +76,22 @@ __END__
 
 =head1 SYNOPSIS
 
-    use BSON;
+    use BSON::Types;
 
-    my $oid  = BSON::ObjectId->new;
-    my $oid2 = BSON::ObjectId->new($string);
-    my $oid3 = BSON::ObjectId->new($binary_string);
+    my $oid  = bson_oid();
+
+    my $bytes = $oid->oid;
+    my $hex   = $oid->hex;
 
 =head1 DESCRIPTION
 
-This module is needed for L<BSON> and it manages BSON's ObjectId element.
-
-=head1 METHODS
-
-=head2 new
-
-Main constructor which takes one optional parameter, a string with ObjectId. 
-ObjectId can be either a 24 character hexadecimal value or a 12 character
-binary value.
-
-    my $oid  = BSON::ObjectId->new("4e24d6249ccf967313000000");
-    my $oid2 = BSON::ObjectId->new("\x4e\x24\xd6\x24\x9c\xcf\x96\x73\x13\0\0\0");
-
-If no ObjectId string is specified, a new one will be generated based on the
-machine ID, process ID and the current time.
-
-=head2 value
-
-Returns or sets the ObjectId value.
-
-    $oid->value("4e262c24422ad15e6a000000");
-    print $oid->value; # Will print it in binary
-
-=head2 is_legal
-
-Returns true if the 24 character string passed matches an ObjectId.
-
-    if ( BSON::ObjectId->is_legal($id) ) {
-        ...
-    }
+This module provides a wrapper around Object ID.  It will create new ones if
+no C<oid> argument is provided to the constructor.
 
 =head1 OVERLOAD
 
 The string operator is overloaded so any string operations will actually use
-the 24-character value of the ObjectId.
+the 24-character hex value of the OID.
 
 =head1 THREADS
 

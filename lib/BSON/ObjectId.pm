@@ -3,44 +3,23 @@ use strict;
 use warnings;
 
 package BSON::ObjectId;
-# ABSTRACT: ObjectId data element for BSON
+# ABSTRACT: Legacy BSON type wrapper for Object IDs (DEPRECATED)
 
 our $VERSION = '0.17';
 
-# if threads are in use, we need threads::shared loaded, too
-if ( $INC{"threads.pm"} ) {
-    require threads::shared;
-}
-
 use Carp;
-use Sys::Hostname;
-use Digest::MD5 'md5';
 
-use overload
-  '""' => \&to_s,
-  '==' => \&op_eq,
-  'eq' => \&op_eq;
-
-my $_inc : shared;
-{
-    lock($_inc);
-    $_inc = int(rand(0xFFFFFF));
-}
-
-my $_host = substr( md5(hostname), 0, 3 );
+use BSON::OID;
+our @ISA = qw/BSON::OID/;
 
 sub new {
     my ( $class, $value ) = @_;
     my $self = bless {}, $class;
     if ( $value ) {
-        $self->value( $value || _generate() );
+        $self->value( $value );
     }
     else {
-        $self->{value} =
-            pack( 'N', time )
-          . $_host
-          . pack( 'n', $$ % 0xFFFF )
-          . substr( pack( 'N', do { lock($_inc); $_inc++; $_inc %= 0xFFFFFF }), 1, 3);
+        $self->{oid} = $self->_packed_oid();
     }
     return $self;
 }
@@ -49,58 +28,45 @@ sub value {
     my ( $self, $new_value ) = @_;
     if ( defined $new_value ) {
         if ( length($new_value) == 12 ) {
-            $self->{value} = $new_value;
+            $self->{oid} = $new_value;
         }
         elsif ( length($new_value) == 24 && $self->is_legal($new_value) ) {
-            $self->{value} = _from_s($new_value);
+            $self->{oid} = pack("H*", $new_value);
         }
         else {
-            croak("BSON::ObjectId must be a 24 char hex value");
+            croak("BSON::ObjectId must be a 12 byte or 24 char hex value");
         }
     }
-    return $self->{value};
+    return $self->{oid};
 }
 
 sub is_legal {
     $_[1] =~ /^[0-9a-f]{24}$/i;
 }
 
-sub to_s {
-    my $self = shift;
-    return unpack( 'H*', $self->value );
-}
-
-sub op_eq {
-    my ( $self, $other ) = @_;
-    return ref($self) eq ref($other) && $self->value eq $other->value;
-}
-
-sub _from_s {
-    my @a = split( //, shift );
-    my $oid = '';
-    while ( my ( $x, $y ) = splice( @a, 0, 2 ) ) {
-        $oid .= pack( 'C', hex("$x$y") );
-    }
-    return $oid;
-}
+sub to_s { $_[0]->to_string }
 
 1;
 
 __END__
 
-=for Pod::Coverage op_eq to_s
-
-=head1 SYNOPSIS
-
-    use BSON;
-
-    my $oid  = BSON::ObjectId->new;
-    my $oid2 = BSON::ObjectId->new($string);
-    my $oid3 = BSON::ObjectId->new($binary_string);
+=for Pod::Coverage to_s
 
 =head1 DESCRIPTION
 
-This module is needed for L<BSON> and it manages BSON's ObjectId element.
+This module has been deprecated as it was not compatible with
+the offical MongoDB BSON implmentation on CPAN.
+
+Internally, this is now a thin wrapper around L<BSON::OID>.  The only
+difference are:
+
+=for :list
+* The C<new> constructor can take a single argument, either a 12-byte
+  packed OID or a 24-byte hex value
+* The C<value> method here returns a 12-byte packed value and may also be
+  used as a mutator with either 12-byte packed or 24-byte hex inputs.
+
+You are strongly encouraged to use L<BSON::OID> instead.
 
 =head1 METHODS
 

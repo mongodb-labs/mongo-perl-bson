@@ -496,8 +496,8 @@ subtest objectid => sub {
     );
 
     my $hash = decode($bson);
-    isa_ok( $hash->{_id}, 'BSON::ObjectId', 'ObjectId created' );
-    is_deeply( $hash, $h, 'ObjectId decode' );
+    isa_ok( $hash->{_id}, 'BSON::OID', 'OID created' );
+    is_deeply( $hash, $h, 'OID decode' );
     is("$h->{_id}", "$hash->{_id}", 'Match');
 };
 

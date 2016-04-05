@@ -132,8 +132,11 @@ sub encode {
         }
 
         # ObjectId
-        elsif ( $type eq 'BSON::ObjectId' ) {
-            $bson .= pack( BSON_TYPE_NAME.BSON_OBJECTID, 0x07, $key, $value->value );
+        elsif ( $type eq 'BSON::OID' || $type eq 'BSON::ObjectId' ) {
+            $bson .= pack( BSON_TYPE_NAME.BSON_OBJECTID, 0x07, $key, $value->oid );
+        }
+        elsif ( $type eq 'MongoDB::OID' ) {
+            $bson .= pack( BSON_TYPE_NAME."H*", 0x07, $key, $value->value );
         }
 
         # Datetime
@@ -374,7 +377,7 @@ sub decode {
         # ObjectId
         elsif ( $type == 0x07 ) {
             ( my $oid, $bson ) = unpack( BSON_OBJECTID.BSON_REMAINING, $bson );
-            $value = BSON::ObjectId->new($oid);
+            $value = BSON::OID->new(oid => $oid);
         }
 
         # Boolean
@@ -417,7 +420,7 @@ sub decode {
             }
 
             ( my ($oid), $bson ) = unpack( BSON_OBJECTID . BSON_REMAINING, $bson );
-            $value = { '$ref' => $ref, '$id' => BSON::ObjectId->new( unpack( "H*", $oid ) ) };
+            $value = { '$ref' => $ref, '$id' => BSON::OID->new( oid => $oid ) };
         }
 
         # Code
@@ -550,7 +553,7 @@ sub _inflate_hash {
     my ( $class, $hash ) = @_;
 
     if ( exists $hash->{'$oid'} ) {
-        return BSON::ObjectId->new( $hash->{'$oid'} );
+        return BSON::OID->new( oid => pack( "H*", $hash->{'$oid'} ) );
     }
 
     if ( exists $hash->{'$numberInt'} ) {
