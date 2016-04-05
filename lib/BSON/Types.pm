@@ -100,6 +100,7 @@ sub bson_string {
 }
 
 sub bson_time {
+    return BSON::Time->new unless defined $_[0];
     return BSON::Time->new( value => 1000 * $_[0] );
 }
 

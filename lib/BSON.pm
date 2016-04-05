@@ -143,6 +143,20 @@ sub encode {
         elsif ( $type eq 'BSON::Time' ) {
             $bson .= pack( BSON_TYPE_NAME, 0x09, $key ) . int64_to_native( $value->value );
         }
+        elsif ( $type eq 'Time::Moment' ) {
+            $bson .= pack( BSON_TYPE_NAME, 0x09, $key ) . int64_to_native( int($value->epoch * 1000 + $value->millisecond) );
+        }
+        elsif ( $type eq 'DateTime' ) {
+            $bson .= pack( BSON_TYPE_NAME, 0x09, $key ) . int64_to_native( int($value->hires_epoch * 1000) );
+        }
+        elsif ( $type eq 'DateTime::Tiny' ) {
+            require Time::Local;
+            my $epoch = Time::Local::timegm(
+                $value->second, $value->minute,    $value->hour,
+                $value->day, $value->month - 1, $value->year,
+            );
+            $bson .= pack( BSON_TYPE_NAME, 0x09, $key ) . int64_to_native( $epoch * 1000 );
+        }
 
         # Timestamp
         elsif ( $type eq 'BSON::Timestamp' ) {
