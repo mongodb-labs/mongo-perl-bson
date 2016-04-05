@@ -126,7 +126,7 @@ sub encode {
             my ( $re, $flags ) = _split_re($value);
             $bson .= pack( BSON_TYPE_NAME.BSON_REGEX, 0x0B, $key, $re, join( "", sort grep /^(i|m|x|l|s|u)$/, split( //, $flags ) ));
         }
-        elsif ( $type eq 'BSON::Regex' ) {
+        elsif ( $type eq 'BSON::Regex' || $type eq 'MongoDB::BSON::Regexp' ) {
             my ( $re, $flags ) = @{$value}{qw/pattern flags/};
             $bson .= pack( BSON_TYPE_NAME.BSON_REGEX, 0x0B, $key, $re, $flags) ;
         }

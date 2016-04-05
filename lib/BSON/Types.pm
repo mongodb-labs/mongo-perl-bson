@@ -19,6 +19,7 @@ our @EXPORT_OK = qw(
     bson_minkey
     bson_oid
     bson_raw
+    bson_regex
     bson_string
     bson_time
 );
@@ -93,6 +94,13 @@ sub bson_oid {
 
 sub bson_raw {
     return BSON::Raw->new( value => $_[0] );
+}
+
+sub bson_regex {
+    my ($pattern, $flags) = @_;
+    return BSON::Regex->new unless defined $_[0];
+    return BSON::Regex->new( pattern => $_[0] ) unless defined $_[1];
+    return BSON::Regex->new( pattern => $_[0], flags => $_[1] );
 }
 
 sub bson_string {
