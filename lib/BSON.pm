@@ -157,15 +157,26 @@ sub encode {
         }
 
         # Binary (XXX need to add string ref support)
-        elsif ( $type eq 'BSON::Bytes' || $type eq 'BSON::Binary' ) {
-            my $data = $type eq 'BSON::Bytes' ? $value->data : pack("C*", @{$value->data});
-            my $subtype = $value->type;
+        elsif ($type eq 'SCALAR'
+            || $type eq 'BSON::Bytes'
+            || $type eq 'BSON::Binary'
+            || $type eq 'MongoDB::BSON::Binary' )
+        {
+            my $data =
+                $type eq 'SCALAR'      ? $$value
+              : $type eq 'BSON::Bytes' ? $value->data
+              : $type eq 'MongoDB::BSON::Binary' ? $value->data
+              :                          pack( "C*", @{ $value->data } );
+            my $subtype = $type eq 'SCALAR' ? 0 : $value->subtype;
             my $len = length($data);
             if ( $subtype == 2 ) {
-                $bson .= pack( BSON_TYPE_NAME.BSON_INT32.BSON_BINARY_TYPE.BSON_INT32.BSON_REMAINING , 0x05, $key, $len+4, $subtype, $len, $data );
+                $bson .=
+                  pack( BSON_TYPE_NAME . BSON_INT32 . BSON_BINARY_TYPE . BSON_INT32 . BSON_REMAINING,
+                    0x05, $key, $len + 4, $subtype, $len, $data );
             }
             else {
-                $bson .= pack( BSON_TYPE_NAME.BSON_INT32.BSON_BINARY_TYPE.BSON_REMAINING , 0x05, $key, $len, $subtype, $data );
+                $bson .= pack( BSON_TYPE_NAME . BSON_INT32 . BSON_BINARY_TYPE . BSON_REMAINING,
+                    0x05, $key, $len, $subtype, $data );
             }
         }
 

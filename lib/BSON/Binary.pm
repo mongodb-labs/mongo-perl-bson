@@ -36,6 +36,11 @@ sub type {
     return $_[0]->{type};
 }
 
+# alias for compatibility with BSON::Bytes
+sub subtype {
+    return $_[0]->{type};
+}
+
 sub to_s {
     my $self = shift;
     my @data = @{ $self->data };

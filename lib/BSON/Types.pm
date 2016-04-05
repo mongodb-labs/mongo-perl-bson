@@ -46,7 +46,10 @@ use BSON::Binary;
 use BSON::ObjectId;
 
 sub bson_bytes {
-    return BSON::Bytes->new( data => $_[0], subtype => ( $_[1] || 0 ) );
+    return BSON::Bytes->new(
+        data => ( defined( $_[0] ) ? $_[0] : '' ),
+        subtype => ( $_[1] || 0 ),
+    );
 }
 
 sub bson_doc {
