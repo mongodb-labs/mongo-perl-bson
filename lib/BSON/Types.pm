@@ -11,6 +11,7 @@ use base 'Exporter';
 our @EXPORT_OK = qw(
     bson_bool
     bson_bytes
+    bson_code
     bson_doc
     bson_double
     bson_int32
@@ -58,6 +59,13 @@ sub bson_bytes {
         data => ( defined( $_[0] ) ? $_[0] : '' ),
         subtype => ( $_[1] || 0 ),
     );
+}
+
+sub bson_code {
+    my ($code, $scope) = @_;
+    return BSON::Code->new unless defined $_[0];
+    return BSON::Code->new( code => $_[0] ) unless defined $_[1];
+    return BSON::Code->new( code => $_[0], scope => $_[1] );
 }
 
 sub bson_doc {

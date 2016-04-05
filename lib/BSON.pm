@@ -198,7 +198,7 @@ sub encode {
         }
 
         # Code
-        elsif ( $type eq 'BSON::Code' ) {
+        elsif ( $type eq 'BSON::Code' || $type eq 'MongoDB::Code' ) {
             my $code = $value->code;
             utf8::encode($code);
             $code = pack(BSON_STRING,$code);
