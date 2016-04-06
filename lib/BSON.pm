@@ -11,6 +11,7 @@ our @EXPORT_OK = qw/encode decode/;
 our $VERSION = '0.17';
 
 use Carp;
+use Config;
 use Tie::IxHash;
 use Math::Int64 qw/:native_if_available int64 int64_to_native native_to_int64/;
 
@@ -19,14 +20,22 @@ use boolean;
 
 require re; # don't "use" or we get a "useless pragma" warning on old perls
 
+use constant {
+    HAS_INT64 => $Config{use64bitint},
+};
+
+use if !HAS_INT64, "Math::BigInt";
+
 # Maximum size of a BSON record
 our $MAX_SIZE = 16 * 1024 * 1024;
 
 # Max integer sizes
-our $min_int_32 = -(1<<31);
-our $max_int_32 =  (1<<31) - 1;
-our $min_int_64 = -(int64(1)<<63);
-our $max_int_64 =  (int64(1)<<63) - 1;
+my $max_int32 = 2147483647;
+my $min_int32 = -2147483648;
+my $max_int64 =
+  HAS_INT64 ? 9223372036854775807 : Math::BigInt->new("9223372036854775807");
+my $min_int64 =
+  HAS_INT64 ? -9223372036854775808 : Math::BigInt->new("-9223372036854775808");
 
 #<<<
 my $int_re     = qr/^(?:(?:[+-]?)(?:[0123456789]+))$/;
@@ -226,7 +235,7 @@ sub encode {
 
         # Int64 (XXX and eventually BigInt)
         elsif ( $type eq 'BSON::Int64' ) {
-            if ( $value > $max_int_64 || $value < $min_int_64 ) {
+            if ( $value > $max_int64 || $value < $min_int64 ) {
                 croak("BSON can only handle 8-byte integers. Key '$key' is '$value'");
             }
             $bson .= pack( BSON_TYPE_NAME.BSON_REMAINING, 0x12, $key, int64_to_native( $value ) );
@@ -239,10 +248,10 @@ sub encode {
 
         # Int (Int32 or arbitrary)
         elsif ( $type eq 'Math::Int64' || $value =~ $int_re ) {
-            if ( $value > $max_int_64 || $value < $min_int_64 ) {
+            if ( $value > $max_int64 || $value < $min_int64 ) {
                 croak("MongoDB can only handle 8-byte integers. Key '$key' is '$value'");
             }
-            $bson .= $value > $max_int_32 || $value < $min_int_32 ? pack( BSON_TYPE_NAME.BSON_REMAINING, 0x12, $key, int64_to_native( $value ))
+            $bson .= $value > $max_int32 || $value < $min_int32 ? pack( BSON_TYPE_NAME.BSON_REMAINING, 0x12, $key, int64_to_native( $value ))
                                                                   : pack( BSON_TYPE_NAME.BSON_INT32, 0x10, $key, $value );
         }
 

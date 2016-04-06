@@ -77,10 +77,12 @@ sub bson_double {
 }
 
 sub bson_int32 {
+    return BSON::Int32->new unless defined $_[0];
     return BSON::Int32->new( value => $_[0] )
 }
 
 sub bson_int64 {
+    return BSON::Int64->new unless defined $_[0];
     return BSON::Int64->new( value => $_[0] )
 }
 

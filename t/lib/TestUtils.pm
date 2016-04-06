@@ -7,7 +7,7 @@ use B;
 use Carp qw/croak/;
 
 use base 'Exporter';
-our @EXPORT = qw/sv_type packed_is/;
+our @EXPORT = qw/sv_type packed_is bytes_are/;
 
 sub sv_type {
     my $v     = shift;
@@ -25,6 +25,20 @@ sub packed_is {
     local $Test::Builder::Level = $Test::Builder::Level + 1;
 
     my $ok = ok( pack( $template, $got ) eq pack( $template, $exp ), $label );
+    diag "Got:\n", unpack( "H*", $got ), "\nExpected:\n", unpack( "H*", $exp )
+      unless $ok;
+
+    return $ok;
+}
+
+sub bytes_are {
+    croak("Not enough args for bytes_are()") unless @_ >= 2;
+    my ( $got, $exp, $label ) = @_;
+    $label = '' unless defined $label;
+
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
+
+    my $ok = ok( $got eq $exp, $label );
     diag "Got:\n", unpack( "H*", $got ), "\nExpected:\n", unpack( "H*", $exp )
       unless $ok;
 
