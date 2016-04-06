@@ -7,7 +7,7 @@ package BSON::Double;
 
 our $VERSION = '0.17';
 
-use Class::Tiny { value => 0.0 };
+use Class::Tiny 'value';
 
 sub BUILD {
     my $self = shift;
