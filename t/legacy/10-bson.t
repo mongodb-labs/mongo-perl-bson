@@ -8,7 +8,7 @@ use Test::Deep;
 use Test::Number::Delta;
 use Tie::IxHash;
 use DateTime;
-use Math::Int64 qw/:native_if_available int64/;
+use Math::BigInt;
 require re;
 
 use BSON qw/encode decode/;
@@ -42,35 +42,35 @@ subtest int32 => sub {
 
 # Int64
 subtest int64 => sub {
-    plan tests => 2;
     %h = (
-        a => int64('2147483648'),
-        b => int64('9223372036854775807'),
-        c => int64('-9223372036854775808')
+        a => Math::BigInt->new('2147483648'),
+        b => Math::BigInt->new('9223372036854775807'),
+        c => Math::BigInt->new('-9223372036854775808')
     );
     my $bson = encode( \%h );
 
-    # is_deeply fails to compare int64 properly
     cmp_deeply(
         [ unpack "C*", $bson ],
         [
-            38,  0,   0,   0,   18,  97,  0,   0,  0,   0,
-            128, 0,   0,   0,   0,   18,  98,  0,  255, 255,
-            255, 255, 255, 255, 255, 127, 18,  99, 0,   0,
-            0,   0,   0,   0,   0,   0,   128, 0
+            38,  0,   0,   0,
+            18,  97,  0,   0,   0,   0,   128, 0,   0,   0,   0,
+            18,  98,  0,   255, 255, 255, 255, 255, 255, 255, 127,
+            18,  99,  0,   0,   0,   0,   0,   0,   0,   0,   128,
+            0
         ],
         'Int64 encode'
     );
 
     # is_deeply fails to compare int64 properly
-    cmp_deeply( decode($bson), \%h, 'Int64 decode' );
+    my $decoded = decode($bson);
+    for my $k ( qw/a b c/ ) {
+        is( $decoded->{$k}, $h{$k}, "key $k" );
+    }
 };
 
 # Mixed ints
 subtest mix_ints => sub {
-    plan tests => 2;
-    %h = ( a => 1, b => 2147483647, c => -2147483648 );
-    %h = ( a => int64('2147483648'), b => 1, c => -20 );
+    %h = ( a => Math::BigInt->new('2147483648'), b => 1, c => -20 );
     my $bson = encode( \%h );
 
     # is_deeply fails to compare int64 properly
@@ -85,7 +85,10 @@ subtest mix_ints => sub {
     );
 
     # is_deeply fails to compare int64 properly
-    cmp_deeply( decode($bson), \%h, 'Mixints decode' );
+    my $decoded = decode($bson);
+    for my $k ( qw/a b c/ ) {
+        is( $decoded->{$k}, $h{$k}, "key $k" );
+    }
 };
 
 subtest boolean => sub {

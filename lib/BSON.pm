@@ -13,7 +13,6 @@ our $VERSION = '0.17';
 use Carp;
 use Config;
 use Tie::IxHash;
-use Math::Int64 qw/:native_if_available int64 int64_to_native native_to_int64/;
 
 use BSON::Types ();
 use boolean;
@@ -53,7 +52,8 @@ use constant {
     BSON_REGEX => "Z*Z*",
     BSON_JSCODE => "",
     BSON_INT32 => "l",
-    BSON_INT64 => "LL",
+    BSON_INT64 => "q",
+    BSON_8BYTES => "a8",
     BSON_TIMESTAMP => "LL",
     BSON_CODE_W_SCOPE => "l",
     BSON_REMAINING => 'a*',
@@ -84,6 +84,39 @@ sub _ixhash_iterator {
         my $k = $started ? $ixhash->NEXTKEY : do { $started++; $ixhash->FIRSTKEY };
         return unless defined $k;
         return ($k, $ixhash->FETCH($k));
+    }
+}
+
+# XXX could be optimized down to only one substr to trim/pad
+sub _bigint_to_int64 {
+    my $bigint = shift;
+    my $as_hex = $bigint->as_hex; # big-endian hex
+    $as_hex =~ s{-?0x}{};
+    my $len = length($as_hex);
+    substr( $as_hex, 0, 0, "0" x ( 16 - $len ) ) if $len < 16; # pad to quad length
+    return scalar reverse( pack( "H*", $as_hex ) );                   # reverse to little-endian
+}
+
+sub _int64_to_bigint {
+    return Math::BigInt->new( "0x" . reverse( unpack( "H*", shift ) ) );
+}
+
+sub _pack_int64 {
+    my $value = shift;
+    my $type  = ref($value);
+
+    # if no type, then we must be on 64bit perl and can pack with 'q'
+    if ( !$type ) {
+        return pack(BSON_INT64,$value );
+    }
+    elsif ( $type eq 'Math::BigInt' ) {
+        return _bigint_to_int64($value);
+    }
+    elsif ( $type eq 'Math::Int64' ) {
+        return Math::Int64::int64_to_native($value);
+    }
+    else {
+        croak "Don't know how to encode $type '$value' as an Int64.";
     }
 }
 
@@ -150,21 +183,21 @@ sub encode {
 
         # Datetime
         elsif ( $type eq 'BSON::Time' ) {
-            $bson .= pack( BSON_TYPE_NAME, 0x09, $key ) . int64_to_native( $value->value );
+            $bson .= pack( BSON_TYPE_NAME, 0x09, $key ) . _pack_int64( $value->value );
         }
         elsif ( $type eq 'Time::Moment' ) {
-            $bson .= pack( BSON_TYPE_NAME, 0x09, $key ) . int64_to_native( int($value->epoch * 1000 + $value->millisecond) );
+            $bson .= pack( BSON_TYPE_NAME, 0x09, $key ) . _pack_int64( int( $value->epoch * 1000 + $value->millisecond ) );
         }
         elsif ( $type eq 'DateTime' ) {
-            $bson .= pack( BSON_TYPE_NAME, 0x09, $key ) . int64_to_native( int($value->hires_epoch * 1000) );
+            $bson .= pack( BSON_TYPE_NAME, 0x09, $key ) . _pack_int64( int( $value->hires_epoch * 1000 ) );
         }
         elsif ( $type eq 'DateTime::Tiny' ) {
             require Time::Local;
             my $epoch = Time::Local::timegm(
                 $value->second, $value->minute,    $value->hour,
-                $value->day, $value->month - 1, $value->year,
+                $value->day,    $value->month - 1, $value->year,
             );
-            $bson .= pack( BSON_TYPE_NAME, 0x09, $key ) . int64_to_native( $epoch * 1000 );
+            $bson .= pack( BSON_TYPE_NAME, 0x09, $key ) . _pack_int64( $epoch * 1000 );
         }
 
         # Timestamp
@@ -234,11 +267,33 @@ sub encode {
         }
 
         # Int64 (XXX and eventually BigInt)
-        elsif ( $type eq 'BSON::Int64' || $type eq 'Math::BigInt' || $type eq 'Math::Int64' ) {
+        elsif ( $type eq 'BSON::Int64' || $type eq 'Math::BigInt' || $type eq 'Math::Int64' )
+        {
             if ( $value > $max_int64 || $value < $min_int64 ) {
                 croak("BSON can only handle 8-byte integers. Key '$key' is '$value'");
             }
-            $bson .= pack( BSON_TYPE_NAME.BSON_REMAINING, 0x12, $key, int64_to_native( $value ) );
+
+            # unwrap BSON::Int64; it could be Math::BigInt, etc.
+            if ( $type eq 'BSON::Int64' ) {
+                $value = $value->value;
+                $type  = ref($value);
+            }
+
+            # if no type, then we must be on 64bit perl and can pack with 'q'
+            if ( !$type ) {
+                $bson .= pack( BSON_TYPE_NAME . 'q', 0x12, $key, $value );
+            }
+            elsif ( $type eq 'Math::BigInt' ) {
+                $bson .=
+                  pack( BSON_TYPE_NAME . BSON_REMAINING, 0x12, $key, _bigint_to_int64($value) );
+            }
+            elsif ( $type eq 'Math::Int64' ) {
+                $bson .=
+                  pack( BSON_TYPE_NAME . BSON_REMAINING, 0x12, $key, Math::Int64::int64_to_native($value) );
+            }
+            else {
+                croak "Don't know how to BSON encode $type.  Key '$key' is 'bson_int64($value)'";
+            }
         }
 
         # Double (explicit)
@@ -247,12 +302,18 @@ sub encode {
         }
 
         # Int (Int32 or arbitrary)
-        elsif ( $type eq 'Math::Int64' || $value =~ $int_re ) {
+        elsif ( $value =~ $int_re ) {
             if ( $value > $max_int64 || $value < $min_int64 ) {
                 croak("MongoDB can only handle 8-byte integers. Key '$key' is '$value'");
             }
-            $bson .= $value > $max_int32 || $value < $min_int32 ? pack( BSON_TYPE_NAME.BSON_REMAINING, 0x12, $key, int64_to_native( $value ))
-                                                                  : pack( BSON_TYPE_NAME.BSON_INT32, 0x10, $key, $value );
+            elsif ( $value > $max_int32 || $value < $min_int32 ) {
+                # To reach here, we must be on 64bit perl as Math::BigInt, etc.
+                # would have been detected earlier, so we can pack with 'q'
+                $bson .= pack( BSON_TYPE_NAME . BSON_INT64, 0x12, $key, $value );
+            }
+            else {
+                $bson .= pack( BSON_TYPE_NAME . BSON_INT32, 0x10, $key, $value );
+            }
         }
 
         # Double
@@ -413,10 +474,14 @@ sub decode {
 
         # Datetime
         elsif ( $type == 0x09 ) {
-            my ($l1, $l2) = @_;
-            ($l1, $l2, $bson) = unpack(BSON_INT64.BSON_REMAINING,$bson);
-            my $dt = native_to_int64(pack(BSON_INT64,$l1, $l2));
-            $value = BSON::Time->new( value => $dt );
+            if ( HAS_INT64 ) {
+                ($value, $bson) = unpack(BSON_INT64.BSON_REMAINING,$bson);
+            }
+            else {
+                ($value, $bson) = unpack(BSON_8BYTES.BSON_REMAINING,$bson);
+                $value = _int64_to_bigint($value);
+            }
+            $value = BSON::Time->new( value => $value );
         }
 
         # Null
@@ -516,15 +581,19 @@ sub decode {
 
         # Timestamp
         elsif ( $type == 0x11 ) {
-            ( my $sec, my $inc, $bson ) = unpack( BSON_INT64.BSON_REMAINING, $bson );
+            ( my $sec, my $inc, $bson ) = unpack( BSON_INT32.BSON_INT32.BSON_REMAINING, $bson );
             $value = BSON::Timestamp->new( $inc, $sec );
         }
 
         # Int64
         elsif ( $type == 0x12 ) {
-            my ($l1, $l2) = @_;
-            ($l1, $l2, $bson) = unpack(BSON_INT64.BSON_REMAINING,$bson);
-            $value = native_to_int64(pack(BSON_INT64,$l1, $l2));
+            if ( HAS_INT64 ) {
+                ($value, $bson) = unpack(BSON_INT64.BSON_REMAINING,$bson);
+            }
+            else {
+                ($value, $bson) = unpack(BSON_8BYTES.BSON_REMAINING,$bson);
+                $value = _int64_to_bigint($value);
+            }
             $value = BSON::Int64->new( value => $value ) if $opt{wrap_numbers};
         }
 
