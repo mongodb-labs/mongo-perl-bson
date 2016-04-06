@@ -21,7 +21,7 @@ my %WriteMakefileArgs = (
     "Digest::MD5" => 0,
     "Exporter" => 0,
     "MIME::Base64" => 0,
-    "Math::Int64" => 0,
+    "Scalar::Util" => 0,
     "Sys::Hostname" => 0,
     "Tie::IxHash" => 0,
     "Time::HiRes" => 0,
@@ -29,44 +29,48 @@ my %WriteMakefileArgs = (
     "base" => 0,
     "boolean" => 0,
     "constant" => 0,
+    "if" => 0,
     "overload" => 0,
+    "re" => 0,
     "strict" => 0,
     "threads::shared" => 0,
     "warnings" => 0
   },
   "TEST_REQUIRES" => {
+    "B" => 0,
     "Data::Dumper" => 0,
-    "DateTime" => 0,
     "ExtUtils::MakeMaker" => 0,
     "File::Spec" => 0,
     "JSON::MaybeXS" => 0,
+    "Math::BigInt" => 0,
     "Path::Tiny" => 0,
     "Test::Deep" => 0,
     "Test::More" => "0.96",
     "Test::Number::Delta" => 0,
-    "if" => 0,
-    "lib" => 0
+    "lib" => 0,
+    "utf8" => 0
   },
   "VERSION" => "0.17",
   "test" => {
-    "TESTS" => "t/*.t t/corpus/*.t"
+    "TESTS" => "t/*.t t/corpus/*.t t/legacy/*.t t/mapping/*.t"
   }
 );
 
 
 my %FallbackPrereqs = (
+  "B" => 0,
   "Carp" => 0,
   "Class::Tiny" => 0,
   "Data::Dumper" => 0,
-  "DateTime" => 0,
   "Digest::MD5" => 0,
   "Exporter" => 0,
   "ExtUtils::MakeMaker" => 0,
   "File::Spec" => 0,
   "JSON::MaybeXS" => 0,
   "MIME::Base64" => 0,
-  "Math::Int64" => 0,
+  "Math::BigInt" => 0,
   "Path::Tiny" => 0,
+  "Scalar::Util" => 0,
   "Sys::Hostname" => 0,
   "Test::Deep" => 0,
   "Test::More" => "0.96",
@@ -80,8 +84,10 @@ my %FallbackPrereqs = (
   "if" => 0,
   "lib" => 0,
   "overload" => 0,
+  "re" => 0,
   "strict" => 0,
   "threads::shared" => 0,
+  "utf8" => 0,
   "warnings" => 0
 );
 

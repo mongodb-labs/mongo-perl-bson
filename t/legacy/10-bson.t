@@ -7,7 +7,6 @@ use Test::More tests => 17;
 use Test::Deep;
 use Test::Number::Delta;
 use Tie::IxHash;
-use DateTime;
 use Math::BigInt;
 require re;
 
@@ -361,6 +360,8 @@ subtest regex => sub {
 
 # Datetime
 subtest datetime => sub {
+    eval { require DateTime };
+    plan skip_all => "Needs DateTime" unless $INC{"DateTime.pm"};
     plan tests => 6;
 
     my $dt = DateTime->new(
