@@ -9,10 +9,7 @@ our $VERSION = '0.17';
 
 use Carp ();
 
-use Class::Tiny {
-    pattern => '',
-    flags   => '',
-};
+use Class::Tiny qw/pattern flags/;
 
 =attr pattern
 
@@ -33,8 +30,8 @@ my %ALLOWED_FLAGS = map { $_ => 1 } qw/i m x l s u/;
 sub BUILD {
     my $self = shift;
 
-    # stringify pattern
-    $self->{pattern} = "$self->{pattern}";
+    $self->{pattern} = '' unless defined($self->{pattern});
+    $self->{flags} = '' unless defined($self->{flags});
 
     if ( length $self->{flags} ) {
         my %seen;
