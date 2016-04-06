@@ -58,20 +58,20 @@ subtest 'native' => sub {
 };
 
 subtest 'wrapped' => sub {
-    # int64 -> BSON::I
+    # int64 -> BSON::Int64
     $bson = $expect = encode( { A => 2**32+1 } );
     $hash = decode( $bson, wrap_numbers => 1 );
     is( ref( $hash->{A} ), 'BSON::Int64', "int32->BSON::Int64" );
     packed_is( "q", $hash->{A}, 2**32+1, "value correct" );
 
-    # BSON::Int64 -> int64
+    # BSON::Int64 -> BSON::Int64
     $bson = encode( { A => bson_int64(2**32+1) } );
     $hash = decode( $bson, wrap_numbers => 1 );
     is( ref( $hash->{A} ), 'BSON::Int64', "int32->BSON::Int64" );
     packed_is( "q", $hash->{A}, 2**32+1, "value correct" );
     bytes_are( $bson, $expect, "BSON correct" );
 
-    # BSON::Int64(string) -> int64
+    # BSON::Int64(string) -> BSON::Int64
     $bson = encode( { A => bson_int64("0") } );
     $hash = decode( $bson, wrap_numbers => 1 );
     is( ref( $hash->{A} ), 'BSON::Int64', "int32->BSON::Int64" );

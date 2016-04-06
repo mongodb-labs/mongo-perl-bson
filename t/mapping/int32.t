@@ -64,14 +64,14 @@ subtest 'wrapped' => sub {
     is( ref( $hash->{A} ), 'BSON::Int32', "int32->BSON::Int32" );
     packed_is( "l", $hash->{A}, 314159, "value correct" );
 
-    # BSON::Int32 -> int32
+    # BSON::Int32 -> BSON::Int32
     $bson = encode( { A => bson_int32(314159) } );
     $hash = decode( $bson, wrap_numbers => 1 );
     is( ref( $hash->{A} ), 'BSON::Int32', "int32->BSON::Int32" );
     packed_is( "l", $hash->{A}, 314159, "value correct" );
     is( $bson, $expect, "BSON correct" );
 
-    # BSON::Int32(string) -> int32
+    # BSON::Int32(string) -> BSON::Int32
     $bson = encode( { A => bson_int32("314159") } );
     $hash = decode( $bson, wrap_numbers => 1 );
     is( ref( $hash->{A} ), 'BSON::Int32', "int32->BSON::Int32" );
