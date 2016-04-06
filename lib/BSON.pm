@@ -234,7 +234,7 @@ sub encode {
         }
 
         # Int64 (XXX and eventually BigInt)
-        elsif ( $type eq 'BSON::Int64' ) {
+        elsif ( $type eq 'BSON::Int64' || $type eq 'Math::BigInt' || $type eq 'Math::Int64' ) {
             if ( $value > $max_int64 || $value < $min_int64 ) {
                 croak("BSON can only handle 8-byte integers. Key '$key' is '$value'");
             }
