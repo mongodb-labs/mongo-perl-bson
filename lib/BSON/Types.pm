@@ -63,7 +63,6 @@ sub bson_bytes {
 }
 
 sub bson_code {
-    my ($code, $scope) = @_;
     return BSON::Code->new unless defined $_[0];
     return BSON::Code->new( code => $_[0] ) unless defined $_[1];
     return BSON::Code->new( code => $_[0], scope => $_[1] );
@@ -108,7 +107,6 @@ sub bson_raw {
 }
 
 sub bson_regex {
-    my ($pattern, $flags) = @_;
     return BSON::Regex->new unless defined $_[0];
     return BSON::Regex->new( pattern => $_[0] ) unless defined $_[1];
     return BSON::Regex->new( pattern => $_[0], flags => $_[1] );
