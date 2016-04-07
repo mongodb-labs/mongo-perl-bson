@@ -36,6 +36,8 @@ sub test_corpus_file {
 
 sub _validity_tests {
     my ($json) = @_;
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
+
     return unless $json->{valid};
     for my $case ( @{ $json->{valid} } ) {
         my $desc = $case->{description};
@@ -77,6 +79,8 @@ sub _validity_tests {
 
 sub _decode_error_tests {
     my ($json) = @_;
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
+
     return unless $json->{decodeErrors};
     for my $case ( @{ $json->{decodeErrors} } ) {
         my $desc = $case->{description};
@@ -89,6 +93,8 @@ sub _decode_error_tests {
 
 sub _parse_error_tests {
     my ($json) = @_;
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
+
     return unless $json->{parseErrors};
     for my $case ( @{ $json->{parseErrors} } ) {
     }
