@@ -8,10 +8,16 @@ use Math::BigInt;
 use lib 't/lib';
 use TestUtils;
 
+use Config;
 use BSON qw/encode decode/;
 use BSON::Types ':all';
 
 my ($hash, $bson, $expect);
+
+my $max_int64 =
+  $Config{use64bitint} ? 9223372036854775807 : Math::BigInt->new("9223372036854775807");
+my $min_int64 =
+  $Config{use64bitint} ? -9223372036854775808 : Math::BigInt->new("-9223372036854775808");
 
 my $bigpos = Math::BigInt->new("9223372036854775808");
 my $bigneg = Math::BigInt->new("-9223372036854775809");
@@ -20,18 +26,16 @@ my $bigneg = Math::BigInt->new("-9223372036854775809");
 packed_is( "q", bson_int64(), 0, "empty bson_int64() is 0" );
 packed_is( "q", BSON::Int64->new, 0, "empty constructor is 0" );
 
-# test constructor errors; these will wind up doubles
-eval { bson_int64(2**63) };
-like( $@, qr/can't fit/, "bson_int64(2**64) fails" );
-eval { bson_int64(-2**63-1) };
-like( $@, qr/can't fit/, "bson_int64(-2**64-1) fails" );
+# test constructor errors; these will cap at min/max int64
+packed_is( "q", bson_int64(9223372036854775808), $max_int64, "bson_int64(9223372036854775808)" );
+packed_is( "q", bson_int64(9223372036854775808.01), $max_int64, "bson_int64(9223372036854775808.01)" );
+packed_is( "q", bson_int64(9223372036854775807.99), $max_int64, "bson_int64(9223372036854775807.99)" );
+packed_is( "q", bson_int64(-9223372036854775809), $min_int64, "bson_int64(-9223372036854775809)" );
+packed_is( "q", bson_int64(-9223372036854775809.01), $min_int64,  "bson_int64(-9223372036854775809.01)");
+packed_is( "q", bson_int64(-9223372036854775808.99), $min_int64,  "bson_int64(-9223372036854775808.99)");
 
-# test constructor errors with Math::BigInt
-eval { bson_int64($bigpos) };
-like( $@, qr/can't fit/, "bson_int64(big BigInt) fails" );
-eval { bson_int64($bigneg) };
-like( $@, qr/can't fit/, "bson_int64(-big BigInt) fails" );
-
+packed_is( "q", bson_int64($bigpos), $max_int64, "bson_int64(bigpos)" );
+packed_is( "q", bson_int64($bigneg), $min_int64, "bson_int64(bigpos)" );
 
 # test overloading
 packed_is( "q", bson_int64(2**32+1), 2**32+1, "overloading correct" );
