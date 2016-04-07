@@ -28,26 +28,25 @@ our @EXPORT_OK = qw(
 our %EXPORT_TAGS = ( 'all' => [ @EXPORT_OK ] );
 
 use Carp;
-use Tie::IxHash;
-use boolean;
 
-use BSON::Bool;
-use BSON::Bytes;
-use BSON::Code;
-use BSON::Doc;
-use BSON::Double;
-use BSON::Int32;
-use BSON::Int64;
-use BSON::MaxKey;
-use BSON::MinKey;
-use BSON::OID;
-use BSON::Raw;
-use BSON::Regex;
-use BSON::String;
-use BSON::Time;
-use BSON::Timestamp;
+use boolean;            # bson_bool
+use BSON::Bytes;        # bson_bytes
+use BSON::Code;         # bson_code
+use BSON::Doc;          # bson_doc
+use BSON::Double;       # bson_double
+use BSON::Int32;        # bson_int32
+use BSON::Int64;        # bson_int64
+use BSON::MaxKey;       # bson_maxkey
+use BSON::MinKey;       # bson_minkey
+use BSON::OID;          # bson_oid
+use BSON::Raw;          # bson_raw
+use BSON::Regex;        # bson_regex
+use BSON::String;       # bson_string
+use BSON::Time;         # bson_time
+use BSON::Timestamp;    # bson_timestamp
 
 # deprecated, but load anyway
+use BSON::Bool;
 use BSON::Binary;
 use BSON::ObjectId;
 
