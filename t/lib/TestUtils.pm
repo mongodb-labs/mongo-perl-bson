@@ -5,6 +5,7 @@ use Test::More 0.96;
 
 use B;
 use Carp qw/croak/;
+use Config;
 
 use base 'Exporter';
 our @EXPORT = qw/sv_type packed_is bytes_are/;
@@ -24,9 +25,22 @@ sub packed_is {
 
     local $Test::Builder::Level = $Test::Builder::Level + 1;
 
-    my $ok = ok( pack( $template, $got ) eq pack( $template, $exp ), $label );
-    diag "Got:\n", unpack( "H*", $got ), "\nExpected:\n", unpack( "H*", $exp )
-      unless $ok;
+    my $ok;
+    if ( $template eq 'q' && ! $Config{use64bitint} ) {
+        if ( !ref($got) && !ref($exp) ) {
+            # must fit in 32 bits, so downgrade the template
+            $template = 'l';
+        }
+        else {
+            # something is a reference, so must be BigInt or equivalent
+            $ok = ok( $got eq $exp, $label );
+            diag "Got: $got, Expected: $exp" unless $ok;
+            return $ok;
+        }
+    }
+
+    $ok = ok( pack( $template, $got ) eq pack( $template, $exp ), $label );
+    diag "Got: $got, Expected: $exp" unless $ok;
 
     return $ok;
 }
