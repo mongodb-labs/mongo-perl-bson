@@ -209,12 +209,12 @@ sub encode {
         }
 
         # MinKey
-        elsif ( $type eq 'BSON::MinKey' ) {
+        elsif ( $type eq 'BSON::MinKey' || $type eq 'MongoDB::MinKey' ) {
             $bson .= pack( BSON_TYPE_NAME, 0xFF, $key );
         }
 
         # MaxKey
-        elsif ( $type eq 'BSON::MaxKey' ) {
+        elsif ( $type eq 'BSON::MaxKey' || $type eq 'MongoDB::MaxKey' ) {
             $bson .= pack( BSON_TYPE_NAME, 0x7F, $key );
         }
 
