@@ -23,6 +23,7 @@ our @EXPORT_OK = qw(
     bson_regex
     bson_string
     bson_time
+    bson_timestamp
 );
 our %EXPORT_TAGS = ( 'all' => [ @EXPORT_OK ] );
 
@@ -120,6 +121,12 @@ sub bson_string {
 sub bson_time {
     return BSON::Time->new unless defined $_[0];
     return BSON::Time->new( value => 1000 * $_[0] );
+}
+
+sub bson_timestamp {
+    return BSON::Timestamp->new unless defined $_[0];
+    return BSON::Timestamp->new( seconds => $_[0] ) unless defined $_[1];
+    return BSON::Timestamp->new( seconds => $_[0], increment => $_[1] );
 }
 
 1;

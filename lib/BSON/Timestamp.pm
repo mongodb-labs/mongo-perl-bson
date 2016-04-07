@@ -9,10 +9,7 @@ our $VERSION = '0.17';
 
 use Carp ();
 
-use Class::Tiny {
-    seconds   => sub { time },
-    increment => 0,
-};
+use Class::Tiny qw/seconds increment/;
 
 # Support back-compat 'secs' and inc' and legacy constructor shortcut
 sub BUILDARGS {

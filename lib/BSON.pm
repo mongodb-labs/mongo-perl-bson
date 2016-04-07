@@ -204,6 +204,9 @@ sub encode {
         elsif ( $type eq 'BSON::Timestamp' ) {
             $bson .= pack( BSON_TYPE_NAME.BSON_TIMESTAMP, 0x11, $key, $value->increment, $value->seconds );
         }
+        elsif ( $type eq 'MongoDB::Timestamp' ){
+            $bson .= pack( BSON_TYPE_NAME.BSON_TIMESTAMP, 0x11, $key, $value->inc, $value->sec );
+        }
 
         # MinKey
         elsif ( $type eq 'BSON::MinKey' ) {
