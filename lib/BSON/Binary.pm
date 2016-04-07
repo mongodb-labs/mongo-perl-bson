@@ -3,7 +3,7 @@ use strict;
 use warnings;
 
 package BSON::Binary;
-# ABSTRACT: Binary data for BSON
+# ABSTRACT: Legacy BSON type wrapper for binary data (DEPRECATED)
 
 our $VERSION = '0.17';
 
@@ -53,46 +53,14 @@ __END__
 
 =for Pod::Coverage to_s
 
-=head1 SYNOPSIS
-
-    use BSON;
-
-    my $bin = BSON::Binary->new([1,2,3,4,5,0x67,0x89], 0);
 
 =head1 DESCRIPTION
 
-This module is needed for L<BSON> and it manages BSON's binary element.
+This module has been deprecated as it was horribly inefficient (unpacking
+binary data to individual single-byte elements of an array!) and had a
+weird API that was not compatible with the existing MongoDB Binary wrapper
+implmentation on CPAN.
 
-=head1 METHODS
-
-=head2 new
-
-Main constructor which takes two parameters: An array reference with 
-binary data and a data type. A string may also be passed as the first parameter, 
-in which case it will be converted to an array ref.
-
-    my $bin = BSON::Binary->new("classic\x20string\0", 0);
-
-The different types are described in the BSON specification. A type is
-one of the following:
-
-    0x00  Binary / Generic
-    0x01  Function
-    0x02  Binary (Old)
-    0x03  UUID
-    0x05  MD5
-    0x80  User defined
-
-=head2 data
-
-Returns an array reference to the contents of the binary data.
-
-=head2 type
-
-Returns the type of the binary data per the BSON specification.
-
-=head1 SEE ALSO
-
-L<BSON>
+You are strongly encouraged to use L<BSON::Bytes> instead.
 
 =cut
