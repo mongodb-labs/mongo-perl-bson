@@ -90,26 +90,55 @@ sub _ixhash_iterator {
 # XXX could be optimized down to only one substr to trim/pad
 sub _bigint_to_int64 {
     my $bigint = shift;
+    my $neg = $bigint < 0;
+    if ( $neg ) {
+        if ( $bigint < $min_int64 ) {
+            return "\x80\x00\x00\x00\x00\x00\x00\x00";
+        }
+        $bigint = abs($bigint) - ($max_int64 + 1);
+    }
+    elsif ( $bigint > $max_int64 ) {
+        return "\x7f\xff\xff\xff\xff\xff\xff\xff";
+    }
+
     my $as_hex = $bigint->as_hex; # big-endian hex
     $as_hex =~ s{-?0x}{};
     my $len = length($as_hex);
     substr( $as_hex, 0, 0, "0" x ( 16 - $len ) ) if $len < 16; # pad to quad length
-    return scalar reverse( pack( "H*", $as_hex ) );                   # reverse to little-endian
+    my $pack = pack( "H*", $as_hex );
+    $pack |= "\x80\x00\x00\x00\x00\x00\x00\x00" if $neg;
+    return scalar reverse $pack;
 }
 
 sub _int64_to_bigint {
-    return Math::BigInt->new( "0x" . reverse( unpack( "H*", shift ) ) );
+    my $bytes = reverse(shift);
+    return Math::BigInt->new() if $bytes eq "\x00\x00\x00\x00\x00\x00\x00\x00";
+    if ( unpack("c", $bytes) < 0 ) {
+        if ( $bytes eq "\x80\x00\x00\x00\x00\x00\x00\x00" ) {
+            return -1 * Math::BigInt->new( "0x" . unpack("H*",$bytes) );
+        }
+        else {
+            return -1 * Math::BigInt->new( "0x" . unpack( "H*", ~$bytes ) ) - 1;
+        }
+    }
+    else {
+        return Math::BigInt->new( "0x" . unpack( "H*", $bytes ) );
+    }
 }
 
 sub _pack_int64 {
     my $value = shift;
     my $type  = ref($value);
 
-    # if no type, then we must be on 64bit perl and can pack with 'q'
-    if ( !$type ) {
-        return pack(BSON_INT64,$value );
+    # if no type, then on 64-big perl we can pack with 'q'; otherwise
+    # we need to convert scalars to Math::BigInt and pack them that way.
+    if ( ! $type ) {
+        return pack(BSON_INT64,$value ) if HAS_INT64;
+        $value = Math::BigInt->new($value);
+        $type = 'Math::BigInt';
     }
-    elsif ( $type eq 'Math::BigInt' ) {
+
+    if ( $type eq 'Math::BigInt' ) {
         return _bigint_to_int64($value);
     }
     elsif ( $type eq 'Math::Int64' ) {
@@ -279,24 +308,9 @@ sub encode {
             # unwrap BSON::Int64; it could be Math::BigInt, etc.
             if ( $type eq 'BSON::Int64' ) {
                 $value = $value->value;
-                $type  = ref($value);
             }
 
-            # if no type, then we must be on 64bit perl and can pack with 'q'
-            if ( !$type ) {
-                $bson .= pack( BSON_TYPE_NAME . 'q', 0x12, $key, $value );
-            }
-            elsif ( $type eq 'Math::BigInt' ) {
-                $bson .=
-                  pack( BSON_TYPE_NAME . BSON_REMAINING, 0x12, $key, _bigint_to_int64($value) );
-            }
-            elsif ( $type eq 'Math::Int64' ) {
-                $bson .=
-                  pack( BSON_TYPE_NAME . BSON_REMAINING, 0x12, $key, Math::Int64::int64_to_native($value) );
-            }
-            else {
-                croak "Don't know how to BSON encode $type.  Key '$key' is 'bson_int64($value)'";
-            }
+            $bson .= pack( BSON_TYPE_NAME, 0x12, $key ) . _pack_int64($value);
         }
 
         # Double (explicit)
@@ -304,15 +318,13 @@ sub encode {
             $bson .= pack( BSON_TYPE_NAME.BSON_DOUBLE, 0x01, $key, $value/1.0 );
         }
 
-        # Int (Int32 or arbitrary)
+        # Int (BSON::Int32 or heuristic based on size)
         elsif ( $value =~ $int_re ) {
             if ( $value > $max_int64 || $value < $min_int64 ) {
                 croak("MongoDB can only handle 8-byte integers. Key '$key' is '$value'");
             }
             elsif ( $value > $max_int32 || $value < $min_int32 ) {
-                # To reach here, we must be on 64bit perl as Math::BigInt, etc.
-                # would have been detected earlier, so we can pack with 'q'
-                $bson .= pack( BSON_TYPE_NAME . BSON_INT64, 0x12, $key, $value );
+                $bson .= pack( BSON_TYPE_NAME, 0x12, $key ) . _pack_int64($value);
             }
             else {
                 $bson .= pack( BSON_TYPE_NAME . BSON_INT32, 0x10, $key, $value );
@@ -656,7 +668,12 @@ sub _inflate_hash {
     }
 
     if ( exists $hash->{'$numberLong'} ) {
-        return BSON::Int64->new( value => $hash->{'$numberLong'} );
+        if (HAS_INT64) {
+            return BSON::Int64->new( value => $hash->{'$numberLong'} );
+        }
+        else {
+            return BSON::Int64->new( value => Math::BigInt->new($hash->{'$numberLong'}) );
+        }
     }
 
     if ( exists $hash->{'$binary'} ) {
@@ -765,8 +782,10 @@ sub _iso8601_to_epochms {
             $zone_offset = ($zd eq '-' ? -1 : 1 ) * (3600 * $zh + 60 * $zm);
         }
         my $frac = $s - int($s);
-        my $epoch = Time::Local::timegm(int($s), $m, $h, $D, $M, $Y);
-        return int( 1000 * ( $epoch - $zone_offset + $frac ) );
+        my $epoch = Time::Local::timegm(int($s), $m, $h, $D, $M, $Y) - $zone_offset;
+        $epoch = HAS_INT64 ? 1000 * $epoch : Math::BigInt->new($epoch) * 1000;
+        $epoch += $frac * 1000;
+        return $epoch;
     }
     else {
         Carp::croak("Couldn't parse '\$date' field: $date\n");

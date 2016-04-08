@@ -40,7 +40,9 @@ packed_is( "q", bson_int64($bigneg), $min_int64, "bson_int64(bigpos)" );
 # test overloading
 packed_is( "q", bson_int64(2**32+1), 2**32+1, "overloading correct" );
 
-subtest 'native' => sub {
+subtest 'native (64-bit perls)' => sub {
+    plan skip_all => 'not a 64-bit perl' unless $Config{use64bitint};
+
     # int64 -> int64
     $bson = $expect = encode( { A => 2**32+1 } );
     $hash = decode( $bson );
@@ -74,6 +76,47 @@ subtest 'native' => sub {
         $bson = encode( { A => Math::Int64::int64("0") } );
         $hash = decode( $bson );
         is( sv_type( $hash->{A} ), 'IV', "Math::Int64->int64" );
+        packed_is( "q", $hash->{A}, 0, "value correct" );
+    }
+
+};
+
+subtest 'Math::BigInt (32-bit perls)' => sub {
+    plan skip_all => 'not a 32-bit perl' if $Config{use64bitint};
+
+    # NV -> Math::BigInt
+    $bson = $expect = encode( { A => 2**32+1 } );
+    $hash = decode( $bson );
+    is( ref( $hash->{A} ), 'Math::BigInt', "int64->Math::BigInt" );
+    packed_is( "q", $hash->{A}, 2**32+1, "value correct" );
+
+    # BSON::Int64 -> Math::BigInt
+    $bson = encode( { A => bson_int64(2**32+1) } );
+    $hash = decode( $bson );
+    is( ref( $hash->{A} ), 'Math::BigInt', "BSON::Int64->Math::BigInt" );
+    packed_is( "q", $hash->{A}, 2**32+1, "value correct" );
+    bytes_are( $bson, $expect, "BSON correct" );
+
+    # BSON::Int64(string) -> Math::BigInt
+    $bson = encode( { A => bson_int64("0") } );
+    $hash = decode( $bson );
+    is( ref( $hash->{A} ), 'Math::BigInt', "BSON::Int64->Math::BigInt" );
+    packed_is( "q", $hash->{A}, 0, "value correct" );
+
+    # Math::BigInt -> Math::BigInt
+    $bson = encode( { A => Math::BigInt->new("0") } );
+    $hash = decode( $bson );
+    is( ref( $hash->{A} ), 'Math::BigInt', "Math::BigInt->Math::BigInt" );
+    packed_is( "q", $hash->{A}, 0, "value correct" );
+
+    # Math::Int64 -> Math::BigInt
+    SKIP: {
+        eval { require Math::Int64 };
+        skip( "Math::Int64 not installed", 2 )
+            unless $INC{'Math/Int64.pm'};
+        $bson = encode( { A => Math::Int64::int64("0") } );
+        $hash = decode( $bson );
+        is( ref( $hash->{A} ), 'Math::BigInt', "Math::Int64->Math::BigInt" );
         packed_is( "q", $hash->{A}, 0, "value correct" );
     }
 

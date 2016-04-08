@@ -26,7 +26,6 @@ use if !$Config{use64bitint}, "Math::BigInt";
 BEGIN {
     my $max_int64 = $Config{use64bitint} ? 9223372036854775807 : Math::BigInt->new("9223372036854775807");
     my $min_int64 = $Config{use64bitint} ? -9223372036854775808 : Math::BigInt->new("-9223372036854775808");
-    my $packed_min_int64 = pack("q", $min_int64);
     if ( $Config{nvsize} == 16 || ! $Config{use64bitint} ) {
         *BUILD = sub {
             my $self = shift;
@@ -44,6 +43,7 @@ BEGIN {
         }
     }
     else {
+        my $packed_min_int64 = pack("q", $min_int64);
         *BUILD = sub {
             my $self = shift;
 
@@ -62,6 +62,7 @@ BEGIN {
 }
 
 use overload (
+    q{""}    => sub { $_[0]->{value} },
     q{0+}    => sub { $_[0]->{value} },
     fallback => 1,
 );

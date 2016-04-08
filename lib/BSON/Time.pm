@@ -8,8 +8,12 @@ package BSON::Time;
 our $VERSION = '0.17';
 
 use Carp qw/croak/;
+use Config;
 use Time::HiRes qw/time/;
 use Scalar::Util qw/looks_like_number/;
+use overload;
+
+use if !$Config{use64bitint}, 'Math::BigInt';
 
 use Class::Tiny qw/value/; # value stores ms since epoch as integer
 
@@ -22,15 +26,15 @@ sub BUILDARGS {
         $args{value} = 1000 * time();
     }
     elsif ( $n == 1 ) {
-        croak "argument to new must be epoch seconds"
+        croak "argument to BSON::Time::new must be epoch seconds, not '$_[0]'"
           unless looks_like_number( $_[0] );
         $args{value} = 1000 * shift;
     }
     elsif ( $n % 2 == 0 ) {
         %args = @_;
         if ( defined $args{value} ) {
-            croak "argument to new must be epoch seconds"
-              unless looks_like_number( $args{value} );
+            croak "argument to BSON::Time::new must be epoch seconds, not '$args{value}'"
+              unless looks_like_number( $args{value} ) || overload::Overloaded($args{value});
         }
         else {
             $args{value} = 1000 * time();
@@ -42,6 +46,10 @@ sub BUILDARGS {
 
     # normalize all to integer ms
     $args{value} = int( $args{value} );
+
+    if ( !$Config{use64bitint} && ref($args{value}) ne 'Math::BigInt' ) {
+        $args{value} = Math::BigInt->new($args{value});
+    }
 
     return \%args;
 }

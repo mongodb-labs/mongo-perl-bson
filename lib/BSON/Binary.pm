@@ -7,8 +7,6 @@ package BSON::Binary;
 
 our $VERSION = '0.17';
 
-use overload '""' => \&to_s;
-
 our $TYPE_SIMPLE       = 0x00;
 our $TYPE_BYTES        = 0x02;
 our $TYPE_UUID         = 0x03;
@@ -46,6 +44,8 @@ sub to_s {
     my @data = @{ $self->data };
     return pack( 'lC*', scalar(@data), $self->type, @data );
 }
+
+use overload '""' => \&to_s;
 
 1;
 
