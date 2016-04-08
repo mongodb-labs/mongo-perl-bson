@@ -308,7 +308,7 @@ subtest regex => sub {
     is(ref $hash->{b}, 'BSON::Regex');
 
     SKIP: {
-        skip "Comparing regexes is fragile before 5.10", 2 if $] lt 5.010;
+        skip "Comparing regexes is fragile before 5.10", 1 if $] lt 5.010;
         $hash->{$_} = $hash->{$_}->try_compile for qw/a b/;
         for (qw/a b/) {
             is_deeply(

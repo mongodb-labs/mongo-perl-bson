@@ -756,7 +756,7 @@ sub _iso8601_to_epochms {
 
     if ( $date =~ /\A$iso8601_re\z/ ) {
         my ($Y,$M,$D,$h,$m,$s,$z) = ($1,$2-1,$3,$4,$5,$6,$7);
-        if (length($z))  {
+        if (defined($z) && length($z))  {
             $z =~ tr[:][];
             $z .= "00" if length($z) < 5;
             my $zd = substr($z,0,1);
