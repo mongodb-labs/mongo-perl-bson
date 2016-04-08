@@ -337,9 +337,14 @@ sub encode {
         }
 
         # String
-        else {
+        elsif ( $type eq '' ) {
             utf8::encode($value);
             $bson .= pack( BSON_TYPE_NAME.BSON_STRING, 0x02, $key, $value );
+        }
+
+        # Unsupported type
+        else  {
+            croak("For key '$key', can't encode value of type '$type'");
         }
     }
 
