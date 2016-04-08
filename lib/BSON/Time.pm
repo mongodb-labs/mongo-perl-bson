@@ -74,6 +74,11 @@ sub _str_cmp {
     return "$self" cmp "$other";
 }
 
+sub op_eq {
+    my ( $self, $other ) = @_;
+    return( ($self <=> $other) == 0 );
+}
+
 use overload (
     q{""}    => \&epoch,
     q{0+}    => \&epoch,

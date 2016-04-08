@@ -27,11 +27,15 @@ sub false {
     return $_[0]->new(0);
 }
 
+sub op_eq {
+    return !! $_[0] == !! $_[1];
+}
+
 1;
 
 __END__
 
-=for Pod::Coverage new value true false
+=for Pod::Coverage new value true false op_eq
 
 =head1 DESCRIPTION
 

@@ -58,6 +58,35 @@ sub hex {
       : ( $self->{hex} = unpack( "H*", $self->{oid} ) );
 }
 
+sub get_time {
+    return unpack( "N", substr( $_[0]->{oid}, 0, 8 ) );
+}
+
+# for testing purposes
+sub _get_pid {
+    return unpack( "N", substr( $_[0]->{oid}, 14, 4 ) );
+}
+
+=head2 TO_JSON
+
+    my $json = JSON->new;
+    $json->allow_blessed;
+    $json->convert_blessed;
+
+    $json->encode(MongoDB::OID->new);
+
+Returns a JSON string for this OID.  This is compatible with the strict JSON
+representation used by MongoDB, that is, an OID with the value
+"012345678901234567890123" will be represented as
+C<{"$oid" : "012345678901234567890123"}>.
+
+=cut
+
+sub TO_JSON {
+    return {'$oid' => $_[0]->hex };
+}
+
+
 BEGIN {
     *to_string = \&hex;
     *value = \&hex;
