@@ -17,7 +17,7 @@ use Tie::IxHash;
 use BSON::Types ();
 use boolean;
 
-require re; # don't "use" or we get a "useless pragma" warning on old perls
+use if $] ge '5.010000', 're', 'regexp_pattern';
 
 use constant {
     HAS_INT64 => $Config{use64bitint},
