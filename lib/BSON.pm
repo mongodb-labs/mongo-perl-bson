@@ -637,7 +637,7 @@ sub inflate_extjson {
         $hash->{$k} =
             $type eq 'HASH'    ? $class->_inflate_hash($v)
           : $type eq 'ARRAY'   ? $class->_inflate_array($v)
-          : $type =~ $bools_re ? boolean($v)
+          : $type =~ $bools_re ? ( $v ? true : false )
           :                      $v;
     }
 
