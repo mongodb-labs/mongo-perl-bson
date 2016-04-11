@@ -25,7 +25,7 @@ Returns a double, unless the value is 'Inf', '-Inf' or NaN
 
 sub TO_JSON {
     my $copy = "$_[0]->{value}"; # avoid changing value to PVNV
-    return $_[0]->{value}/1.0 unless $copy =~ /^(?:Inf|-Inf|NaN)/;
+    return $_[0]->{value}/1.0 unless $copy =~ /^(?:Inf|-Inf|NaN)/i;
 
     croak( "The value '$copy' is illegal in JSON" );
 }
