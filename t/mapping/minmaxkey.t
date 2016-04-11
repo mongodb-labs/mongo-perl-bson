@@ -36,6 +36,15 @@ is( ref( $hash->{A} ), 'BSON::MaxKey', "BSON::MaxKey->BSON::MaxKey" );
 is( ref( $hash->{B} ), 'BSON::MinKey', "BSON::MinKey->BSON::MinKey" );
 is( $bson, $expect, "BSON correct" );
 
+eval { to_myjson({a=>bson_maxkey()}) };
+like( $@, qr/illegal in JSON/, 'json throws: bson_maxkey()' );
+eval { to_myjson({a=>bson_minkey()}) };
+like( $@, qr/illegal in JSON/, 'json throws: bson_minkey()' );
+
+# to extended JSON
+is( to_extjson({a=>bson_minkey()}), q[{"a":{"$minKey":1}}], 'extjson: bson_minkey' );
+is( to_extjson({a=>bson_maxkey()}), q[{"a":{"$maxKey":1}}], 'extjson: bson_maxkey' );
+
 done_testing;
 
 # COPYRIGHT

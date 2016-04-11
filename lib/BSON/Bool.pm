@@ -40,7 +40,7 @@ __END__
 =head1 DESCRIPTION
 
 This module has been deprecated as it was not compatible with
-other common boolean implmentations on CPAN.
+other common boolean implementations on CPAN.
 
 Internally, this is now a thin wrapper around L<boolean>.
 

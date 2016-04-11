@@ -11,6 +11,7 @@ binmode( Test::More->builder->$_, ":utf8" )
 use lib 't/lib';
 use TestUtils;
 
+use MIME::Base64;
 use BSON qw/encode decode/;
 use BSON::Types ':all';
 
@@ -57,6 +58,14 @@ SKIP: {
     is( "$hash->{A}",      $bindata,      "value correct" );
     is( $bson, $expect, "BSON correct" );
 }
+
+# to JSON
+my $test_data = "\1\2\3\4\0\1\2\3\4";
+my $b64_data = encode_base64($test_data, "");
+is( to_myjson({a=>bson_bytes($test_data)}), qq[{"a":"$b64_data"}], 'json: bson_bytes(<data>)' );
+
+# to extended JSON
+is( to_extjson({a=>bson_bytes($test_data)}), qq[{"a":{"\$binary":"$b64_data","\$type":0}}], 'extjson: bson_bytes(<data>)' );
 
 done_testing;
 

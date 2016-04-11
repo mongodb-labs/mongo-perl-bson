@@ -41,6 +41,28 @@ BEGIN {
     *inc = \&increment;
 }
 
+=method TO_JSON
+
+If the C<BSON_EXTJSON> option is true, returns a hashref compatible with
+MongoDB's L<extended JSON|https://docs.mongodb.org/manual/reference/mongodb-extended-json/>
+format, which represents it as a document as follows:
+
+    {"$timestamp" : { "t":<seconds>, "i":<increment> }}
+
+If the C<BSON_EXTJSON> option is false, an error is thrown, as this value
+can't otherwise be represented in JSON.
+
+=cut
+
+sub TO_JSON {
+    if ( $ENV{BSON_EXTJSON} ) {
+        return { '$timestamp' => { t => $_[0]->{seconds}, i => $_[0]->{increment} } };
+    }
+
+    Carp::croak( "The value '$_[0]' is illegal in JSON" );
+}
+
+
 1;
 
 __END__

@@ -54,6 +54,18 @@ SKIP: {
     is( $bson, $expect, "BSON correct" );
 }
 
+# to JSON
+eval { to_myjson({a=>bson_timestamp()}) };
+like( $@, qr/illegal in JSON/, 'json throws: bson_timestamp()' );
+
+# to extended JSON
+is(
+    to_extjson( { a => bson_timestamp( $seconds, $increment ) } ),
+    qq[{"a":{"\$timestamp":{"i":$increment,"t":$seconds}}}],
+    'extjson: bson_timestamp(<secs>,<inc>)'
+);
+
+
 done_testing;
 
 # COPYRIGHT

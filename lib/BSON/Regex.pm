@@ -70,5 +70,27 @@ sub try_compile {
     return $re;
 }
 
+=method TO_JSON
+
+If the C<BSON_EXTJSON> option is true, returns a hashref compatible with
+MongoDB's L<extended JSON|https://docs.mongodb.org/manual/reference/mongodb-extended-json/>
+format, which represents it as a document as follows:
+
+    {"$regex" : "<pattern>", "$options" : "<flags>"}
+
+If the C<BSON_EXTJSON> option is false, an error is thrown, as this value
+can't otherwise be represented in JSON.
+
+=cut
+
+sub TO_JSON {
+    if ( $ENV{BSON_EXTJSON} ) {
+        return { '$regex' => $_[0]->{pattern}, '$options' => $_[0]->{flags} };
+    }
+
+    Carp::croak( "The value '$_[0]' is illegal in JSON" );
+}
+
+
 1;
 # vim: set ts=4 sts=4 sw=4 et tw=75:

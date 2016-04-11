@@ -79,7 +79,19 @@ subtest "BSON type CODEWSCOPE" => sub {
     }
 };
 
+# to JSON
+eval { to_myjson({a=>bson_code()}) };
+like( $@, qr/illegal in JSON/, 'json throws: bson_code()' );
 
+# to extended JSON
+(my $code_json = $code) =~ s{"}{\\"}g;
+my $scope_json = to_myjson($scope);
+is( to_extjson({a=>bson_code($code)}), qq[{"a":{"\$code":"$code_json"}}], 'extjson: bson_code(<code>)' );
+is(
+    to_extjson( { a => bson_code( $code, $scope ) } ),
+    qq[{"a":{"\$code":"$code_json","\$scope":$scope_json}}],
+    'extjson: bson_code(<code>,<scope>)'
+);
 
 done_testing;
 

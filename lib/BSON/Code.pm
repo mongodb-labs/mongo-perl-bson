@@ -9,9 +9,7 @@ our $VERSION = '0.17';
 
 use Carp ();
 
-use Class::Tiny qw/scope/, {
-    code => '',
-};
+use Class::Tiny qw/code scope/;
 
 sub length {
     length( $_[0]->code );
@@ -37,9 +35,35 @@ sub BUILDARGS {
 
 sub BUILD {
     my ($self) = @_;
+    $self->{code} = '' unless defined $self->{code};
     Carp::croak( __PACKAGE__ . " scope must be hash reference, not $self->{scope}")
         if exists($self->{scope}) && ref($self->{scope}) ne 'HASH';
     return;
+}
+
+=method TO_JSON
+
+If the C<BSON_EXTJSON> option is true, returns a hashref compatible with
+MongoDB's L<extended JSON|https://docs.mongodb.org/manual/reference/mongodb-extended-json/>
+format, which represents it as a document as follows:
+
+    {"$code" : "<code>"}
+    {"$code" : "<code>", "$scope" : <scope-document> }
+
+If the C<BSON_EXTJSON> option is false, an error is thrown, as this value
+can't otherwise be represented in JSON.
+
+=cut
+
+sub TO_JSON {
+    if ( $ENV{BSON_EXTJSON} ) {
+        return {
+            '$code' => $_[0]->{code},
+            ( defined $_[0]->{scope} ? ( '$scope' => $_[0]->{scope} ) : () ),
+        };
+    }
+
+    Carp::croak( "The value '$_[0]' is illegal in JSON" );
 }
 
 1;

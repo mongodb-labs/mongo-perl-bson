@@ -22,6 +22,14 @@ sub BUILD {
     }
 }
 
+=method TO_JSON
+
+Returns the value as an integer.
+
+=cut
+
+sub TO_JSON { return int($_[0]->{value}) }
+
 use overload (
     q{0+}    => sub { $_[0]->{value} },
     fallback => 1,

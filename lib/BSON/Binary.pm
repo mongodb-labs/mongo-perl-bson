@@ -59,7 +59,7 @@ __END__
 This module has been deprecated as it was horribly inefficient (unpacking
 binary data to individual single-byte elements of an array!) and had a
 weird API that was not compatible with the existing MongoDB Binary wrapper
-implmentation on CPAN.
+implementation on CPAN.
 
 You are strongly encouraged to use L<BSON::Bytes> instead.
 

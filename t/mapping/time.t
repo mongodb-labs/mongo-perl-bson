@@ -73,6 +73,14 @@ SKIP: {
     is( $bson,             $expect,      "BSON correct" );
 }
 
+# to JSON
+is( to_myjson({a=>bson_time(0)}), q[{"a":"1970-01-01T00:00:00Z"}], 'json: bson_time(0)' );
+is( to_myjson({a=>bson_time(1356351330.5)}), q[{"a":"2012-12-24T12:15:30.500Z"}], 'json: bson_time(1356351330.5)' );
+
+# to extended JSON
+is( to_extjson({a=>bson_time(0)}), q[{"a":{"$date":{"$numberLong":"0"}}}], 'extjson: bson_time(0)' );
+is( to_extjson({a=>bson_time(1356351330.5)}), q[{"a":{"$date":{"$numberLong":"1356351330500"}}}], 'extjson: bson_time(1356351330.5)' );
+
 done_testing;
 
 # COPYRIGHT

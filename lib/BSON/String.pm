@@ -34,6 +34,14 @@ sub BUILDARGS {
     return \%args;
 }
 
+=method TO_JSON
+
+Returns value a string.
+
+=cut
+
+sub TO_JSON { return "$_[0]->{value}" }
+
 use overload (
     q{""}    => sub { $_[0]->{value} },
     fallback => 1,

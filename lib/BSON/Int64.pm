@@ -61,6 +61,26 @@ BEGIN {
     }
 }
 
+=method TO_JSON
+
+On a 64-bit perl, returns the value as an integer.  On a 32-bit Perl, it
+will be returned as a Math::BigInt object, which will
+fail to serialize unless a C<TO_JSON> method is defined
+for that or in package C<universal>.
+
+If the C<BSON_EXTJSON> option is true, it will instead
+be compatible with MongoDB's L<extended JSON|https://docs.mongodb.org/manual/reference/mongodb-extended-json/>
+format, which represents it as a document as follows:
+
+    {"$numberLong" : "223372036854775807"}
+
+=cut
+
+sub TO_JSON {
+    return int($_[0]->{value}) unless $ENV{BSON_EXTJSON};
+    return { '$numberLong' => "$_[0]->{value}" };
+}
+
 use overload (
     q{""}    => sub { $_[0]->{value} },
     q{0+}    => sub { $_[0]->{value} },

@@ -39,6 +39,7 @@ sub _validity_tests {
     local $Test::Builder::Level = $Test::Builder::Level + 1;
 
     return unless $json->{valid};
+
     for my $case ( @{ $json->{valid} } ) {
         my $desc = $case->{description};
         my $bson = pack( "H*", $case->{subject} );
@@ -57,6 +58,7 @@ sub _validity_tests {
             local $Data::Dumper::Useqq = 1;
             cmp_deeply( $decoded, $expect, "$desc: Decode to inflated extjson" )
               or diag "Got:\n", Dumper($decoded), "Wanted:\n", Dumper($expect);
+
         }
 
         # roundtrip test

@@ -58,6 +58,17 @@ sub epoch {
     return int( $_[0]->value / 1000 );
 }
 
+sub to_iso8601 {
+    my $self = shift;
+    my ($s, $m, $h, $D, $M, $Y) = gmtime($self->epoch);
+    $M++;
+    $Y+=1900;
+    my $f = $self->{value} % 1000;
+    return $f
+      ? sprintf( "%4d-%02d-%02dT%02d:%02d:%02d.%03dZ", $Y, $M, $D, $h, $m, $s, $f )
+      : sprintf( "%4d-%02d-%02dT%02d:%02d:%02dZ",      $Y, $M, $D, $h, $m, $s );
+}
+
 sub _num_cmp {
     my ( $self, $other ) = @_;
     if ( ref($other) eq ref($self) ) {
@@ -86,6 +97,25 @@ use overload (
     q{cmp}   => \&_str_cmp,
     fallback => 1,
 );
+
+=method TO_JSON
+
+Returns an ISO-8601 string for this date and time object in this form:
+C<YYYY-MM-DDThh:mm:ss.sssZ>.  The fractional seconds will be omitted
+if they are zero.
+
+If the C<BSON_EXTJSON> option is true, it will instead be compatible with
+MongoDB's L<extended JSON|https://docs.mongodb.org/manual/reference/mongodb-extended-json/>
+format, which represents it as a document as follows:
+
+    {"$date" : { "$numberLong": "22337203685477580" } }
+
+=cut
+
+sub TO_JSON {
+    return $_[0]->to_iso8601 unless $ENV{BSON_EXTJSON};
+    return { '$date' => { '$numberLong' => "$_[0]->{value}"} };
+}
 
 1;
 

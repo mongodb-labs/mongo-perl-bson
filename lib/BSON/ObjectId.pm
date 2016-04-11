@@ -55,7 +55,7 @@ __END__
 =head1 DESCRIPTION
 
 This module has been deprecated as it was not compatible with
-the offical MongoDB BSON implmentation on CPAN.
+the official MongoDB BSON implementation on CPAN.
 
 Internally, this is now a thin wrapper around L<BSON::OID>.  The only
 difference are:

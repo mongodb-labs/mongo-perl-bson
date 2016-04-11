@@ -161,6 +161,16 @@ subtest 'wrapped' => sub {
 
 };
 
+if ( $Config{use64bitint} ) {
+    # to JSON
+    is( to_myjson({a=>bson_int64(0)}), q[{"a":0}], 'bson_int64(0)' );
+    is( to_myjson({a=>bson_int64(42)}), q[{"a":42}], 'bson_int64(42)' );
+
+    # to extended JSON
+    is( to_extjson({a=>bson_int64(0)}), q[{"a":{"$numberLong":"0"}}], 'extjson: bson_int64(0)' );
+    is( to_extjson({a=>bson_int64(42)}), q[{"a":{"$numberLong":"42"}}], 'extjson: bson_int64(0)' );
+}
+
 done_testing;
 
 # COPYRIGHT

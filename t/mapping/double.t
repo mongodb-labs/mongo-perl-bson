@@ -10,6 +10,8 @@ use TestUtils;
 use BSON qw/encode decode/;
 use BSON::Types qw/bson_double/;
 
+use JSON::MaybeXS;
+
 my ($hash);
 
 # test constructor
@@ -66,6 +68,20 @@ for my $s ( qw/Inf -Inf NaN/ ) {
         or diag explain $hash;
     packed_is( "d", $hash->{A}, $s/1.0, "value correct" );
 }
+
+# to JSON
+is( to_myjson({a=>bson_double(0.0)}), q[{"a":0}], 'bson_double(0.0) (XXX lossy!)' );
+is( to_myjson({a=>bson_double(42)}), q[{"a":42}], 'bson_double(42) (XXX lossy!)' );
+is( to_myjson({a=>bson_double(0.1)}), q[{"a":0.1}], 'bson_double(0.1)' );
+eval { to_myjson({a=>bson_double("Inf"/1.0)}) };
+like( $@, qr/illegal in JSON/, 'throws: bson_double("Inf"/1.0)' );
+
+# to extended JSON; XXX not implemented yet by mognod;
+# see https://jira.mongodb.org/browse/SERVER-23204
+##is( to_extjson({a=>bson_double(0.0)}), q[{"a":0}], 'extjson: bson_double(0.0) (XXX lossy!)' );
+##is( to_extjson({a=>bson_double(42)}), q[{"a":42}], 'extjson: bson_double(42) (XXX lossy!)' );
+##is( to_extjson({a=>bson_double(0.1)}), q[{"a":0.1}], 'extjson: bson_double(0.1)' );
+##is( to_extjson({a=>bson_double("Inf"/1.0)}), q[{"a":{"$numberDouble":"Inf"}}], 'extjson: bson_double("Inf"/1.0)' );
 
 done_testing;
 

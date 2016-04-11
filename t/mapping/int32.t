@@ -79,6 +79,14 @@ subtest 'wrapped' => sub {
     is( $bson, $expect, "BSON correct" );
 };
 
+# to JSON
+is( to_myjson({a=>bson_int32(0)}), q[{"a":0}], 'bson_int32(0)' );
+is( to_myjson({a=>bson_int32(42)}), q[{"a":42}], 'bson_int32(42)' );
+
+# to extended JSON
+is( to_extjson({a=>bson_int32(0)}), q[{"a":0}], 'extjson: bson_int32(0)' );
+is( to_extjson({a=>bson_int32(42)}), q[{"a":42}], 'extjson: bson_int32(42)' );
+
 done_testing;
 
 # COPYRIGHT

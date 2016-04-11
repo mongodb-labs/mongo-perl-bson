@@ -67,22 +67,20 @@ sub _get_pid {
     return unpack( "N", substr( $_[0]->{oid}, 14, 4 ) );
 }
 
-=head2 TO_JSON
+=method TO_JSON
 
-    my $json = JSON->new;
-    $json->allow_blessed;
-    $json->convert_blessed;
+Returns a string for this OID, with the OID given as 24 hex digits.
 
-    $json->encode(MongoDB::OID->new);
+If the C<BSON_EXTJSON> option is true, it will instead be compatible with
+MongoDB's L<extended JSON|https://docs.mongodb.org/manual/reference/mongodb-extended-json/>
+format, which represents it as a document as follows:
 
-Returns a JSON string for this OID.  This is compatible with the strict JSON
-representation used by MongoDB, that is, an OID with the value
-"012345678901234567890123" will be represented as
-C<{"$oid" : "012345678901234567890123"}>.
+    {"$oid" : "012345678901234567890123"}
 
 =cut
 
 sub TO_JSON {
+    return $_[0]->hex unless $ENV{BSON_EXTJSON};
     return {'$oid' => $_[0]->hex };
 }
 

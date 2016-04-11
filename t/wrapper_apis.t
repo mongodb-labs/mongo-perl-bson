@@ -15,33 +15,52 @@ use BSON qw/encode decode/;
 use BSON::Types ':all';
 
 # Undeprecated BSON type wrappers need to be API compatible with previous
-# versions and with MongoDB::* equivalents
+# versions and with MongoDB::* equivalents. Added 'TO_JSON' for all
+# wrapper classes to ensure they all serialize.
 
 my %apis = (
     "BSON::Bool" => {
-        "BSON::Bool" => [ qw/true false value op_eq/ ],
+        "BSON::Bool" => [ qw/true false value op_eq TO_JSON/ ],
     },
     "BSON::Bytes" => {
+        "BSON::Bytes" => [ qw/TO_JSON/ ],
         "MongoDB::BSON::Binary" => [ qw/data subtype/ ],
     },
+    "BSON::Code" => {
+        "BSON::Code" => [ qw/code scope length TO_JSON/ ],
+        "MongoDB::Code" => [ qw/code scope/ ],
+    },
+    "BSON::Double" => {
+        "BSON::Double" => [ qw/TO_JSON/ ],
+    },
+    "BSON::Int32" => {
+        "BSON::Int32" => [ qw/TO_JSON/ ],
+    },
+    "BSON::Int64" => {
+        "BSON::Int64" => [ qw/TO_JSON/ ],
+    },
+    "BSON::MaxKey" => {
+        "BSON::MaxKey" => [ qw/TO_JSON/ ],
+    },
+    "BSON::MinKey" => {
+        "BSON::MinKey" => [ qw/TO_JSON/ ],
+    },
     "BSON::OID" => {
+        "BSON::OID" => [ qw/TO_JSON/ ],
         "MongoDB::OID" => [ qw/value to_string get_time TO_JSON _get_pid/ ],
     },
     "BSON::Regex" => {
+        "BSON::Regex" => [ qw/TO_JSON/ ],
         "MongoDB::BSON::Regexp" => [ qw/pattern flags try_compile/ ],
     },
     "BSON::String" => {
-        "BSON::String" => [ qw/value/ ],
+        "BSON::String" => [ qw/value TO_JSON/ ],
     },
     "BSON::Time" => {
-        "BSON::Time" => [ qw/value epoch op_eq/ ],
-    },
-    "BSON::Code" => {
-        "BSON::Code" => [ qw/code scope length/ ],
-        "MongoDB::Code" => [ qw/code scope/ ],
+        "BSON::Time" => [ qw/value epoch op_eq TO_JSON/ ],
     },
     "BSON::Timestamp" => {
-        "BSON::Timestamp" => [ qw/seconds increment/ ],
+        "BSON::Timestamp" => [ qw/seconds increment TO_JSON/ ],
         "MongoDB::Timestamp" => [ qw/sec inc/ ],
     },
 );

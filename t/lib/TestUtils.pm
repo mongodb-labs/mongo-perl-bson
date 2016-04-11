@@ -6,9 +6,27 @@ use Test::More 0.96;
 use B;
 use Carp qw/croak/;
 use Config;
+use JSON::MaybeXS;
 
 use base 'Exporter';
-our @EXPORT = qw/sv_type packed_is bytes_are/;
+our @EXPORT = qw/sv_type packed_is bytes_are to_extjson to_myjson/;
+
+my $json_codec = JSON::MaybeXS->new(
+    ascii => 1,
+    pretty => 0,
+    canonical => 1,
+    allow_blessed => 1,
+    convert_blessed => 1,
+);
+
+sub to_extjson {
+    local $ENV{BSON_EXTJSON} = 1;
+    return $json_codec->encode( shift );
+}
+
+sub to_myjson {
+    return $json_codec->encode( shift );
+}
 
 sub sv_type {
     my $v     = shift;

@@ -64,6 +64,18 @@ SKIP: {
     is( $bson, $expect, "BSON correct" );
 }
 
+# to JSON
+eval { to_myjson({a=>bson_regex()}) };
+like( $@, qr/illegal in JSON/, 'json throws: bson_regex()' );
+
+# to extended JSON
+(my $pattern_json = $pattern) =~ s{\\}{\\\\}g;
+is(
+    to_extjson( { a => bson_regex( $pattern, $flags ) } ),
+    qq[{"a":{"\$options":"$sorted_flags","\$regex":"$pattern_json"}}],
+    'extjson: bson_regex(<pattern>,<flags>)'
+);
+
 done_testing;
 
 # COPYRIGHT
