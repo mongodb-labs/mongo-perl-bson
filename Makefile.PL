@@ -31,7 +31,6 @@ my %WriteMakefileArgs = (
     "constant" => 0,
     "if" => 0,
     "overload" => 0,
-    "re" => 0,
     "strict" => 0,
     "threads::shared" => 0,
     "warnings" => 0
@@ -48,6 +47,7 @@ my %WriteMakefileArgs = (
     "Test::More" => "0.96",
     "Test::Number::Delta" => 0,
     "lib" => 0,
+    "re" => 0,
     "utf8" => 0
   },
   "VERSION" => "0.17",
