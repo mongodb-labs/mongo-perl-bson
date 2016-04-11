@@ -725,7 +725,7 @@ sub _inflate_hash {
     }
 
     if ( exists $hash->{'$undefined'} ) {
-        return undef;
+        return undef; ## no critic
     }
 
     if ( exists $hash->{'$ref'} ) {
