@@ -14,6 +14,7 @@ use Carp;
 use Config;
 use Tie::IxHash;
 
+use Moo;
 use BSON::Types ();
 use boolean;
 
@@ -62,6 +63,354 @@ use constant {
     BSON_BINARY_TYPE => 'C',
     BSON_CSTRING => 'Z*',
 };
+
+use namespace::clean -except => 'meta';
+
+#--------------------------------------------------------------------------#
+# public attributes
+#--------------------------------------------------------------------------#
+
+=attr error_callback
+
+This attribute specifies a function reference that will be called with
+three positional arguments:
+
+=for :list
+* an error string argument describing the error condition
+* a reference to the problematic document or byte-string
+* the method in which the error occurred (e.g. C<encode_one> or C<decode_one>)
+
+Note: for decoding errors, the byte-string is passed as a reference to avoid
+copying possibly large strings.
+
+If not provided, errors messages will be thrown with C<Carp::croak>.
+
+=cut
+
+has error_callback => (
+    is      => 'ro',
+    isa     => sub { die "not a code reference" if defined $_[0] && ! ref $_[0] eq 'CODE' },
+);
+
+=attr invalid_chars
+
+A string containing ASCII characters that must not appear in keys.  The default
+is the empty string, meaning there are no invalid characters.
+
+=cut
+
+has invalid_chars => (
+    is      => 'ro',
+    isa     => sub { die "not a string" if ! defined $_[0] || ref $_[0] },
+    default => '',
+);
+
+=attr max_length
+
+This attribute defines the maximum document size. The default is 0, which
+disables any maximum.
+
+If set to a positive number, it applies to both encoding B<and> decoding (the
+latter is necessary for prevention of resource consumption attacks).
+
+=cut
+
+has max_length => (
+    is      => 'ro',
+    isa     => sub { die "not a non-negative number" unless defined $_[0] && $_[0] >= 0 },
+    default => 0,
+);
+
+=attr op_char
+
+This is a single character to use for special operators.  If a key starts
+with C<op_char>, the C<op_char> character will be replaced with "$".
+
+The default is "$".
+
+=cut
+
+has op_char => (
+    is  => 'ro',
+    isa => sub { die "not a single character" if defined $_[0] && length $_[0] > 1 },
+);
+
+=attr ordered
+
+If set to a true value decoding will return a tied hash that preserves
+key order. Otherwise, a regular unordered hash will be returned.
+
+B<IMPORTANT CAVEATS>:
+
+=for :list
+* Users must not rely on the return value being any particular tied hash
+  implementation.  It may change in the future for efficiency.
+* Turning this option on entails a significant speed penalty as tied hashes
+  are slower than regular Perl hashes.
+
+The default is false.
+
+=cut
+
+has ordered => (
+    is => 'ro',
+    default => "",
+);
+
+=attr prefer_numeric
+
+If set to true, scalar values that look like a numeric value will be
+encoded as a BSON numeric type.  When false, if the scalar value was ever
+used as a string, it will be encoded as a BSON UTF-8 string.
+
+The default is false.
+
+=cut
+
+has prefer_numeric => (
+    is => 'ro',
+    default => "",
+);
+
+=attr wrap_numbers
+
+If set to true, during decoding, numeric values will be wrapped into
+BSON type-wrappers: L<BSON::Double>, L<BSON::Int64> or L<BSON::Int32>.
+While very slow, this can help ensure fields can round-trip if unmodified.
+
+The default is false.
+
+=cut
+
+has wrap_numbers => (
+    is => 'ro',
+    default => "",
+);
+
+=attr wrap_strings
+
+If set to true, during decoding, string values will be wrapped into a BSON
+type-wrappers, L<BSON::String>.  While very slow, this can help ensure
+fields can round-trip if unmodified.
+
+The default is false.
+
+=cut
+
+has wrap_strings => (
+    is => 'ro',
+    default => "",
+);
+
+#--------------------------------------------------------------------------#
+# public methods
+#--------------------------------------------------------------------------#
+
+=method encode_one
+
+    $byte_string = $codec->encode_one( $doc );
+    $byte_string = $codec->encode_one( $doc, \%options );
+
+Takes a "document", typically a hash reference, an array reference, or a
+Tie::IxHash object and returns a byte string with the BSON representation of
+the document.
+
+An optional hash reference of options may be provided.  Valid options include:
+
+=for :list
+* first_key – if C<first_key> is defined, it and C<first_value>
+  will be encoded first in the output BSON; any matching key found in the
+  document will be ignored.
+* first_value - value to assign to C<first_key>; will encode as Null if omitted
+* error_callback – overrides codec default
+* invalid_chars – overrides codec default
+* max_length – overrides codec default
+* op_char – overrides codec default
+* prefer_numeric – overrides codec default
+
+=cut
+
+sub encode_one {
+    my ( $self, $document, $options ) = @_;
+
+    my $merged_opts = { %$self, ( $options ? %$options : () ) };
+
+    my $bson = eval { _encode_bson( $document, $merged_opts ) };
+    # XXX this is a late max_length check -- it should be checked during
+    # encoding after each key
+    if ( $@ or ( $merged_opts->{max_length} && length($bson) > $merged_opts->{max_length} ) ) {
+        my $msg = $@ || "Document exceeds maximum size $merged_opts->{max_length}";
+        if ( $merged_opts->{error_callback} ) {
+            $merged_opts->{error_callback}->( $msg, $document, 'encode_one' );
+        }
+        else {
+            Carp::croak("During encode_one, $msg");
+        }
+    }
+
+    return $bson;
+}
+
+=method decode_one
+
+    $doc = $codec->decode_one( $byte_string );
+    $doc = $codec->decode_one( $byte_string, \%options );
+
+Takes a byte string with a BSON-encoded document and returns a
+hash reference representin the decoded document.
+
+An optional hash reference of options may be provided.  Valid options include:
+
+=for :list
+* dbref_callback – overrides codec default
+* dt_type – overrides codec default
+* error_callback – overrides codec default
+* max_length – overrides codec default
+
+=cut
+
+sub decode_one {
+    my ( $self, $string, $options ) = @_;
+
+    my $merged_opts = { %$self, ( $options ? %$options : () ) };
+
+    if ( $merged_opts->{max_length} && length($string) > $merged_opts->{max_length} ) {
+        my $msg = "Document exceeds maximum size $merged_opts->{max_length}";
+        if ( $merged_opts->{error_callback} ) {
+            $merged_opts->{error_callback}->( $msg, \$string, 'decode_one' );
+        }
+        else {
+            Carp::croak("During decode_one, $msg");
+        }
+    }
+
+    my $document = eval { _decode_bson( $string, $merged_opts ) };
+    if ( $@ ) {
+        if ( $merged_opts->{error_callback} ) {
+            $merged_opts->{error_callback}->( $@, \$string, 'decode_one' );
+        }
+        else {
+            Carp::croak("During decode_one, $@");
+        }
+    }
+
+    return $document;
+}
+
+=method clone
+
+    $copy = $codec->clone( ordered => 1 );
+
+Constructs a copy of the original codec, but allows changing
+attributes in the copy.
+
+=cut
+
+sub clone {
+    my ($self, @args) = @_;
+    my $class = ref($self);
+    if ( @args == 1 && ref( $args[0] ) eq 'HASH' ) {
+        return $class->new( %$self, %{$args[0]} );
+    }
+
+    return $class->new( %$self, @args );
+}
+
+
+#--------------------------------------------------------------------------#
+# public methods
+#--------------------------------------------------------------------------#
+
+=method inflate_extjson
+
+    $bson->inflate_extjson( $data );
+
+Given a hash reference, this method walks the hash, replacing any
+L<MongoDB extended JSON|https://docs.mongodb.org/manual/reference/mongodb-extended-json/>
+items with BSON type-wrapper equivalents.  Additionally, any JSON
+boolean objects (e.g. C<JSON::PP::Boolean>) will be replaced with
+L<boolean.pm|boolean> true or false values.
+
+=cut
+
+sub inflate_extjson {
+    my ( $self, $hash ) = @_;
+
+    for my $k ( keys %$hash ) {
+        my $v = $hash->{$k};
+        if ( substr( $k, 0, 1 ) eq '$' ) {
+            croak "Dollar-prefixed key '$k' is not legal in top-level hash";
+        }
+        my $type = ref($v);
+        $hash->{$k} =
+            $type eq 'HASH'    ? $self->_inflate_hash($v)
+          : $type eq 'ARRAY'   ? $self->_inflate_array($v)
+          : $type =~ $bools_re ? ( $v ? true : false )
+          :                      $v;
+    }
+
+    return $hash;
+}
+
+#--------------------------------------------------------------------------#
+# legacy functional interface
+#--------------------------------------------------------------------------#
+
+=function encode
+
+    my $bson = encode({ bar => 'foo' }, \%options);
+
+This is the legacy, functional interface and is only expored on demand.
+It takes a hashref and returns a BSON string.
+
+=function decode
+
+    my $hash = decode( $bson, \%options );
+
+This is the legacy, functional interface and is only exported on demand.
+It takes a BSON string and returns a hashref.
+
+=cut
+
+{
+    my $CODEC;
+
+    sub encode {
+        my $doc = shift;
+        $CODEC = BSON->new unless defined $CODEC;
+        if ( @_ == 1 && ref( $_[0] ) eq 'HASH' ) {
+            return $CODEC->encode_one( $doc, $_[0] );
+        }
+        elsif ( @_ % 2 == 0 ) {
+            return $CODEC->encode_one( $doc, {@_} );
+        }
+        else {
+            Carp::croak("Options for 'encode' must be a hashref or key-value pairs");
+        }
+    }
+
+    sub decode {
+        my $doc = shift;
+        $CODEC = BSON->new unless defined $CODEC;
+        my $args;
+        if ( @_ == 1 && ref( $_[0] ) eq 'HASH' ) {
+            $args = shift;
+        }
+        elsif ( @_ % 2 == 0 ) {
+            $args = { @_ };
+        }
+        else {
+            Carp::croak("Options for 'decode' must be a hashref or key-value pairs");
+        }
+        $args->{ordered} = delete $args->{ixhash}
+          if exists $args->{ixhash} && !exists $args->{ordered};
+        return $CODEC->decode_one( $doc, $args );
+    }
+}
+
+#--------------------------------------------------------------------------#
+# private functions
+#--------------------------------------------------------------------------#
 
 sub _split_re {
     my $value = shift;
@@ -149,8 +498,8 @@ sub _pack_int64 {
     }
 }
 
-sub encode {
-    my $doc = shift;
+sub _encode_bson_pp {
+    my ($doc) = @_;
 
     return $doc->value if ref($doc) eq 'BSON::Raw';
     return $$doc if ref($doc) eq 'MongoDB::BSON::Raw';
@@ -321,7 +670,7 @@ sub encode {
         # Int (BSON::Int32 or heuristic based on size)
         elsif ( $value =~ $int_re ) {
             if ( $value > $max_int64 || $value < $min_int64 ) {
-                croak("MongoDB can only handle 8-byte integers. Key '$key' is '$value'");
+                croak("BSON can only handle 8-byte integers. Key '$key' is '$value'");
             }
             elsif ( $value > $max_int32 || $value < $min_int32 ) {
                 $bson .= pack( BSON_TYPE_NAME, 0x12, $key ) . _pack_int64($value);
@@ -388,8 +737,8 @@ sub __dump_bson {
     return join(" ", @pairs);
 }
 
-sub decode {
-    my $bson = shift;
+sub _decode_bson_pp {
+    my ($bson, $opt) = @_;
     my $blen= length($bson);
     my $len = unpack( BSON_INT32, $bson );
     if ( length($bson) != $len ) {
@@ -398,11 +747,10 @@ sub decode {
     if ( chop($bson) ne "\x00" ) {
         croak("BSON document not null terminated");
     }
-    my %opt = @_;
     $bson = substr $bson, 4;
     my @array = ();
     my %hash = ();
-    tie( %hash, 'Tie::IxHash' ) if $opt{ixhash} || $opt{ordered};
+    tie( %hash, 'Tie::IxHash' ) if $opt->{ordered};
     my ($type, $key, $value);
     while ($bson) {
         ( $type, $key, $bson ) = unpack( BSON_TYPE_NAME.BSON_REMAINING, $bson );
@@ -419,7 +767,7 @@ sub decode {
         # Double
         if ( $type == 0x01 ) {
             ( $value, $bson ) = unpack( BSON_DOUBLE.BSON_REMAINING, $bson );
-            $value = BSON::Double->new( value => $value ) if $opt{wrap_numbers};
+            $value = BSON::Double->new( value => $value ) if $opt->{wrap_numbers};
         }
 
         # String and Symbol (deprecated); Symbol will be convert to String
@@ -433,13 +781,13 @@ sub decode {
             if ( !utf8::decode($value) ) {
                 croak( sprintf( $ERR_BAD_UTF8, $key, $type ) );
             }
-            $value = BSON::String->new( value => $value ) if $opt{wrap_strings};
+            $value = BSON::String->new( value => $value ) if $opt->{wrap_strings};
         }
 
         # Document and Array
         elsif ( $type == 0x03 || $type == 0x04 ) {
             my $len = unpack( BSON_INT32, $bson );
-            $value = decode( substr( $bson, 0, $len ), %opt, _decode_array => $type == 0x04 );
+            $value = _decode_bson_pp( substr( $bson, 0, $len ), { %$opt, _decode_array => $type == 0x04}  );
             $bson = substr( $bson, $len, length($bson) - $len );
         }
 
@@ -588,7 +936,7 @@ sub decode {
                 croak( sprintf( $ERR_MISSING_NULL, $key, $type ) );
             }
 
-            my $scope = decode( $codewscope, %opt, _decode_array => 0 );
+            my $scope = _decode_bson_pp( $codewscope, { %$opt, _decode_array => 0} );
 
             $value = BSON::Code->new( code => $code, scope => $scope );
         }
@@ -596,7 +944,7 @@ sub decode {
         # Int32
         elsif ( $type == 0x10 ) {
             ( $value, $bson ) = unpack( BSON_INT32.BSON_REMAINING, $bson );
-            $value = BSON::Int32->new( value => $value ) if $opt{wrap_numbers};
+            $value = BSON::Int32->new( value => $value ) if $opt->{wrap_numbers};
         }
 
         # Timestamp
@@ -614,7 +962,7 @@ sub decode {
                 ($value, $bson) = unpack(BSON_8BYTES.BSON_REMAINING,$bson);
                 $value = _int64_to_bigint($value);
             }
-            $value = BSON::Int64->new( value => $value ) if $opt{wrap_numbers};
+            $value = BSON::Int64->new( value => $value ) if $opt->{wrap_numbers};
         }
 
         # MinKey
@@ -632,33 +980,14 @@ sub decode {
             croak "Unsupported type $type";
         }
 
-        if ( $opt{_decode_array} ) {
+        if ( $opt->{_decode_array} ) {
             push @array, $value;
         }
         else {
             $hash{$key} = $value;
         }
     }
-    return $opt{_decode_array} ? \@array : \%hash;
-}
-
-sub inflate_extjson {
-    my ( $class, $hash ) = @_;
-
-    for my $k ( keys %$hash ) {
-        my $v = $hash->{$k};
-        if ( substr( $k, 0, 1 ) eq '$' ) {
-            croak "Dollar-prefixed key '$k' is not legal in top-level hash";
-        }
-        my $type = ref($v);
-        $hash->{$k} =
-            $type eq 'HASH'    ? $class->_inflate_hash($v)
-          : $type eq 'ARRAY'   ? $class->_inflate_array($v)
-          : $type =~ $bools_re ? ( $v ? true : false )
-          :                      $v;
-    }
-
-    return $hash;
+    return $opt->{_decode_array} ? \@array : \%hash;
 }
 
 sub _inflate_hash {
@@ -795,6 +1124,11 @@ sub _iso8601_to_epochms {
     else {
         Carp::croak("Couldn't parse '\$date' field: $date\n");
     }
+}
+
+BEGIN {
+    *_encode_bson = \&_encode_bson_pp;
+    *_decode_bson = \&_decode_bson_pp;
 }
 
 1;
