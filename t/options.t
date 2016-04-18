@@ -37,6 +37,19 @@ subtest "invalid_char" => sub {
     like( $@, qr/key 'example\.c\$om' has invalid character\(s\) '\.\$'/, "multi-invalid chars throws exception");
 };
 
+subtest "max_length" => sub {
+    my $b = _BSON( max_length => 20 );
+
+    my $hash = { "example.com" => "a" x 100 };
+    my $encoded = _BSON->encode_one($hash);
+
+    eval { $b->encode_one( $hash ) };
+    like( $@, qr/encode_one.*Document exceeds maximum size 20/, "max_length exceeded during encode_one" );
+
+    eval { $b->decode_one( $encoded ) };
+    like( $@, qr/decode_one.*Document exceeds maximum size 20/, "max_length exceeded during decode_one" );
+};
+
 done_testing;
 
 # COPYRIGHT
