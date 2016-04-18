@@ -12,6 +12,7 @@ our $VERSION = '0.17';
 
 use Carp;
 use Config;
+use Scalar::Util 'blessed';
 use Tie::IxHash;
 
 use Moo;
@@ -376,6 +377,9 @@ It takes a BSON string and returns a hashref.
     my $CODEC;
 
     sub encode {
+        if ( $_[0] eq 'BSON' || ( blessed($_[0]) && $_[0]->isa('BSON') ) ) {
+            Carp::croak("Error: 'encode' is a function, not a method");
+        }
         my $doc = shift;
         $CODEC = BSON->new unless defined $CODEC;
         if ( @_ == 1 && ref( $_[0] ) eq 'HASH' ) {
@@ -390,6 +394,9 @@ It takes a BSON string and returns a hashref.
     }
 
     sub decode {
+        if ( $_[0] eq 'BSON' || ( blessed($_[0]) && $_[0]->isa('BSON') ) ) {
+            Carp::croak("Error: 'decode' is a function, not a method");
+        }
         my $doc = shift;
         $CODEC = BSON->new unless defined $CODEC;
         my $args;
