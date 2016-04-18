@@ -23,18 +23,26 @@ subtest "error_callback" => sub {
     $b->decode_one($bad);
     is( 0+ @errs, 1, "error_callback ran" );
     like( $errs[0][0], qr/not null terminated/, "error_callback arg 0" );
-    is( ${$errs[0][1]}, $bad, "error_callback arg 1" );
-    is( $errs[0][2], 'decode_one', "error_callback arg 2" );
+    is( ${ $errs[0][1] }, $bad,         "error_callback arg 1" );
+    is( $errs[0][2],      'decode_one', "error_callback arg 2" );
 };
 
 subtest "invalid_char" => sub {
     my $b = _BSON( invalid_chars => '.' );
     eval { $b->encode_one( { "example.com" => 1 } ) };
-    like( $@, qr/key 'example\.com' has invalid character\(s\) '\.'/, "invalid char throws exception");
+    like(
+        $@,
+        qr/key 'example\.com' has invalid character\(s\) '\.'/,
+        "invalid char throws exception"
+    );
 
     $b = _BSON( invalid_chars => '.$' );
     eval { $b->encode_one( { "example.c\$om" => 1 } ) };
-    like( $@, qr/key 'example\.c\$om' has invalid character\(s\) '\.\$'/, "multi-invalid chars throws exception");
+    like(
+        $@,
+        qr/key 'example\.c\$om' has invalid character\(s\) '\.\$'/,
+        "multi-invalid chars throws exception"
+    );
 };
 
 subtest "max_length" => sub {
@@ -43,11 +51,19 @@ subtest "max_length" => sub {
     my $hash = { "example.com" => "a" x 100 };
     my $encoded = _BSON->encode_one($hash);
 
-    eval { $b->encode_one( $hash ) };
-    like( $@, qr/encode_one.*Document exceeds maximum size 20/, "max_length exceeded during encode_one" );
+    eval { $b->encode_one($hash) };
+    like(
+        $@,
+        qr/encode_one.*Document exceeds maximum size 20/,
+        "max_length exceeded during encode_one"
+    );
 
-    eval { $b->decode_one( $encoded ) };
-    like( $@, qr/decode_one.*Document exceeds maximum size 20/, "max_length exceeded during decode_one" );
+    eval { $b->decode_one($encoded) };
+    like(
+        $@,
+        qr/decode_one.*Document exceeds maximum size 20/,
+        "max_length exceeded during decode_one"
+    );
 };
 
 done_testing;
