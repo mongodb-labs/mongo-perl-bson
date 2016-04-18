@@ -19,8 +19,8 @@ sub _BSON { BSON->new(@_) }
 subtest "error_callback" => sub {
     my $bad = "\x05\x00\x00\x00\x01";
     my @errs;
-    my $b = _BSON( error_callback => sub { push @errs, [@_] } );
-    $b->decode_one($bad);
+    my $obj = _BSON( error_callback => sub { push @errs, [@_] } );
+    $obj->decode_one($bad);
     is( 0+ @errs, 1, "error_callback ran" );
     like( $errs[0][0], qr/not null terminated/, "error_callback arg 0" );
     is( ${ $errs[0][1] }, $bad,         "error_callback arg 1" );
@@ -28,16 +28,16 @@ subtest "error_callback" => sub {
 };
 
 subtest "invalid_char" => sub {
-    my $b = _BSON( invalid_chars => '.' );
-    eval { $b->encode_one( { "example.com" => 1 } ) };
+    my $obj = _BSON( invalid_chars => '.' );
+    eval { $obj->encode_one( { "example.com" => 1 } ) };
     like(
         $@,
         qr/key 'example\.com' has invalid character\(s\) '\.'/,
         "invalid char throws exception"
     );
 
-    $b = _BSON( invalid_chars => '.$' );
-    eval { $b->encode_one( { "example.c\$om" => 1 } ) };
+    $obj = _BSON( invalid_chars => '.$' );
+    eval { $obj->encode_one( { "example.c\$om" => 1 } ) };
     like(
         $@,
         qr/key 'example\.c\$om' has invalid character\(s\) '\.\$'/,
@@ -46,19 +46,19 @@ subtest "invalid_char" => sub {
 };
 
 subtest "max_length" => sub {
-    my $b = _BSON( max_length => 20 );
+    my $obj = _BSON( max_length => 20 );
 
     my $hash = { "example.com" => "a" x 100 };
     my $encoded = _BSON->encode_one($hash);
 
-    eval { $b->encode_one($hash) };
+    eval { $obj->encode_one($hash) };
     like(
         $@,
         qr/encode_one.*Document exceeds maximum size 20/,
         "max_length exceeded during encode_one"
     );
 
-    eval { $b->decode_one($encoded) };
+    eval { $obj->decode_one($encoded) };
     like(
         $@,
         qr/decode_one.*Document exceeds maximum size 20/,
