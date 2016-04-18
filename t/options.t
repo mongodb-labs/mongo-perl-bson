@@ -27,6 +27,16 @@ subtest "error_callback" => sub {
     is( $errs[0][2], 'decode_one', "error_callback arg 2" );
 };
 
+subtest "invalid_char" => sub {
+    my $b = _BSON( invalid_chars => '.' );
+    eval { $b->encode_one( { "example.com" => 1 } ) };
+    like( $@, qr/key 'example\.com' has invalid character\(s\) '\.'/, "invalid char throws exception");
+
+    $b = _BSON( invalid_chars => '.$' );
+    eval { $b->encode_one( { "example.c\$om" => 1 } ) };
+    like( $@, qr/key 'example\.c\$om' has invalid character\(s\) '\.\$'/, "multi-invalid chars throws exception");
+};
+
 done_testing;
 
 # COPYRIGHT

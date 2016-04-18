@@ -499,7 +499,7 @@ sub _pack_int64 {
 }
 
 sub _encode_bson_pp {
-    my ($doc) = @_;
+    my ($doc, $opt) = @_;
 
     return $doc->value if ref($doc) eq 'BSON::Raw';
     return $$doc if ref($doc) eq 'MongoDB::BSON::Raw';
@@ -512,9 +512,21 @@ sub _encode_bson_pp {
       : ref($doc) eq 'Tie::IxHash' ? _ixhash_iterator($doc)
       :                              undef;
 
+    my $invalid =
+      length( $opt->{invalid_chars} ) ? qr/[\Q$opt->{invalid_chars}\E]/ : undef;
+
     my $bson = '';
     while ( my ( $key, $value ) = $iter ? $iter->() : (each %$doc) ) {
         last unless defined $key;
+
+        if ( $invalid && $key =~ $invalid ) {
+            croak(
+                sprintf(
+                    "key '%s' has invalid character(s) '%s'",
+                    $key, $opt->{invalid_chars}
+                )
+            );
+        }
 
         my $type = ref $value;
 
