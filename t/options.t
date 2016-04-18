@@ -66,6 +66,17 @@ subtest "max_length" => sub {
     );
 };
 
+subtest "op-char" => sub {
+    my $obj = _BSON( op_char => '-' );
+
+    my $hash = { -inc => { x => 1 } };
+    my $expect = { '$inc' => { x => 1 } };
+    my $got =$obj->decode_one( $obj->encode_one($hash) );
+
+    is_deeply( $got, $expect, "op-char converts to '\$'" )
+      or diag explain $got;
+};
+
 done_testing;
 
 # COPYRIGHT

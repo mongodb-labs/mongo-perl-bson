@@ -519,12 +519,16 @@ sub _encode_bson_pp {
       : ref($doc) eq 'Tie::IxHash' ? _ixhash_iterator($doc)
       :                              undef;
 
+    my $op_char = defined($opt->{op_char}) ? $opt->{op_char} : '';
     my $invalid =
       length( $opt->{invalid_chars} ) ? qr/[\Q$opt->{invalid_chars}\E]/ : undef;
 
     my $bson = '';
     while ( my ( $key, $value ) = $iter ? $iter->() : (each %$doc) ) {
         last unless defined $key;
+
+        substr( $key, 0, 1 ) = '$'
+          if length($op_char) && substr( $key, 0, 1 ) eq $op_char;
 
         if ( $invalid && $key =~ $invalid ) {
             croak(
