@@ -77,6 +77,19 @@ subtest "op-char" => sub {
       or diag explain $got;
 };
 
+subtest "prefer_numeric" => sub {
+    my $hash = { x => "42" };
+
+    my $pn0 = _BSON( prefer_numeric => 0 );
+    my $pn1 = _BSON( prefer_numeric => 1 );
+    my $dec = _BSON( wrap_numbers   => 1, wrap_strings => 1 );
+
+    is( ref( $dec->decode_one( $pn1->encode_one($hash) )->{x} ),
+        'BSON::Int32', 'prefer_numeric => 1' );
+    is( ref( $dec->decode_one( $pn0->encode_one($hash) )->{x} ),
+        'BSON::String', 'prefer_numeric => 0' );
+};
+
 done_testing;
 
 # COPYRIGHT

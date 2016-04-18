@@ -20,6 +20,13 @@ use BSON::Types ':all';
     like( $@, qr/For key 'a', can't encode value of type 'Some::Random::Class'/, "encoding unknown type is fatal" );
 }
 
+{
+    my $glob = *foo;
+    eval { encode( { a => $glob } ) };
+    like( $@, qr/For key 'a', can't encode value '\*main::foo'/, "encoding glob is fatal" );
+}
+
+
 done_testing;
 
 # COPYRIGHT
