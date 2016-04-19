@@ -35,19 +35,24 @@ is( "$hash->{A}",      $now,         "value correct" );
 # DateTime -> BSON::Time
 SKIP: {
     eval { require DateTime };
-    skip( "DateTime not installed", 2 )
+    skip( "DateTime not installed", 1 )
       unless $INC{'DateTime.pm'};
     $bson = encode( { A => DateTime->from_epoch( epoch => $now ) } );
     $hash = decode($bson);
     is( ref( $hash->{A} ), 'BSON::Time', "DateTime->BSON::Time" );
     is( "$hash->{A}",      $now,         "value correct" );
     is( $bson,             $expect,      "BSON correct" );
+
+    # conversion
+    my $obj = $hash->{A}->as_datetime;
+    isa_ok( $obj, 'DateTime', 'as_datetime' );
+    is($obj->epoch, $now, "epoch"); 
 }
 
 # DateTime::Tiny -> BSON::Time
 SKIP: {
     eval { require DateTime::Tiny };
-    skip( "DateTime::Tiny not installed", 2 )
+    skip( "DateTime::Tiny not installed", 1 )
       unless $INC{'DateTime/Tiny.pm'};
     my ($s,$m,$h,$D,$M,$Y) = gmtime($now);
     my $dt = DateTime::Tiny->new(
@@ -59,18 +64,28 @@ SKIP: {
     is( ref( $hash->{A} ), 'BSON::Time', "DateTime::Tiny->BSON::Time" );
     is( "$hash->{A}",      $now,         "value correct" );
     is( $bson,             $expect,      "BSON correct" );
+
+    # conversion
+    my $obj = $hash->{A}->as_datetime_tiny;
+    isa_ok( $obj, 'DateTime::Tiny', 'as_datetime_tiny' );
+    is($obj->as_string . "Z", $hash->{A}->as_iso8601, "iso8601"); 
 }
 
 # Time::Moment -> BSON::Time
 SKIP: {
     eval { require Time::Moment };
-    skip( "Time::Moment not installed", 2 )
+    skip( "Time::Moment not installed", 1 )
       unless $INC{'Time/Moment.pm'};
     $bson = encode( { A => Time::Moment->from_epoch( $now ) } );
     $hash = decode($bson);
     is( ref( $hash->{A} ), 'BSON::Time', "Time::Moment->BSON::Time" );
     is( "$hash->{A}",      $now,         "value correct" );
     is( $bson,             $expect,      "BSON correct" );
+
+    # conversion
+    my $obj = $hash->{A}->as_time_moment;
+    isa_ok( $obj, 'Time::Moment', 'as_time_moment' );
+    is($obj->epoch, $now, "epoch"); 
 }
 
 # to JSON

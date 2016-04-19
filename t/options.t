@@ -106,6 +106,71 @@ subtest "first_key" => sub {
 
 };
 
+subtest "dt_type" => sub {
+    my $now = time;
+
+    # undef
+    {
+        my $obj = _BSON( dt_type => undef );
+        my $bson = $obj->encode_one( { A => bson_time() } );
+        my $hash = $obj->decode_one($bson);
+        is( ref( $hash->{A} ), 'BSON::Time', "dt_type = undef" );
+    }
+
+    # BSON::Time
+    {
+        my $obj = _BSON( dt_type => "BSON::Time" );
+        my $bson = $obj->encode_one( { A => bson_time() } );
+        my $hash = $obj->decode_one($bson);
+        is( ref( $hash->{A} ), 'BSON::Time', "dt_type = BSON::Time" );
+    }
+
+    # DateTime
+    SKIP: {
+        eval { require DateTime };
+        skip( "DateTime not installed", 1 )
+        unless $INC{'DateTime.pm'};
+
+        my $obj = _BSON( dt_type => "DateTime" );
+        my $bson = $obj->encode_one( { A => bson_time() } );
+        my $hash = $obj->decode_one($bson);
+        is( ref( $hash->{A} ), 'DateTime', "dt_type = DateTime" );
+    }
+
+    # DateTime::Tiny
+    SKIP: {
+        eval { require DateTime::Tiny };
+        skip( "DateTime::Tiny not installed", 1 )
+        unless $INC{'DateTime/Tiny.pm'};
+
+        my $obj = _BSON( dt_type => "DateTime::Tiny" );
+        my $bson = $obj->encode_one( { A => bson_time() } );
+        my $hash = $obj->decode_one($bson);
+        is( ref( $hash->{A} ), 'DateTime::Tiny', "dt_type = DateTime::Tiny" );
+    }
+
+    # Time::Moment
+    SKIP: {
+        eval { require Time::Moment };
+        skip( "Time::Moment not installed", 1 )
+        unless $INC{'Time/Moment.pm'};
+
+        my $obj = _BSON( dt_type => "Time::Moment" );
+        my $bson = $obj->encode_one( { A => bson_time() } );
+        my $hash = $obj->decode_one($bson);
+        is( ref( $hash->{A} ), 'Time::Moment', "dt_type = Time::Moment" );
+    }
+
+    # unknown
+    {
+        my $obj = _BSON( dt_type => 'BOGUS' );
+        my $bson = $obj->encode_one( { A => bson_time() } );
+        eval { $obj->decode_one($bson) };
+        like( $@, qr/unsupported dt_type/i, "dt_type = BOGUS" );
+    }
+
+};
+
 done_testing;
 
 # COPYRIGHT

@@ -58,7 +58,7 @@ sub epoch {
     return int( $_[0]->value / 1000 );
 }
 
-sub to_iso8601 {
+sub as_iso8601 {
     my $self = shift;
     my ($s, $m, $h, $D, $M, $Y) = gmtime($self->epoch);
     $M++;
@@ -67,6 +67,28 @@ sub to_iso8601 {
     return $f
       ? sprintf( "%4d-%02d-%02dT%02d:%02d:%02d.%03dZ", $Y, $M, $D, $h, $m, $s, $f )
       : sprintf( "%4d-%02d-%02dT%02d:%02d:%02dZ",      $Y, $M, $D, $h, $m, $s );
+}
+
+sub as_datetime {
+    require DateTime;
+    return DateTime->from_epoch( epoch => $_[0]->{value} / 1000 );
+}
+
+sub as_datetime_tiny {
+    my ($s, $m, $h, $D, $M, $Y) = gmtime($_[0]->epoch);
+    $M++;
+    $Y+=1900;
+
+    require DateTime::Tiny;
+    return DateTime::Tiny->new(
+        year => $Y, month => $M, day => $D,
+        hour => $h, minute => $m, second => $s
+    );
+}
+
+sub as_time_moment {
+    require Time::Moment;
+    return Time::Moment->from_epoch( $_[0]->{value} / 1000 );
 }
 
 sub _num_cmp {
@@ -113,7 +135,7 @@ format, which represents it as a document as follows:
 =cut
 
 sub TO_JSON {
-    return $_[0]->to_iso8601 unless $ENV{BSON_EXTJSON};
+    return $_[0]->as_iso8601 unless $ENV{BSON_EXTJSON};
     return { '$date' => { '$numberLong' => "$_[0]->{value}"} };
 }
 

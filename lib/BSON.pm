@@ -219,6 +219,29 @@ has wrap_strings => (
     default => "",
 );
 
+=attr dt_type (Discouraged)
+
+Sets the type of object which is returned for BSON DateTime fields. The
+default is C<undef>, which returns objects of type L<BSON::Time>.  This is
+overloaded to be the integer epoch value when used as a number or string,
+so is somewhat backwards compatible with C<dt_type> in the L<MongoDB>
+driver.
+
+Other acceptable values are L<BSON::Time> (explicitly), L<DateTime>,
+L<Time::Moment>, L<DateTime::Tiny>.
+
+Because BSON::Time objects have methods to convert to DateTime,
+Time::Moment or DateTime::Tiny, use of this field is discouraged.  Users
+should use these methods on demand.  This option is provided for backwards
+compatibility only.
+
+=cut
+
+has dt_type => (
+    is      => 'ro',
+    isa     => sub { return if !defined($_[0]); die "not a string" if ref $_[0] },
+);
+
 #--------------------------------------------------------------------------#
 # public methods
 #--------------------------------------------------------------------------#
@@ -279,10 +302,13 @@ hash reference representin the decoded document.
 An optional hash reference of options may be provided.  Valid options include:
 
 =for :list
-* dbref_callback – overrides codec default
 * dt_type – overrides codec default
 * error_callback – overrides codec default
 * max_length – overrides codec default
+* ordered - overrides codec default
+* wrap_dbrefs - overrides codec default
+* wrap_numbers - overrides codec default
+* wrap_strings - overrides codec default
 
 =cut
 
@@ -961,6 +987,13 @@ sub _decode_bson_pp {
                 $value = _int64_to_bigint($value);
             }
             $value = BSON::Time->new( value => $value );
+            if ( defined $opt->{dt_type} && $opt->{dt_type} ne 'BSON::Time' ) {
+                $value =
+                    $opt->{dt_type} eq 'Time::Moment'   ? $value->as_time_moment
+                  : $opt->{dt_type} eq 'DateTime'       ? $value->as_datetime
+                  : $opt->{dt_type} eq 'DateTime::Tiny' ? $value->as_datetime_tiny
+                  :   croak("Unsupported dt_type '$opt->{dt_type}'");
+            }
         }
 
         # Null
