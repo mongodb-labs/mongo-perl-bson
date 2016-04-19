@@ -524,8 +524,18 @@ sub _encode_bson_pp {
     my $invalid =
       length( $opt->{invalid_chars} ) ? qr/[\Q$opt->{invalid_chars}\E]/ : undef;
 
+    my $opt_first_key = $opt->{first_key};
+    my $first_key;
+    my @save;
     my $bson = '';
     while ( my ( $key, $value ) = $iter ? $iter->() : (each %$doc) ) {
+        next if defined $first_key && $key eq $first_key;
+
+        if ( ! defined $first_key && defined $opt_first_key ) {
+            @save = ( $key, $value );
+            ($key, $value) = @{$opt}{qw/first_key first_value/};
+        }
+
         last unless defined $key;
 
         substr( $key, 0, 1 ) = '$'
@@ -761,6 +771,12 @@ sub _encode_bson_pp {
                 croak("For key '$key', can't encode value '$value'");
             }
 
+        }
+
+        if ( ! defined $first_key && defined $opt_first_key ) {
+            $first_key = $opt_first_key;
+            ( $key, $value ) = splice( @save, 0, 2 );
+            redo;
         }
 
     }

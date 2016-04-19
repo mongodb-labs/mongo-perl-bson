@@ -90,6 +90,22 @@ subtest "prefer_numeric" => sub {
         'BSON::String', 'prefer_numeric => 0' );
 };
 
+subtest "first_key" => sub {
+    my @doc = ( x => 42, y => 23 );
+
+    my $obj = _BSON( ordered => 1 );
+
+    my $got =
+      $obj->decode_one(
+        $obj->encode_one( bson_doc(@doc), { first_key => 'y', first_value => 32 } ) );
+
+    my ( $k, $v ) = each %$got;
+
+    is( $k, 'y', "first_key put first" );
+    is( $v, 32,  "first_value overrode existing value" );
+
+};
+
 done_testing;
 
 # COPYRIGHT
