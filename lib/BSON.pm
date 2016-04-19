@@ -573,6 +573,7 @@ sub _encode_bson_pp {
     my $invalid =
       length( $opt->{invalid_chars} ) ? qr/[\Q$opt->{invalid_chars}\E]/ : undef;
 
+    # cache so we can delete from opt later
     my $opt_first_key = $opt->{first_key};
     my $first_key;
     my @save;
@@ -582,7 +583,9 @@ sub _encode_bson_pp {
 
         if ( ! defined $first_key && defined $opt_first_key ) {
             @save = ( $key, $value );
-            ($key, $value) = @{$opt}{qw/first_key first_value/};
+            # delete from opt to avoid propagation
+            $key = delete $opt->{first_key};
+            $value = delete $opt->{first_value};
         }
 
         last unless defined $key;

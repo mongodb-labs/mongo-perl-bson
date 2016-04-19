@@ -91,7 +91,7 @@ subtest "prefer_numeric" => sub {
 };
 
 subtest "first_key" => sub {
-    my @doc = ( x => 42, y => 23 );
+    my @doc = ( x => 42, y => 23, z => { a => 1, b => 2} );
 
     my $obj = _BSON( ordered => 1 );
 
@@ -103,6 +103,7 @@ subtest "first_key" => sub {
 
     is( $k, 'y', "first_key put first" );
     is( $v, 32,  "first_value overrode existing value" );
+    ok( ! exists $got->{z}{_id}, "first_key doesn't propagate" );
 
 };
 
