@@ -174,6 +174,21 @@ has prefer_numeric => (
     default => "",
 );
 
+=attr wrap_dbrefs
+
+If set to true, during decoding, documents with C<$id> and C<$ref> fields
+will be wrapped as L<BSON::DBRef> objects.  If false, they are decoded into
+ordinary hash references (or ordered hashes, if C<ordered> is true).
+
+The default is true.
+
+=cut
+
+has wrap_dbrefs  => (
+    is => 'ro',
+    default => 1,
+);
+
 =attr wrap_numbers
 
 If set to true, during decoding, numeric values will be wrapped into
@@ -378,7 +393,7 @@ It takes a BSON string and returns a hashref.
     my $CODEC;
 
     sub encode {
-        if ( $_[0] eq 'BSON' || ( blessed($_[0]) && $_[0]->isa('BSON') ) ) {
+        if ( defined $_[0] && ( $_[0] eq 'BSON' || ( blessed($_[0]) && $_[0]->isa('BSON') ) ) ) {
             Carp::croak("Error: 'encode' is a function, not a method");
         }
         my $doc = shift;
@@ -395,7 +410,7 @@ It takes a BSON string and returns a hashref.
     }
 
     sub decode {
-        if ( $_[0] eq 'BSON' || ( blessed($_[0]) && $_[0]->isa('BSON') ) ) {
+        if ( defined $_[0] && ( $_[0] eq 'BSON' || ( blessed($_[0]) && $_[0]->isa('BSON') ) ) ) {
             Carp::croak("Error: 'decode' is a function, not a method");
         }
         my $doc = shift;
@@ -515,10 +530,14 @@ sub _encode_bson_pp {
     # XXX works for now, but should be optimized eventually
     $doc = $doc->_as_tied_hash if ref($doc) eq 'BSON::Doc';
 
+    my $doc_type = ref($doc);
     my $iter =
-        ref($doc) eq 'BSON::Doc'   ? $doc->_iterator
-      : ref($doc) eq 'Tie::IxHash' ? _ixhash_iterator($doc)
-      :                              undef;
+        $doc_type eq 'HASH'           ? undef
+      : $doc_type eq 'BSON::Doc'      ? $doc->_iterator
+      : $doc_type eq 'Tie::IxHash'    ? _ixhash_iterator($doc)
+      : $doc_type eq 'BSON::DBRef'    ? _ixhash_iterator( $doc->_ordered )
+      : $doc_type eq 'MongoDB::DBRef' ? _ixhash_iterator( $doc->_ordered )
+      :                                 undef;
 
     my $op_char = defined($opt->{op_char}) ? $opt->{op_char} : '';
     my $invalid =
@@ -573,7 +592,9 @@ sub _encode_bson_pp {
                 || $type eq 'BSON::Doc'
                 || $type eq 'BSON::Raw'
                 || $type eq 'Tie::IxHash'
-                || $type eq 'MongoDB::BSON::Raw' )
+                || $type eq 'MongoDB::BSON::Raw'
+                || $type eq 'BSON::DBRef'
+                || $type eq 'MongoDB::DBRef')
             {
                 $bson .= pack( BSON_TYPE_NAME, 0x03, $key ) . encode($value);
             }
@@ -823,6 +844,9 @@ sub __dump_bson {
 
 sub _decode_bson_pp {
     my ($bson, $opt) = @_;
+    if ( !defined $bson ) {
+        croak("Decode argument must not be undef");
+    }
     my $blen= length($bson);
     my $len = unpack( BSON_INT32, $bson );
     if ( length($bson) != $len ) {
@@ -872,6 +896,9 @@ sub _decode_bson_pp {
         elsif ( $type == 0x03 || $type == 0x04 ) {
             my $len = unpack( BSON_INT32, $bson );
             $value = _decode_bson_pp( substr( $bson, 0, $len ), { %$opt, _decode_array => $type == 0x04}  );
+            if ( $opt->{wrap_dbrefs} && $type == 0x03 && exists $value->{'$id'} && exists $value->{'$ref'} ) {
+                $value = BSON::DBRef->new( %$value );
+            }
             $bson = substr( $bson, $len, length($bson) - $len );
         }
 

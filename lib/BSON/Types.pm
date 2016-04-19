@@ -12,6 +12,7 @@ our @EXPORT_OK = qw(
     bson_bool
     bson_bytes
     bson_code
+    bson_dbref
     bson_doc
     bson_double
     bson_int32
@@ -32,6 +33,7 @@ use Carp;
 use boolean;            # bson_bool
 use BSON::Bytes;        # bson_bytes
 use BSON::Code;         # bson_code
+use BSON::DBRef;        # bson_dbref
 use BSON::Doc;          # bson_doc
 use BSON::Double;       # bson_double
 use BSON::Int32;        # bson_int32
@@ -65,6 +67,12 @@ sub bson_code {
     return BSON::Code->new unless defined $_[0];
     return BSON::Code->new( code => $_[0] ) unless defined $_[1];
     return BSON::Code->new( code => $_[0], scope => $_[1] );
+}
+
+sub bson_dbref {
+    croak "Arguments to bson_dbref must an id and collection name"
+      unless @_ == 2;
+    return BSON::DBRef->new( id => $_[0], ref => $_[1] );
 }
 
 sub bson_doc {
