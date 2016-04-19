@@ -273,6 +273,9 @@ An optional hash reference of options may be provided.  Valid options include:
 sub encode_one {
     my ( $self, $document, $options ) = @_;
 
+    $document = BSON::Doc->new(@$document)
+      if ref($document) eq 'ARRAY';
+
     my $merged_opts = { %$self, ( $options ? %$options : () ) };
 
     my $bson = eval { _encode_bson( $document, $merged_opts ) };
@@ -558,7 +561,6 @@ sub _encode_bson_pp {
 
     my $iter =
         $doc_type eq 'HASH'           ? undef
-      : $doc_type eq 'ARRAY'          ? BSON::Doc->new(@$doc)->_iterator
       : $doc_type eq 'BSON::Doc'      ? $doc->_iterator
       : $doc_type eq 'Tie::IxHash'    ? _ixhash_iterator($doc)
       : $doc_type eq 'BSON::DBRef'    ? _ixhash_iterator( $doc->_ordered )
