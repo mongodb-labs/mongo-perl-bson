@@ -33,6 +33,12 @@ $hash = decode( encode( { A => bson_string('héllo wörld') } ) );
 is( sv_type( $hash->{A} ), 'PV', "BSON::String->string" );
 is( $hash->{A}, 'héllo wörld', "value correct" );
 
+# MongoDB::BSON::String -> string
+my $str = 'héllo wörld';
+$hash = decode( encode( { A => bless \$str, "MongoDB::BSON::String" } ) );
+is( sv_type( $hash->{A} ), 'PV', "MongoDB::BSON::String->string" );
+is( $hash->{A}, 'héllo wörld', "value correct" );
+
 # string -> BSON::String
 $hash = decode( encode( { A => 'héllo wörld' } ), wrap_strings => 1 );
 is( ref( $hash->{A} ), 'BSON::String', "string->BSON::String" );
@@ -41,6 +47,11 @@ is( $hash->{A}->value, 'héllo wörld', "value correct" );
 # BSON::String -> BSON::String
 $hash = decode( encode( { A => bson_string('héllo wörld') } ), wrap_strings => 1 );
 is( ref( $hash->{A} ), 'BSON::String', "BSON::String->BSON::String" );
+is( $hash->{A}->value, 'héllo wörld', "value correct" );
+
+# MongoDB::BSON::String -> BSON::String
+$hash = decode( encode( { A => bless \$str, "MongoDB::BSON::String" } ), wrap_strings => 1 );
+is( ref( $hash->{A} ), 'BSON::String', "MongoDB::BSON::String->BSON::String" );
 is( $hash->{A}->value, 'héllo wörld', "value correct" );
 
 done_testing;

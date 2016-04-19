@@ -743,6 +743,11 @@ sub _encode_bson_pp {
                 utf8::encode($value);
                 $bson .= pack( BSON_TYPE_NAME.BSON_STRING, 0x02, $utf8_key, $value );
             }
+            elsif ( $type eq 'MongoDB::BSON::String' ) {
+                $value = $$value;
+                utf8::encode($value);
+                $bson .= pack( BSON_TYPE_NAME.BSON_STRING, 0x02, $utf8_key, $value );
+            }
 
             # Int64 (XXX and eventually BigInt)
             elsif ( $type eq 'BSON::Int64' || $type eq 'Math::BigInt' || $type eq 'Math::Int64' )
