@@ -602,11 +602,13 @@ sub _encode_bson_pp {
             );
         }
 
+        my $utf8_key = $key;
+        utf8::encode($utf8_key);
         my $type = ref $value;
 
         # Null
         if ( !defined $value ) {
-            $bson .= pack( BSON_TYPE_NAME, 0x0A, $key );
+            $bson .= pack( BSON_TYPE_NAME, 0x0A, $utf8_key );
         }
 
         # REFERENCES/OBJECTS
@@ -617,7 +619,7 @@ sub _encode_bson_pp {
                 my $i = 0;
                 tie( my %h, 'Tie::IxHash' );
                 %h = map { $i++ => $_ } @$value;
-                $bson .= pack( BSON_TYPE_NAME, 0x04, $key ) . _encode_bson_pp( \%h, $opt );
+                $bson .= pack( BSON_TYPE_NAME, 0x04, $utf8_key ) . _encode_bson_pp( \%h, $opt );
             }
 
             # Document
@@ -630,36 +632,39 @@ sub _encode_bson_pp {
                 || $type eq 'BSON::DBRef'
                 || $type eq 'MongoDB::DBRef')
             {
-                $bson .= pack( BSON_TYPE_NAME, 0x03, $key ) . _encode_bson_pp($value, $opt);
+                $bson .= pack( BSON_TYPE_NAME, 0x03, $utf8_key ) . _encode_bson_pp($value, $opt);
             }
 
             # Regex
             elsif ( $type eq 'Regexp' ) {
                 my ( $re, $flags ) = _split_re($value);
-                $bson .= pack( BSON_TYPE_NAME.BSON_REGEX, 0x0B, $key, $re, join( "", sort grep /^(i|m|x|l|s|u)$/, split( //, $flags ) ));
+                $bson .= pack( BSON_TYPE_NAME.BSON_REGEX, 0x0B, $utf8_key, $re, join( "", sort grep /^(i|m|x|l|s|u)$/, split( //, $flags ) ));
             }
             elsif ( $type eq 'BSON::Regex' || $type eq 'MongoDB::BSON::Regexp' ) {
                 my ( $re, $flags ) = @{$value}{qw/pattern flags/};
-                $bson .= pack( BSON_TYPE_NAME.BSON_REGEX, 0x0B, $key, $re, $flags) ;
+                $bson .= pack( BSON_TYPE_NAME.BSON_REGEX, 0x0B, $utf8_key, $re, $flags) ;
             }
 
             # ObjectId
             elsif ( $type eq 'BSON::OID' || $type eq 'BSON::ObjectId' ) {
-                $bson .= pack( BSON_TYPE_NAME.BSON_OBJECTID, 0x07, $key, $value->oid );
+                $bson .= pack( BSON_TYPE_NAME.BSON_OBJECTID, 0x07, $utf8_key, $value->oid );
             }
             elsif ( $type eq 'MongoDB::OID' ) {
-                $bson .= pack( BSON_TYPE_NAME."H*", 0x07, $key, $value->value );
+                $bson .= pack( BSON_TYPE_NAME."H*", 0x07, $utf8_key, $value->value );
             }
 
             # Datetime
             elsif ( $type eq 'BSON::Time' ) {
-                $bson .= pack( BSON_TYPE_NAME, 0x09, $key ) . _pack_int64( $value->value );
+                $bson .= pack( BSON_TYPE_NAME, 0x09, $utf8_key ) . _pack_int64( $value->value );
             }
             elsif ( $type eq 'Time::Moment' ) {
-                $bson .= pack( BSON_TYPE_NAME, 0x09, $key ) . _pack_int64( int( $value->epoch * 1000 + $value->millisecond ) );
+                $bson .= pack( BSON_TYPE_NAME, 0x09, $utf8_key ) . _pack_int64( int( $value->epoch * 1000 + $value->millisecond ) );
             }
             elsif ( $type eq 'DateTime' ) {
-                $bson .= pack( BSON_TYPE_NAME, 0x09, $key ) . _pack_int64( int( $value->hires_epoch * 1000 ) );
+                if ( $value->time_zone->name eq 'floating' ) {
+                    warn("saving floating timezone as UTC");
+                }
+                $bson .= pack( BSON_TYPE_NAME, 0x09, $utf8_key ) . _pack_int64( int( $value->hires_epoch * 1000 ) );
             }
             elsif ( $type eq 'DateTime::Tiny' ) {
                 require Time::Local;
@@ -667,25 +672,25 @@ sub _encode_bson_pp {
                     $value->second, $value->minute,    $value->hour,
                     $value->day,    $value->month - 1, $value->year,
                 );
-                $bson .= pack( BSON_TYPE_NAME, 0x09, $key ) . _pack_int64( $epoch * 1000 );
+                $bson .= pack( BSON_TYPE_NAME, 0x09, $utf8_key ) . _pack_int64( $epoch * 1000 );
             }
 
             # Timestamp
             elsif ( $type eq 'BSON::Timestamp' ) {
-                $bson .= pack( BSON_TYPE_NAME.BSON_TIMESTAMP, 0x11, $key, $value->increment, $value->seconds );
+                $bson .= pack( BSON_TYPE_NAME.BSON_TIMESTAMP, 0x11, $utf8_key, $value->increment, $value->seconds );
             }
             elsif ( $type eq 'MongoDB::Timestamp' ){
-                $bson .= pack( BSON_TYPE_NAME.BSON_TIMESTAMP, 0x11, $key, $value->inc, $value->sec );
+                $bson .= pack( BSON_TYPE_NAME.BSON_TIMESTAMP, 0x11, $utf8_key, $value->inc, $value->sec );
             }
 
             # MinKey
             elsif ( $type eq 'BSON::MinKey' || $type eq 'MongoDB::MinKey' ) {
-                $bson .= pack( BSON_TYPE_NAME, 0xFF, $key );
+                $bson .= pack( BSON_TYPE_NAME, 0xFF, $utf8_key );
             }
 
             # MaxKey
             elsif ( $type eq 'BSON::MaxKey' || $type eq 'MongoDB::MaxKey' ) {
-                $bson .= pack( BSON_TYPE_NAME, 0x7F, $key );
+                $bson .= pack( BSON_TYPE_NAME, 0x7F, $utf8_key );
             }
 
             # Binary (XXX need to add string ref support)
@@ -704,11 +709,11 @@ sub _encode_bson_pp {
                 if ( $subtype == 2 ) {
                     $bson .=
                     pack( BSON_TYPE_NAME . BSON_INT32 . BSON_BINARY_TYPE . BSON_INT32 . BSON_REMAINING,
-                        0x05, $key, $len + 4, $subtype, $len, $data );
+                        0x05, $utf8_key, $len + 4, $subtype, $len, $data );
                 }
                 else {
                     $bson .= pack( BSON_TYPE_NAME . BSON_INT32 . BSON_BINARY_TYPE . BSON_REMAINING,
-                        0x05, $key, $len, $subtype, $data );
+                        0x05, $utf8_key, $len, $subtype, $data );
                 }
             }
 
@@ -720,23 +725,23 @@ sub _encode_bson_pp {
                 if ( ref( $value->scope ) eq 'HASH' ) {
                     my $scope = _encode_bson_pp( $value->scope, $opt );
                     $bson .=
-                        pack( BSON_TYPE_NAME.BSON_CODE_W_SCOPE, 0x0F, $key, (4 + length($scope) + length($code)) ) . $code . $scope;
+                        pack( BSON_TYPE_NAME.BSON_CODE_W_SCOPE, 0x0F, $utf8_key, (4 + length($scope) + length($code)) ) . $code . $scope;
                 }
                 else {
-                    $bson .= pack( BSON_TYPE_NAME, 0x0D, $key) . $code;
+                    $bson .= pack( BSON_TYPE_NAME, 0x0D, $utf8_key) . $code;
                 }
             }
 
             # Boolean
             elsif ( $type eq 'boolean' || $type =~ $bools_re ) {
-                $bson .= pack( BSON_TYPE_NAME.BSON_BOOLEAN, 0x08, $key, ( $value ? 1 : 0 ) );
+                $bson .= pack( BSON_TYPE_NAME.BSON_BOOLEAN, 0x08, $utf8_key, ( $value ? 1 : 0 ) );
             }
 
             # String (explicit)
             elsif ( $type eq 'BSON::String' ) {
                 $value = $value->value;
                 utf8::encode($value);
-                $bson .= pack( BSON_TYPE_NAME.BSON_STRING, 0x02, $key, $value );
+                $bson .= pack( BSON_TYPE_NAME.BSON_STRING, 0x02, $utf8_key, $value );
             }
 
             # Int64 (XXX and eventually BigInt)
@@ -751,16 +756,16 @@ sub _encode_bson_pp {
                     $value = $value->value;
                 }
 
-                $bson .= pack( BSON_TYPE_NAME, 0x12, $key ) . _pack_int64($value);
+                $bson .= pack( BSON_TYPE_NAME, 0x12, $utf8_key ) . _pack_int64($value);
             }
 
             elsif ( $type eq 'BSON::Int32' ) {
-                $bson .= pack( BSON_TYPE_NAME . BSON_INT32, 0x10, $key, $value->value );
+                $bson .= pack( BSON_TYPE_NAME . BSON_INT32, 0x10, $utf8_key, $value->value );
             }
 
             # Double (explicit)
             elsif ( $type eq 'BSON::Double' ) {
-                $bson .= pack( BSON_TYPE_NAME.BSON_DOUBLE, 0x01, $key, $value/1.0 );
+                $bson .= pack( BSON_TYPE_NAME.BSON_DOUBLE, 0x01, $utf8_key, $value/1.0 );
             }
 
             # Unsupported type
@@ -779,22 +784,22 @@ sub _encode_bson_pp {
                     croak("BSON can only handle 8-byte integers. Key '$key' is '$value'");
                 }
                 elsif ( $value > $max_int32 || $value < $min_int32 ) {
-                    $bson .= pack( BSON_TYPE_NAME, 0x12, $key ) . _pack_int64($value);
+                    $bson .= pack( BSON_TYPE_NAME, 0x12, $utf8_key ) . _pack_int64($value);
                 }
                 else {
-                    $bson .= pack( BSON_TYPE_NAME . BSON_INT32, 0x10, $key, $value );
+                    $bson .= pack( BSON_TYPE_NAME . BSON_INT32, 0x10, $utf8_key, $value );
                 }
             }
 
             # Double
             elsif ( $value =~ $doub_re ) {
-                $bson .= pack( BSON_TYPE_NAME.BSON_DOUBLE, 0x01, $key, $value );
+                $bson .= pack( BSON_TYPE_NAME.BSON_DOUBLE, 0x01, $utf8_key, $value );
             }
 
             # String
             else {
                 utf8::encode($value);
-                $bson .= pack( BSON_TYPE_NAME.BSON_STRING, 0x02, $key, $value );
+                $bson .= pack( BSON_TYPE_NAME.BSON_STRING, 0x02, $utf8_key, $value );
             }
 
         }
@@ -806,21 +811,21 @@ sub _encode_bson_pp {
             my $flags = B::svref_2object(\$value)->FLAGS;
             if ( $flags & B::SVf_POK() ) {
                 utf8::encode($value);
-                $bson .= pack( BSON_TYPE_NAME.BSON_STRING, 0x02, $key, $value );
+                $bson .= pack( BSON_TYPE_NAME.BSON_STRING, 0x02, $utf8_key, $value );
             }
             elsif ( $flags & B::SVf_IOK() ) {
                 if ( $value > $max_int64 || $value < $min_int64 ) {
                     croak("BSON can only handle 8-byte integers. Key '$key' is '$value'");
                 }
                 elsif ( $value > $max_int32 || $value < $min_int32 ) {
-                    $bson .= pack( BSON_TYPE_NAME, 0x12, $key ) . _pack_int64($value);
+                    $bson .= pack( BSON_TYPE_NAME, 0x12, $utf8_key ) . _pack_int64($value);
                 }
                 else {
-                    $bson .= pack( BSON_TYPE_NAME . BSON_INT32, 0x10, $key, $value );
+                    $bson .= pack( BSON_TYPE_NAME . BSON_INT32, 0x10, $utf8_key, $value );
                 }
             }
             elsif ( $flags & B::SVf_NOK() ) {
-                $bson .= pack( BSON_TYPE_NAME.BSON_DOUBLE, 0x01, $key, $value );
+                $bson .= pack( BSON_TYPE_NAME.BSON_DOUBLE, 0x01, $utf8_key, $value );
             }
             else {
                 croak("For key '$key', can't encode value '$value'");
@@ -898,6 +903,7 @@ sub _decode_bson_pp {
     my ($type, $key, $value);
     while ($bson) {
         ( $type, $key, $bson ) = unpack( BSON_TYPE_NAME.BSON_REMAINING, $bson );
+        utf8::decode($key);
 
         # Check type and truncation
         my $min_size = $FIELD_SIZES{$type};
