@@ -13,7 +13,7 @@ our $VERSION = '0.17';
 use B;
 use Carp;
 use Config;
-use Scalar::Util qw/blessed looks_like_number/;
+use Scalar::Util qw/blessed looks_like_number refaddr/;
 use Tie::IxHash;
 
 use Moo;
@@ -552,6 +552,8 @@ sub _pack_int64 {
 
 sub _encode_bson_pp {
     my ($doc, $opt) = @_;
+    my $refaddr = refaddr($doc);
+    die "circular reference detected" if $opt->{_circular}{$refaddr}++;
 
     my $doc_type = ref($doc);
 
@@ -830,6 +832,8 @@ sub _encode_bson_pp {
         }
 
     }
+
+    delete $opt->{_circular}{$refaddr};
 
     return pack( BSON_INT32, length($bson) + 5 ) . $bson . "\0";
 }
