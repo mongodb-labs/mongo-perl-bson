@@ -110,7 +110,7 @@ sub bson_oid {
 }
 
 sub bson_raw {
-    return BSON::Raw->new( value => $_[0] );
+    return BSON::Raw->new( bson => $_[0] );
 }
 
 sub bson_regex {

@@ -550,15 +550,15 @@ sub _pack_int64 {
 sub _encode_bson_pp {
     my ($doc, $opt) = @_;
 
-    return $doc->value if ref($doc) eq 'BSON::Raw';
-    return $$doc if ref($doc) eq 'MongoDB::BSON::Raw';
-
-    # XXX works for now, but should be optimized eventually
-    $doc = $doc->_as_tied_hash if ref($doc) eq 'BSON::Doc';
-
     my $doc_type = ref($doc);
+
+    return $doc->bson
+      if $doc_type eq 'BSON::Raw' || $doc_type eq 'MongoDB::BSON::_EncodedDoc';
+    return $$doc if $doc_type eq 'MongoDB::BSON::Raw';
+
     my $iter =
         $doc_type eq 'HASH'           ? undef
+      : $doc_type eq 'ARRAY'          ? BSON::Doc->new(@$doc)->_iterator
       : $doc_type eq 'BSON::Doc'      ? $doc->_iterator
       : $doc_type eq 'Tie::IxHash'    ? _ixhash_iterator($doc)
       : $doc_type eq 'BSON::DBRef'    ? _ixhash_iterator( $doc->_ordered )
@@ -610,19 +610,20 @@ sub _encode_bson_pp {
                 my $i = 0;
                 tie( my %h, 'Tie::IxHash' );
                 %h = map { $i++ => $_ } @$value;
-                $bson .= pack( BSON_TYPE_NAME, 0x04, $key ) . encode( \%h );
+                $bson .= pack( BSON_TYPE_NAME, 0x04, $key ) . _encode_bson_pp( \%h, $opt );
             }
 
             # Document
             elsif ($type eq 'HASH'
                 || $type eq 'BSON::Doc'
                 || $type eq 'BSON::Raw'
+                || $type eq 'MongoDB::BSON::_EncodedDoc'
                 || $type eq 'Tie::IxHash'
                 || $type eq 'MongoDB::BSON::Raw'
                 || $type eq 'BSON::DBRef'
                 || $type eq 'MongoDB::DBRef')
             {
-                $bson .= pack( BSON_TYPE_NAME, 0x03, $key ) . encode($value);
+                $bson .= pack( BSON_TYPE_NAME, 0x03, $key ) . _encode_bson_pp($value, $opt);
             }
 
             # Regex
@@ -710,7 +711,7 @@ sub _encode_bson_pp {
                 utf8::encode($code);
                 $code = pack(BSON_STRING,$code);
                 if ( ref( $value->scope ) eq 'HASH' ) {
-                    my $scope = encode( $value->scope );
+                    my $scope = _encode_bson_pp( $value->scope, $opt );
                     $bson .=
                         pack( BSON_TYPE_NAME.BSON_CODE_W_SCOPE, 0x0F, $key, (4 + length($scope) + length($code)) ) . $code . $scope;
                 }

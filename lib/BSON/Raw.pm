@@ -7,7 +7,7 @@ package BSON::Raw;
 
 our $VERSION = '0.17';
 
-use Class::Tiny qw/value/;
+use Class::Tiny qw/bson metadata/;
 
 1;
 

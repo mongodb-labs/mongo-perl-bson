@@ -61,6 +61,15 @@ subtest "Top level document" => sub {
     is( ref($hash), 'HASH', "Tie::IxHash(OO)->hashref" );
     is_deeply( $hash, { @kv }, "value correct" );
 
+    SKIP: {
+        eval { require MongoDB::BSON::_EncodedDoc };
+        skip( "MongoDB::BSON::_EncodedDoc not installed", 4 )
+        unless $INC{'MongoDB/BSON/_EncodedDoc.pm'};
+        $hash = decode( encode( MongoDB::BSON::_EncodedDoc->new( bson => $raw, metadata => {} ) ) );
+        is( ref($hash), 'HASH', "MongoDB::BSON::_EncodedDoc->hashref" );
+        is_deeply( $hash, { @kv }, "value correct" );
+    }
+
 };
 
 subtest "Subdocument" => sub {
@@ -98,6 +107,14 @@ subtest "Subdocument" => sub {
     is( ref($hash->{doc}), 'HASH', "Tie::IxHash(OO)->hashref" );
     is_deeply( $hash->{doc}, { @kv }, "value correct" );
 
+    SKIP: {
+        eval { require MongoDB::BSON::_EncodedDoc };
+        skip( "MongoDB::BSON::_EncodedDoc not installed", 4 )
+        unless $INC{'MongoDB/BSON/_EncodedDoc.pm'};
+        $hash = decode( encode( { doc => MongoDB::BSON::_EncodedDoc->new( bson => $raw, metadata => {} ) } ) );
+        is( ref($hash->{doc}), 'HASH', "MongoDB::BSON::_EncodedDoc->hashref" );
+        is_deeply( $hash->{doc}, { @kv }, "value correct" );
+    }
 };
 
 subtest "Ordered top level doc" => sub {
@@ -135,7 +152,6 @@ subtest "Ordered subdoc" => sub {
 
 # TODO:
 # Hash::Ordered to hashref
-# DBRef callback testing (unless done in a separate test file)
 
 done_testing;
 
