@@ -21,6 +21,7 @@ use BSON::Types ':all';
 }
 
 {
+    no warnings 'once';
     my $glob = *foo;
     eval { encode( { a => $glob } ) };
     like( $@, qr/For key 'a', can't encode value '\*main::foo'/, "encoding glob is fatal" );
