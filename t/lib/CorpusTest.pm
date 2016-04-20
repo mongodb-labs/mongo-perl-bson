@@ -53,7 +53,7 @@ sub _validity_tests {
         }
 
         # decoding test
-        {
+        if ( !exists $case->{to_extjson} || $case->{to_extjson} ) {
             my $expect = BSON->inflate_extjson( decode_json( $case->{extjson} ) );
             local $Data::Dumper::Useqq = 1;
             cmp_deeply( $decoded, $expect, "$desc: Decode to inflated extjson" )

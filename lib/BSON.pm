@@ -57,6 +57,7 @@ use constant {
     BSON_INT32 => "l",
     BSON_INT64 => "q",
     BSON_8BYTES => "a8",
+    BSON_16BYTES => "a16",
     BSON_TIMESTAMP => "LL",
     BSON_CODE_W_SCOPE => "l",
     BSON_REMAINING => 'a*',
@@ -783,6 +784,11 @@ sub _encode_bson_pp {
                 $bson .= pack( BSON_TYPE_NAME.BSON_DOUBLE, 0x01, $utf8_key, $value/1.0 );
             }
 
+            # Decimal128
+            elsif ( $type eq 'BSON::Decimal128' ) {
+                $bson .= pack( BSON_TYPE_NAME.BSON_16BYTES, 0x13, $utf8_key, $value->bytes );
+            }
+
             # Unsupported type
             else  {
                 croak("For key '$key', can't encode value of type '$type'");
@@ -873,6 +879,7 @@ my %FIELD_SIZES = (
     0x10 => 4,
     0x11 => 8,
     0x12 => 8,
+    0x13 => 16,
     0x7F => 0,
     0xFF => 0,
 );
@@ -1133,6 +1140,12 @@ sub _decode_bson_pp {
             $value = BSON::Int64->new( value => $value ) if $opt->{wrap_numbers};
         }
 
+        # Decimal128
+        elsif ( $type == 0x13 ) {
+            ( my $bytes, $bson ) = unpack( BSON_16BYTES.BSON_REMAINING, $bson );
+            $value = BSON::Decimal128->new_from_bytes( $bytes );
+        }
+
         # MinKey
         elsif ( $type == 0xFF ) {
             $value = BSON::MinKey->new;
@@ -1229,6 +1242,10 @@ sub _inflate_hash {
         my $id = $hash->{'$id'};
         $id = BSON->_inflate_hash($id) if ref($id) eq 'HASH';
         return { '$ref' => $hash->{'$ref'}, '$id' => $id };
+    }
+
+    if ( exists $hash->{'$numberDecimal'} ) {
+        return BSON::Decimal128->new( value => $hash->{'$numberDecimal'} );
     }
 
     # Following extended JSON is non-standard
