@@ -105,6 +105,14 @@ subtest "first_key" => sub {
     is( $v, 32,  "first_value overrode existing value" );
     ok( ! exists $got->{z}{_id}, "first_key doesn't propagate" );
 
+    # empty doc with first_key
+    $got =
+      $obj->decode_one(
+        $obj->encode_one( bson_doc(), { first_key => 'y', first_value => 32 } ) );
+    ( $k, $v ) = each %$got;
+
+    is( $k, 'y', "first_key put first" );
+    is( $v, 32,  "first_value overrode existing value" );
 };
 
 subtest "dt_type" => sub {

@@ -565,6 +565,7 @@ sub _encode_bson_pp {
 
     return $doc->bson
       if $doc_type eq 'BSON::Raw' || $doc_type eq 'MongoDB::BSON::_EncodedDoc';
+
     return $$doc if $doc_type eq 'MongoDB::BSON::Raw';
 
     my $iter =
@@ -579,19 +580,19 @@ sub _encode_bson_pp {
     my $invalid =
       length( $opt->{invalid_chars} ) ? qr/[\Q$opt->{invalid_chars}\E]/ : undef;
 
-    # cache so we can delete from opt later
-    my $opt_first_key = $opt->{first_key};
+    # Set up first key bookkeeping
+    my $first_key_pending = !! defined($opt->{first_key});
     my $first_key;
-    my @save;
     my $bson = '';
-    while ( my ( $key, $value ) = $iter ? $iter->() : (each %$doc) ) {
+
+    my ($key, $value);
+    while ( $first_key_pending or ( $key, $value ) = $iter ? $iter->() : (each %$doc) ) {
         next if defined $first_key && $key eq $first_key;
 
-        if ( ! defined $first_key && defined $opt_first_key ) {
-            @save = ( $key, $value );
-            # delete from opt to avoid propagation
-            $key = delete $opt->{first_key};
+        if ( $first_key_pending ) {
+            $first_key = $key = delete $opt->{first_key};
             $value = delete $opt->{first_value};
+            undef $first_key_pending;
         }
 
         last unless defined $key;
@@ -846,13 +847,6 @@ sub _encode_bson_pp {
             }
 
         }
-
-        if ( ! defined $first_key && defined $opt_first_key ) {
-            $first_key = $opt_first_key;
-            ( $key, $value ) = splice( @save, 0, 2 );
-            redo;
-        }
-
     }
 
     delete $opt->{_circular}{$refaddr};
