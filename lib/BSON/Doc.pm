@@ -16,6 +16,10 @@ sub new {
     croak "BSON::Doc::new requires key/value pairs"
         if @args % 2 != 0;
 
+    my $key_count =()= keys %{{@args}};
+    croak "Duplicate keys not allowed in BSON::Doc"
+        if $key_count * 2 != @args;
+
     return bless \@args, $class;
 }
 

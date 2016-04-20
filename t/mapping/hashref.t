@@ -21,6 +21,9 @@ my ($hash);
 is( scalar @{bson_doc()}, 0, "empty bson_doc() is empty doc" );
 is( scalar @{BSON::Doc->new}, 0, "empty constructor is empty doc" );
 
+eval { bson_doc( a => 1, b => 2, a => 3, c => 4 ) };
+like( $@, qr/duplicate keys not allowed/i, "duplicate keys in bson_doc() throw error" );
+
 # test overloading
 # XXX TBD
 
