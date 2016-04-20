@@ -59,12 +59,12 @@ sub hex {
 }
 
 sub get_time {
-    return unpack( "N", substr( $_[0]->{oid}, 0, 8 ) );
+    return unpack( "N", substr( $_[0]->{oid}, 0, 4 ) );
 }
 
 # for testing purposes
 sub _get_pid {
-    return unpack( "N", substr( $_[0]->{oid}, 14, 4 ) );
+    return unpack( "n", substr( $_[0]->{oid}, 7, 2 ) );
 }
 
 =method TO_JSON
