@@ -814,9 +814,8 @@ sub _encode_bson_pp {
         else {
 
             my $flags = B::svref_2object(\$value)->FLAGS;
-            if ( $flags & B::SVf_POK() ) {
-                utf8::encode($value);
-                $bson .= pack( BSON_TYPE_NAME.BSON_STRING, 0x02, $utf8_key, $value );
+            if ( $flags & B::SVf_NOK() ) {
+                $bson .= pack( BSON_TYPE_NAME.BSON_DOUBLE, 0x01, $utf8_key, $value );
             }
             elsif ( $flags & B::SVf_IOK() ) {
                 if ( $value > $max_int64 || $value < $min_int64 ) {
@@ -829,8 +828,9 @@ sub _encode_bson_pp {
                     $bson .= pack( BSON_TYPE_NAME . BSON_INT32, 0x10, $utf8_key, $value );
                 }
             }
-            elsif ( $flags & B::SVf_NOK() ) {
-                $bson .= pack( BSON_TYPE_NAME.BSON_DOUBLE, 0x01, $utf8_key, $value );
+            elsif ( $flags & B::SVf_POK() ) {
+                utf8::encode($value);
+                $bson .= pack( BSON_TYPE_NAME.BSON_STRING, 0x02, $utf8_key, $value );
             }
             else {
                 croak("For key '$key', can't encode value '$value'");
