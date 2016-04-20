@@ -464,6 +464,12 @@ It takes a BSON string and returns a hashref.
 # private functions
 #--------------------------------------------------------------------------#
 
+sub _printable {
+    my $value = shift;
+    $value =~ s/([^[:print:]])/sprintf("\\x%02x",ord($1))/ge;
+    return $value;
+}
+
 sub _split_re {
     my $value = shift;
     if ( $] ge 5.010 ) {
@@ -589,6 +595,9 @@ sub _encode_bson_pp {
         }
 
         last unless defined $key;
+
+        croak "Key '" . _printable($key) . "' contains null character"
+          unless -1 == index($key, "\0");
 
         substr( $key, 0, 1 ) = '$'
           if length($op_char) && substr( $key, 0, 1 ) eq $op_char;

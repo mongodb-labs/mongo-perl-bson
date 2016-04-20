@@ -27,6 +27,12 @@ use BSON::Types ':all';
     like( $@, qr/For key 'a', can't encode value '\*main::foo'/, "encoding glob is fatal" );
 }
 
+{
+    my $with_null= "Hello\0World";
+    eval { encode( { $with_null => 123 } ) };
+    like( $@, qr/Key 'Hello\\x00World' contains null character/, "encoding embedded null is fatal" );
+}
+
 
 done_testing;
 
