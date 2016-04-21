@@ -52,8 +52,8 @@ my $input = { A => $dbref };
 
 # MongoDB::DBRef -> BSON::Regex
 SKIP: {
-    eval { require MongoDB::DBRef };
-    skip( "MongoDB::DBRef not installed", 4 )
+    eval { require MongoDB::DBRef; MongoDB::DBRef->VERSION(1) };
+    skip( "MongoDB::DBRef v1.0.0+ not installed", 4 )
       unless $INC{'MongoDB/DBRef.pm'};
     $bson =
       encode( { A => MongoDB::DBRef->new( id => $dbref->id, ref => $dbref->ref ) } );
