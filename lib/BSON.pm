@@ -239,7 +239,9 @@ has dt_type => (
 sub BUILD {
     my ($self) = @_;
     $self->{wrap_dbrefs} = 1;
+    $self->{invalid_chars} = "" unless defined $self->{invalid_chars};
 }
+
 #--------------------------------------------------------------------------#
 # public methods
 #--------------------------------------------------------------------------#
