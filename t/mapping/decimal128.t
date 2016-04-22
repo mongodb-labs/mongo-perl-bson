@@ -47,9 +47,10 @@ is(
     'bson_decimal128(0.0)'
 );
 
+# normalizes representation
 is(
-    to_extjson( { a => bson_decimal128("12345678E+678") } ),
-    q[{"a":{"$numberDecimal":"12345678E+678"}}],
+    to_extjson( { a => bson_decimal128("12345678E678") } ),
+    q[{"a":{"$numberDecimal":"1.2345678E+685"}}],
     'bson_decimal128(12345678E+678)'
 );
 

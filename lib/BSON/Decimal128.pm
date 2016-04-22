@@ -13,19 +13,37 @@ use Math::BigInt;
 use Class::Tiny qw/value/;
 
 sub new_from_bytes {
-    my $class = shift;
-    $class->new( value => _bid_to_string(shift) );
+    my ($class, $bid) = @_;
+    return $class->new( defined($bid) ? ( value => _bid_to_string($bid) ) : () );
 }
+
+my $digits     = qr/[0-9]+/;
+my $decimal_re = qr{
+    ( [-+]? )                                        # maybe a sign
+    ( (?:$digits \. $digits? ) | (?: \.? $digits ) ) # decimal-part
+    ( (?:e [-+]? $digits)? )                         # maybe exponent
+}ix;
+my $strict_re = qr{
+     (?: NaN )
+  |  (?: -? Inf )                                  # infinities
+  |  (?: -? [0-9]{1,34} )                          # integer form
+  |  (?: -? 0\.[0-9]{1,6} )                        # short decimal form
+  |  (?: -? [0-9]\.[0-9]{1,33} E [+-] $digits )    # exponential form
+}x;
 
 sub BUILD {
     my $self = shift;
     $self->{value} = "0" unless defined $self->{value};
+
+    # maybe normalize representation
+    return if $self->{value} =~ /\A $strict_re \z/x;
+    $self->{value} = _bid_to_string( _string_to_bid( $self->{value} ) );
 }
 
-# lazy caching
 sub bytes {
-    return $_[0]->{_bytes} if defined $_[0]->{_bytes};
-    return $_[0]->{_bytes} = _string_to_bid( $_[0]->{value} );
+    my $self = shift;
+    return $self->{_bytes} if defined $self->{_bytes};
+    return $self->{_bytes} = _string_to_bid($self->{value});
 }
 
 sub _bid_to_string {
@@ -106,20 +124,13 @@ my ( $bidNaN, $bidPosInf, $bidNegInf ) =
 
 sub _croak { croak("Couldn't parse '$_[0]' as Decimal128") }
 
-my $digits     = qr/[0-9]+/;
-my $decimal_re = qr{
-    ( [-+]? )                                        # maybe a sign
-    ( (?:$digits \. $digits? ) | (?: \.? $digits ) ) # decimal-part
-    ( (?:e [-+]? $digits)? )                         # maybe exponent
-}ix;
-
 sub _string_to_bid {
     my $s = shift;
     $s = "0" if $s eq "";
 
     # maybe special
     return $bidNaN    if $s =~ /\A NaN \z/ix;
-    return $bidPosInf if $s =~ /\A Inf(?:inity)? \z/ix;
+    return $bidPosInf if $s =~ /\A \+?Inf(?:inity)? \z/ix;
     return $bidNegInf if $s =~ /\A -Inf(?:inity)? \z/ix;
 
     # parse string
