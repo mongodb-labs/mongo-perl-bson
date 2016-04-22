@@ -33,7 +33,7 @@ my $strict_re = qr{
 
 sub BUILD {
     my $self = shift;
-    $self->{value} = "0" unless defined $self->{value};
+    $self->{value} = "" unless defined $self->{value};
 
     # maybe normalize representation
     return if $self->{value} =~ /\A $strict_re \z/x;
@@ -127,7 +127,7 @@ sub _croak { croak("Couldn't parse '$_[0]' as Decimal128") }
 
 sub _string_to_bid {
     my $s = shift;
-    $s = "0" if $s eq "";
+    # $s = "0" if $s eq "";
 
     # maybe special
     return $bidNaN    if $s =~ /\A NaN \z/ix;
@@ -149,6 +149,8 @@ sub _string_to_bid {
     my $dot = index( $mant, "." );
     $mant =~ s/\.//;
     $exp += $dot - length($mant) if $dot >= 0;
+
+    _croak($s) if $exp > 6111 || $exp < -6176;
 
     # Get binary representation of coefficient
     my $coef = Math::BigInt->new($mant)->as_bin;

@@ -78,7 +78,7 @@ sub bson_dbref {
 }
 
 sub bson_decimal128 {
-    return BSON::Decimal128->new( value => $_[0] )
+    return BSON::Decimal128->new( value => defined $_[0] ? $_[0] : 0 )
 }
 
 sub bson_doc {

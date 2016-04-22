@@ -15,8 +15,10 @@ use JSON::MaybeXS;
 my ($hash);
 
 # test constructor
-is( bson_decimal128()->value, "0", "empty bson_decimal128() is 0" );
-is( BSON::Decimal128->new->value, "0", "empty constructor is 0" );
+is( bson_decimal128(), "0", "empty bson_decimal128() is 0" );
+
+eval { BSON::Decimal128->new };
+ok( $@, "BSON::Decimal128->new throws" );
 
 # test overloading
 is( bson_decimal128("3.14159"), "3.14159", "overloading correct" );
