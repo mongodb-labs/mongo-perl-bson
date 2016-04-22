@@ -38,6 +38,9 @@ sub _validity_tests {
     my ($json) = @_;
     local $Test::Builder::Level = $Test::Builder::Level + 1;
 
+    # suppress caching that throws off Test::Deep
+    local $BSON::Types::NoCache = 1;
+
     return unless $json->{valid};
 
     for my $case ( @{ $json->{valid} } ) {

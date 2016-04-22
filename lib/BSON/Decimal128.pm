@@ -42,6 +42,7 @@ sub BUILD {
 
 sub bytes {
     my $self = shift;
+    return _string_to_bid($self->{value}) if $BSON::Types::NoCache;
     return $self->{_bytes} if defined $self->{_bytes};
     return $self->{_bytes} = _string_to_bid($self->{value});
 }
