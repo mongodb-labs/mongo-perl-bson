@@ -28,7 +28,11 @@ Returns the value as an integer.
 
 =cut
 
-sub TO_JSON { return int($_[0]->{value}) }
+# BSON_EXTJSON_FORCE is for testing; not needed for normal operation
+sub TO_JSON {
+    return int($_[0]->{value}) unless $ENV{BSON_EXTJSON_FORCE};
+    return { '$numberInt' => "$_[0]->{value}" };
+}
 
 use overload (
     q{0+}    => sub { $_[0]->{value} },

@@ -9,6 +9,9 @@ use Path::Tiny;
 use JSON::MaybeXS;
 use Data::Dumper;
 
+# from t/lib
+use TestUtils;
+
 use base 'Exporter';
 our @EXPORT = qw/test_corpus_file/;
 
@@ -41,42 +44,69 @@ sub _validity_tests {
     # suppress caching that throws off Test::Deep
     local $BSON::Types::NoCache = 1;
 
+    # aggressively force ext-json representation, even for int32 and double
+    local $ENV{BSON_EXTJSON_FORCE} = 1;
+
     return unless $json->{valid};
 
     for my $case ( @{ $json->{valid} } ) {
+        local $Data::Dumper::Useqq = 1;
+
         my $desc = $case->{description};
         my $bson = pack( "H*", $case->{subject} );
         my $wrap = $json->{bson_type} =~ /\A(?:0x01|0x10|0x12)\z/;
 
-        my $decoded = eval { BSON::decode( $bson, wrap_numbers => $wrap ) };
+        my $codec = BSON->new( wrap_numbers => $wrap, ordered => 1 );
+
+        my $from_bson = eval { $codec->decode_one( $bson ) };
         if ( my $err = $@ ) {
-            fail("$desc: Couldn't decode");
+            fail("$desc: Couldn't decode BSON");
+            diag "Error:\n$err";
+            next;
+        }
+
+        my $from_extjson = eval { $codec->inflate_extjson( decode_json( $case->{extjson} ) ) };
+        if ( my $err = $@ ) {
+            fail("$desc: Couldn't decode ExtJSON");
             diag "Error:\n$err";
             next;
         }
 
         # decoding test: E->N == B->N'   (N == N')
         {
-            my $expect = BSON->inflate_extjson( decode_json( $case->{extjson} ) );
-            local $Data::Dumper::Useqq = 1;
-            cmp_deeply( $decoded, $expect, "$desc: Decode to inflated extjson" )
-              or diag "Got:\n", Dumper($decoded), "Wanted:\n", Dumper($expect);
-
+            cmp_deeply( $from_extjson, $from_bson, "$desc: [E -> N == B -> N']" )
+              or diag "Got:\n", Dumper($from_extjson), Dumper($from_bson), "Wanted:\n", ;
         }
 
-        # roundtrip test
-        if ( !$case->{decodeOnly} ) {
-            my $got = eval {
-                unpack( "H*",
-                    BSON::encode( BSON::decode( $bson, wrap_numbers => $wrap, ixhash => 1 ) ) );
-            };
-            if ( my $err = $@ ) {
-                fail("$desc: Couldn't roundtrip");
-                diag "Error:\n$err";
+        # BSON encoding tests:
+        # a) N -> B' == B
+        # b) N -> B' -> N'' == N (only if (a) fails)
+        {
+            my $bson_2 = $codec->encode_one( $from_bson );
+            if ( $bson_2 eq $bson ) {
+                pass("$desc: [N -> B' == B]");
             }
             else {
-                is( lc($got), lc( $case->{subject} ), "$desc: Roundtrip" )
-                    or diag "ExtJSON: $case->{extjson}";
+                my $from_bson_2 = $codec->decode_one( $bson_2 );
+                cmp_deeply( $from_bson_2, $from_bson, "$desc: [N -> B' -> N'' == N]" )
+                  or diag "Got:\n", Dumper($from_bson_2), "Wanted:\n", Dumper($from_bson);
+            }
+        }
+
+        # ExtJSON encoding tests:
+        # a) N -> E' == E
+        # b) N -> E' -> N''' == N (only if (a) fails)
+        {
+            # eliminate white space
+            (my $extjson = $case->{extjson}) =~ s{\s+}{}g;
+            (my $extjson_2 = to_extjson( $from_bson )) =~ s{\s+}{}g;
+            if ( $extjson_2 eq $extjson ) {
+                pass("$desc: [N -> E' == E]");
+            }
+            else {
+                my $from_extjson_2 = $codec->inflate_extjson( decode_json( $extjson_2 ) );
+                cmp_deeply( $from_extjson_2, $from_extjson, "$desc: [N -> E' -> N''' == N]" )
+                  or diag "Got:\n", Dumper($from_extjson_2), "Wanted:\n", Dumper($from_extjson);
             }
         }
     }
