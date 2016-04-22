@@ -105,7 +105,6 @@ is the empty string, meaning there are no invalid characters.
 has invalid_chars => (
     is      => 'ro',
     isa     => sub { die "not a string" if ! defined $_[0] || ref $_[0] },
-    default => '',
 );
 
 =attr max_length
@@ -121,7 +120,6 @@ latter is necessary for prevention of resource consumption attacks).
 has max_length => (
     is      => 'ro',
     isa     => sub { die "not a non-negative number" unless defined $_[0] && $_[0] >= 0 },
-    default => 0,
 );
 
 =attr op_char
@@ -157,7 +155,6 @@ The default is false.
 
 has ordered => (
     is => 'ro',
-    default => "",
 );
 
 =attr prefer_numeric
@@ -172,7 +169,6 @@ The default is false.
 
 has prefer_numeric => (
     is => 'ro',
-    default => "",
 );
 
 =attr wrap_dbrefs
@@ -187,7 +183,6 @@ The default is true.
 
 has wrap_dbrefs  => (
     is => 'ro',
-    default => 1,
 );
 
 =attr wrap_numbers
@@ -202,7 +197,6 @@ The default is false.
 
 has wrap_numbers => (
     is => 'ro',
-    default => "",
 );
 
 =attr wrap_strings
@@ -217,7 +211,6 @@ The default is false.
 
 has wrap_strings => (
     is => 'ro',
-    default => "",
 );
 
 =attr dt_type (Discouraged)
@@ -243,6 +236,10 @@ has dt_type => (
     isa     => sub { return if !defined($_[0]); die "not a string" if ref $_[0] },
 );
 
+sub BUILD {
+    my ($self) = @_;
+    $self->{wrap_dbrefs} = 1;
+}
 #--------------------------------------------------------------------------#
 # public methods
 #--------------------------------------------------------------------------#
@@ -1051,7 +1048,7 @@ sub _decode_bson_pp {
             }
 
             ( my ($oid), $bson ) = unpack( BSON_OBJECTID . BSON_REMAINING, $bson );
-            $value = { '$ref' => $ref, '$id' => BSON::OID->new( oid => $oid ) };
+            $value = BSON::DBRef->new( '$ref' => $ref, '$id' => BSON::OID->new( oid => $oid ) );
         }
 
         # Code
@@ -1241,7 +1238,7 @@ sub _inflate_hash {
     if ( exists $hash->{'$ref'} ) {
         my $id = $hash->{'$id'};
         $id = BSON->_inflate_hash($id) if ref($id) eq 'HASH';
-        return { '$ref' => $hash->{'$ref'}, '$id' => $id };
+        return BSON::DBRef->new( '$ref' => $hash->{'$ref'}, '$id' => $id );
     }
 
     if ( exists $hash->{'$numberDecimal'} ) {

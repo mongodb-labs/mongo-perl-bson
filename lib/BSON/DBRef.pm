@@ -114,6 +114,33 @@ sub _ordered {
     );
 }
 
+=method TO_JSON
+
+Returns Base64 encoded string equivalent to the data attribute.
+
+If the C<BSON_EXTJSON> option is true, it will instead be compatible with
+MongoDB's L<extended JSON|https://docs.mongodb.org/manual/reference/mongodb-extended-json/>
+format, which represents it as a document as follows:
+
+    {"$binary" : "<base64 data>", "$type" : "<type>"}
+
+=cut
+
+sub TO_JSON {
+    my $self = shift;
+
+    if ( $ENV{BSON_EXTJSON} ) {
+        return {
+            '$ref' => $self->ref,
+            '$id'  => $self->id,
+            ( defined($self->db) ? ( '$db' => $self->db ) : () ),
+            %{ $self->extra },
+        };
+    }
+
+    Carp::croak( "The value '$self' is illegal in JSON" );
+}
+
 
 1;
 
