@@ -33,7 +33,7 @@ sub TO_JSON {
     return MIME::Base64::encode_base64($_[0]->{data}, "") unless $ENV{BSON_EXTJSON};
     return {
         '$binary' => MIME::Base64::encode_base64($_[0]->{data}, ""),
-        '$type' => $_[0]->{subtype},
+        '$type' => sprintf("%02x",$_[0]->{subtype}),
     };
 }
 
