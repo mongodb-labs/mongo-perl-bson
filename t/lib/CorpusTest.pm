@@ -5,6 +5,7 @@ use Test::More 0.96;
 use Test::Deep qw/!blessed/;
 
 use BSON;
+use BSON::Types ':all';
 use Path::Tiny;
 use JSON::MaybeXS;
 use Data::Dumper;
@@ -126,12 +127,22 @@ sub _decode_error_tests {
     }
 }
 
+my %PARSER = (
+    '0x13' => sub { bson_decimal128(shift) },
+);
+
 sub _parse_error_tests {
     my ($json) = @_;
     local $Test::Builder::Level = $Test::Builder::Level + 1;
 
-    return unless $json->{parseErrors};
+    my $parser = $PARSER{$json->{bson_type}};
+    if ( $json->{parseErrors} && !$parser  ) {
+        BAIL_OUT("No parseError parser available for $json->{bson_type}");
+    }
+
     for my $case ( @{ $json->{parseErrors} } ) {
+        eval { $parser->($case->{subject}) };
+        ok( $@, "$case->{description}: parse should throw an error " );
     }
 }
 
