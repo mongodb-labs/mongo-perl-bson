@@ -238,7 +238,7 @@ has dt_type => (
 
 sub BUILD {
     my ($self) = @_;
-    $self->{wrap_dbrefs} = 1;
+    $self->{wrap_dbrefs} = 1 unless defined $self->{wrap_dbrefs};
     $self->{invalid_chars} = "" unless defined $self->{invalid_chars};
 }
 
