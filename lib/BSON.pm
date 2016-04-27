@@ -24,6 +24,7 @@ use if $] ge '5.010000', 're', 'regexp_pattern';
 
 use constant {
     HAS_INT64 => $Config{use64bitint},
+    HAS_LD    => $Config{uselongdouble},
 };
 
 use if !HAS_INT64, "Math::BigInt";
@@ -1250,6 +1251,9 @@ sub _inflate_hash {
     # Following extended JSON is non-standard
 
     if ( exists $hash->{'$numberDouble'} ) {
+        if ( $hash->{'$numberDouble'} eq '-0' && $] lt '5.014' && ! HAS_LD ) {
+            $hash->{'$numberDouble'} = '-0.0';
+        }
         return BSON::Double->new( value => $hash->{'$numberDouble'} );
     }
 
