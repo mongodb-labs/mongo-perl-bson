@@ -848,6 +848,17 @@ sub _encode_bson_pp {
                 utf8::encode($value);
                 $bson .= pack( BSON_TYPE_NAME.BSON_STRING, 0x02, $utf8_key, $value );
             }
+            elsif ( $] lt '5.010' && $flags & B::SVp_IOK() ) {
+                if ( $value > $max_int64 || $value < $min_int64 ) {
+                    croak("BSON can only handle 8-byte integers. Key '$key' is '$value'");
+                }
+                elsif ( $value > $max_int32 || $value < $min_int32 ) {
+                    $bson .= pack( BSON_TYPE_NAME, 0x12, $utf8_key ) . _pack_int64($value);
+                }
+                else {
+                    $bson .= pack( BSON_TYPE_NAME . BSON_INT32, 0x10, $utf8_key, $value );
+                }
+            }
             else {
                 croak("For key '$key', can't encode value '$value'");
             }
