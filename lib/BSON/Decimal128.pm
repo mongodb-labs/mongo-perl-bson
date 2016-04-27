@@ -22,7 +22,7 @@ use constant {
 };
 
 sub new_from_bytes {
-    my ($class, $bid) = @_;
+    my ( $class, $bid ) = @_;
     return $class->new( defined($bid) ? ( value => _bid_to_string($bid) ) : () );
 }
 
@@ -48,16 +48,16 @@ sub BUILD {
     if ( $self->{value} =~ /\A $strict_re \z/x ) {
         # but if $1 has a value, check that it's in range
         return if !$1 || ( $1 >= EMIN && $1 <= EMAX );
-    };
+    }
     $self->{value} = _bid_to_string( _string_to_bid( $self->{value} ) );
 }
 
 sub bytes {
     my $self = shift;
     no warnings 'once';
-    return _string_to_bid($self->{value}) if $BSON::Types::NoCache;
+    return _string_to_bid( $self->{value} ) if $BSON::Types::NoCache;
     return $self->{_bytes} if defined $self->{_bytes};
-    return $self->{_bytes} = _string_to_bid($self->{value});
+    return $self->{_bytes} = _string_to_bid( $self->{value} );
 }
 
 sub _bid_to_string {
@@ -158,7 +158,7 @@ sub _string_to_bid {
 
     _croak($s) unless defined $mant;
 
-    # sign bit 
+    # sign bit
     my $neg = defined($sign) && $sign eq '-' ? "1" : "0";
 
     # locate decimal, remove it and adjust the exponent
@@ -168,7 +168,7 @@ sub _string_to_bid {
 
     # clamping
     if ( $exp > AEMAX && $exp - AEMAX <= PLIM - length($mant) ) {
-        $mant .= "0"x($exp-AEMAX);
+        $mant .= "0" x ( $exp - AEMAX );
         $exp = AEMAX;
     }
 
