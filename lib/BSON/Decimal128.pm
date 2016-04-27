@@ -36,6 +36,7 @@ sub BUILD {
     $self->{value} = "" unless defined $self->{value};
 
     # maybe normalize representation
+    # XXX need to range check here, too
     return if $self->{value} =~ /\A $strict_re \z/x;
     $self->{value} = _bid_to_string( _string_to_bid( $self->{value} ) );
 }
@@ -123,7 +124,7 @@ sub _bid_to_string {
 my ( $bidNaN, $bidPosInf, $bidNegInf ) =
   map { scalar reverse pack( "B*", $_ . ( "0" x 118 ) ) } qw/ 011111 011110 111110 /;
 
-sub _croak { croak("Couldn't parse '$_[0]' as Decimal128") }
+sub _croak { croak("Couldn't parse '$_[0]' as valid Decimal128") }
 
 sub _string_to_bid {
     my $s = shift;
@@ -149,6 +150,12 @@ sub _string_to_bid {
     my $dot = index( $mant, "." );
     $mant =~ s/\.//;
     $exp += $dot - length($mant) if $dot >= 0;
+
+    # clamping
+    if ( $exp > 6111 && $exp - 6111 <= 34 - length($mant) ) {
+        $mant .= "0"x($exp-6111);
+        $exp = 6111;
+    }
 
     _croak($s) if $exp > 6111 || $exp < -6176;
 

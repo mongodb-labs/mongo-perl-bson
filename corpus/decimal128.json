@@ -364,7 +364,7 @@
         },
         {
             "description": "Exponent too large",
-            "subject": "1E6112"
+            "subject": "9999999999999999999999999999999999E6112"
         },
         {
             "description": "Exponent too small",
