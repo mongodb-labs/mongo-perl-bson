@@ -1413,7 +1413,7 @@ instead.
 
 =head1 HISTORY AND ROADMAP
 
-This module was originally written by minimalist.  In 2014, he graciously
+This module was originally written by Stefan G.  In 2014, he graciously
 transferred ongoing maintenance to MongoDB, Inc.
 
 Going forward, work will focus on restoration of a pure-Perl dependency chain,
