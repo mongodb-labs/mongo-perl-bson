@@ -23,10 +23,8 @@ Returns a double, unless the value is 'Inf', '-Inf' or NaN
 
 =cut
 
-# BSON_EXTJSON_FORCE is for testing; not needed for normal operation
 sub TO_JSON {
     my $copy = "$_[0]->{value}"; # avoid changing value to PVNV
-    return { '$numberDouble' => "$_[0]->{value}" } if $ENV{BSON_EXTJSON_FORCE};;
     return $_[0]->{value}/1.0 unless $copy =~ /^(?:Inf|-Inf|NaN)/i;
 
     croak( "The value '$copy' is illegal in JSON" );

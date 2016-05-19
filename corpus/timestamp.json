@@ -5,15 +5,14 @@
     "valid": [
         {
             "description": "Timestamp: (123456789, 42)",
-            "subject": "100000001161002A00000015CD5B0700",
-            "string": "(123456789, 42)",
-            "extjson": "{\"a\" : {\"$timestamp\" : {\"i\" : 42, \"t\" : 123456789}}}"
+            "bson": "100000001161002A00000015CD5B0700",
+            "extjson": "{\"a\" : {\"$timestamp\" : {\"t\" : 123456789, \"i\" : 42}}}"
         }
     ],
     "decodeErrors": [
         {
             "description": "Truncated timestamp field",
-            "subject": "0f0000001161002A00000015CD5B00"
+            "bson": "0f0000001161002A00000015CD5B00"
         }
     ]
 }

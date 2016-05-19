@@ -30,8 +30,7 @@ Returns the value as an integer.
 
 # BSON_EXTJSON_FORCE is for testing; not needed for normal operation
 sub TO_JSON {
-    return int($_[0]->{value}) unless $ENV{BSON_EXTJSON_FORCE};
-    return { '$numberInt' => "$_[0]->{value}" };
+    return int($_[0]->{value});
 }
 
 use overload (

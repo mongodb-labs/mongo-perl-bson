@@ -9,7 +9,7 @@ use Config;
 use JSON::MaybeXS;
 
 use base 'Exporter';
-our @EXPORT = qw/sv_type packed_is bytes_are to_extjson to_myjson/;
+our @EXPORT = qw/sv_type packed_is bytes_are to_extjson to_myjson try_or_fail/;
 
 my $json_codec = JSON::MaybeXS->new(
     ascii => 1,
@@ -76,6 +76,18 @@ sub bytes_are {
 
     return $ok;
 }
+
+sub try_or_fail {
+    my ($code, $label) = @_;
+    eval { $code->() };
+    if ( my $err = $@ ) {
+        fail($label);
+        diag "Error:\n$err";
+        return;
+    }
+    return 1;
+}
+
 
 1;
 # COPYRIGHT

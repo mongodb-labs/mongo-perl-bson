@@ -5,8 +5,7 @@
     "valid": [
         {
             "description": "Maxkey",
-            "subject": "080000007F610000",
-            "string": "Maxkey",
+            "bson": "080000007F610000",
             "extjson": "{\"a\" : {\"$maxKey\" : 1}}"
         }
     ]

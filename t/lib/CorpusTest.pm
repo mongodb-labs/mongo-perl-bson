@@ -33,6 +33,16 @@ sub test_corpus_file {
         return;
     }
 
+    if ( $json->{deprecated} ) {
+        $f = path( "corpus", "deprecated", $file );
+        $json = eval { decode_json( $f->slurp ) };
+        if ( my $err = $@ ) {
+            fail("deprecaed/$base failed to load");
+            diag($err);
+            return;
+        }
+    }
+
     _validity_tests($json);
     _decode_error_tests($json);
     _parse_error_tests($json);
@@ -48,69 +58,158 @@ sub _validity_tests {
     # aggressively force ext-json representation, even for int32 and double
     local $ENV{BSON_EXTJSON_FORCE} = 1;
 
-    return unless $json->{valid};
+    my $bson_type = $json->{bson_type};
 
     for my $case ( @{ $json->{valid} } ) {
         local $Data::Dumper::Useqq = 1;
 
         my $desc = $case->{description};
-        my $bson = pack( "H*", $case->{subject} );
-        my $wrap = $json->{bson_type} =~ /\A(?:0x01|0x10|0x12)\z/;
-
+        my $wrap = $bson_type =~ /\A(?:0x01|0x10|0x12)\z/;
         my $codec = BSON->new( wrap_numbers => $wrap, ordered => 1 );
+        my $lossy = $case->{lossy};
 
-        my $from_bson = eval { $codec->decode_one( $bson ) };
-        if ( my $err = $@ ) {
-            fail("$desc: Couldn't decode BSON");
-            diag "Error:\n$err";
-            next;
+        my $B = $case->{bson};
+        my $E = $case->{extjson}; # could be undef
+
+        my $cB = exists($case->{canonical_bson}) ? $case->{canonical_bson} : $B;
+        my $cE = exists($case->{canonical_extjson}) ? $case->{canonical_extjson} : $E;
+
+        my $skip_extjson = !(defined($E) && _extjson_ok($bson_type, $E));
+
+        $B = pack( "H*", $B );
+        $cB = pack( "H*", $cB );
+
+        $E = _normalize( $E, "$desc: normalizing E"  );
+        $cE = _normalize( $cE, "$desc: normalizing cE"  );
+
+        _bson_to_bson( $codec, $B, $cB, "$desc: B->cB" );
+
+        if ($B ne $cB) {
+            _bson_to_bson( $codec, $cB, $cB, "$desc: cB->cB" );
         }
 
-        my $from_extjson = eval { $codec->inflate_extjson( decode_json( $case->{extjson} ) ) };
-        if ( my $err = $@ ) {
-            fail("$desc: Couldn't decode ExtJSON");
-            diag "Error:\n$err";
-            next;
-        }
+        if ( ! $skip_extjson ) {
+            _bson_to_extjson( $codec, $B, $cE, "$desc: B->cE" );
+            _extjson_to_extjson( $codec, $E, $cE, "$desc: E->cE" );
 
-        # decoding test: E->N == B->N'   (N == N')
-        {
-            cmp_deeply( $from_extjson, $from_bson, "$desc: [E -> N == B -> N']" )
-              or diag "Got:\n", Dumper($from_extjson), Dumper($from_bson), "Wanted:\n", ;
-        }
-
-        # BSON encoding tests:
-        # a) N -> B' == B
-        # b) N -> B' -> N'' == N (only if (a) fails)
-        {
-            my $bson_2 = $codec->encode_one( $from_bson );
-            if ( $bson_2 eq $bson ) {
-                pass("$desc: [N -> B' == B]");
+            if ($B ne $cB) {
+                _bson_to_extjson( $codec, $cB, $cE, "$desc: cB->cE" );
             }
-            else {
-                my $from_bson_2 = $codec->decode_one( $bson_2 );
-                cmp_deeply( $from_bson_2, $from_bson, "$desc: [N -> B' -> N'' == N]" )
-                  or diag "Got:\n", Dumper($from_bson_2), "Wanted:\n", Dumper($from_bson);
-            }
-        }
 
-        # ExtJSON encoding tests:
-        # a) N -> E' == E
-        # b) N -> E' -> N''' == N (only if (a) fails)
-        {
-            # eliminate white space
-            (my $extjson = $case->{extjson}) =~ s{\s+}{}g;
-            (my $extjson_2 = to_extjson( $from_bson )) =~ s{\s+}{}g;
-            if ( $extjson_2 eq $extjson ) {
-                pass("$desc: [N -> E' == E]");
+            if ($E ne $cE) {
+                _extjson_to_extjson( $codec, $cE, $cE, "$desc: cE->cE" );
             }
-            else {
-                my $from_extjson_2 = $codec->inflate_extjson( decode_json( $extjson_2 ) );
-                cmp_deeply( $from_extjson_2, $from_extjson, "$desc: [N -> E' -> N''' == N]" )
-                  or diag "Got:\n", Dumper($from_extjson_2), "Wanted:\n", Dumper($from_extjson);
+
+            if ( ! $lossy ) {
+                _extjson_to_bson( $codec, $E, $cB, "$desc: E->cB" );
+
+                if ($E ne $cE) {
+                    _extjson_to_bson( $codec, $E, $cB, "$desc: cE->cB" );
+                }
+
             }
         }
     }
+
+    return;
+}
+
+# this handle special cases that just don't work will in perl
+sub _extjson_ok {
+    my ($type, $E) = @_;
+
+    if ( $type eq "0x01" ) {
+        return if $E =~ /\d\.0\D/; # trailing zeros wind up as integers
+        return if $E =~ '-0(\.0)?'; # negative zero not preserved in Perl
+    }
+
+    return 1;
+}
+
+sub _normalize {
+    my ($json, $desc) = @_;
+    return unless defined $json;
+
+    try_or_fail(
+        sub {
+            $json = to_myjson( decode_json( $json ) );
+        },
+        $desc
+    ) or next;
+
+    return $json;
+}
+
+sub _bson_to_bson {
+    my ($codec, $input, $expected, $label) = @_;
+
+    my ($decoded,$got);
+
+    try_or_fail(
+        sub { $decoded = $codec->decode_one( $input ) },
+        "$label: Couldn't decode BSON"
+    ) or return;
+
+    try_or_fail(
+        sub { $got = $codec->encode_one( $decoded ) },
+        "$label: Couldn't encode BSON from BSON"
+    ) or return;
+
+    return bytes_are( $got, $expected, $label );
+}
+
+sub _bson_to_extjson {
+    my ($codec, $input, $expected, $label) = @_;
+
+    my ($decoded,$got);
+
+    try_or_fail(
+        sub { $decoded = $codec->decode_one( $input ) },
+        "$label: Couldn't decode BSON"
+    ) or return;
+
+    try_or_fail(
+        sub { $got = to_extjson( $decoded ) },
+        "$label: Couldn't encode ExtJSON from BSON"
+    ) or return;
+
+    return is($got, $expected, $label);
+}
+
+sub _extjson_to_bson {
+    my ($codec, $input, $expected, $label) = @_;
+
+    my ($decoded,$got);
+
+    try_or_fail(
+        sub { $decoded = $codec->inflate_extjson( decode_json( $input ) ) },
+        "$label: Couldn't decode ExtJSON"
+    ) or return;
+
+    try_or_fail(
+        sub { $got = $codec->encode_one( $decoded ) },
+        "$label: Couldn't encode BSON from BSON"
+    ) or return;
+
+    return bytes_are( $got, $expected, $label );
+}
+
+sub _extjson_to_extjson {
+    my ($codec, $input, $expected, $label) = @_;
+
+    my ($decoded,$got);
+
+    try_or_fail(
+        sub { $decoded = $codec->inflate_extjson( decode_json( $input ) ) },
+        "$label: Couldn't decode ExtJSON"
+    ) or return;
+
+    try_or_fail(
+        sub { $got = to_extjson( $decoded ) },
+        "$label: Couldn't encode ExtJSON from BSON"
+    ) or return;
+
+    return is($got, $expected, $label);
 }
 
 sub _decode_error_tests {
@@ -120,7 +219,7 @@ sub _decode_error_tests {
     return unless $json->{decodeErrors};
     for my $case ( @{ $json->{decodeErrors} } ) {
         my $desc = $case->{description};
-        my $bson = pack( "H*", $case->{subject} );
+        my $bson = pack( "H*", $case->{bson} );
 
         eval { BSON::decode($bson) };
         ok( length($@), "Decode error: $desc:" );
@@ -141,7 +240,7 @@ sub _parse_error_tests {
     }
 
     for my $case ( @{ $json->{parseErrors} } ) {
-        eval { $parser->($case->{subject}) };
+        eval { $parser->($case->{bson}) };
         ok( $@, "$case->{description}: parse should throw an error " );
     }
 }

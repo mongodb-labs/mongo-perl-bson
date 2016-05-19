@@ -5,37 +5,33 @@
     "valid": [
         {
             "description": "empty regex with no options",
-            "subject": "0A0000000B6100000000",
-            "string": "//",
-            "extjson": "{\"a\" : {\"$options\" : \"\", \"$regex\" : \"\"}}"
+            "bson": "0A0000000B6100000000",
+            "extjson": "{\"a\" : {\"$regex\" : \"\", \"$options\" : \"\"}}"
         },
         {
             "description": "regex without options",
-            "subject": "0D0000000B6100616263000000",
-            "string": "/abc/",
-            "extjson": "{\"a\" : {\"$options\" : \"\", \"$regex\" : \"abc\"}}"
+            "bson": "0D0000000B6100616263000000",
+            "extjson": "{\"a\" : {\"$regex\" : \"abc\", \"$options\" : \"\"}}"
         },
         {
             "description": "regex with options",
-            "subject": "0F0000000B610061626300696D0000",
-            "string": "/abc/im",
-            "extjson": "{\"a\" : {\"$options\" : \"im\", \"$regex\" : \"abc\"}}"
+            "bson": "0F0000000B610061626300696D0000",
+            "extjson": "{\"a\" : {\"$regex\" : \"abc\", \"$options\" : \"im\"}}"
         },
         {
             "description": "regex with slash",
-            "subject": "110000000B610061622F636400696D0000",
-            "string": "/ab/cd/im",
-            "extjson": "{\"a\" : {\"$options\" : \"im\", \"$regex\" : \"ab/cd\"}}"
+            "bson": "110000000B610061622F636400696D0000",
+            "extjson": "{\"a\" : {\"$regex\" : \"ab/cd\", \"$options\" : \"im\"}}"
         }
     ],
     "decodeErrors": [
         {
             "description": "embedded null in pattern",
-            "subject": "0F0000000B610061006300696D0000"
+            "bson": "0F0000000B610061006300696D0000"
         },
         {
             "description": "embedded null in flags",
-            "subject": "100000000B61006162630069006D0000"
+            "bson": "100000000B61006162630069006D0000"
         }
     ]
 }

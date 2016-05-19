@@ -77,3 +77,20 @@ highlight elements of a BSON document.  It may be used like this:
 
     echo "0900000010610005000000" | perl bsonview -x
 
+## Open Questions
+
+These issues are still TBD:
+
+* Can "-0.0" be represented "canonically" in bson?  Some languages might
+  not round-trip it.  (Do we need a "lossy_bson" field to capture this?)
+
+* How should DBPointer round-trip? Should we expect it to be turned into a
+  DBRef or round-trip faithfully?
+
+* How should Symbol roundtrip?  Should we expect it to be turned into a
+  string?
+
+* How should Undefined roundtrip? Should we expect it to be turned into a
+  null?
+
+* Should we flag cases where extjson is lossy compared to bson?

@@ -5,27 +5,24 @@
     "valid": [
         {
             "description": "All zeroes",
-            "subject": "1400000007610000000000000000000000000000",
-            "string": "000000000000000000000000",
+            "bson": "1400000007610000000000000000000000000000",
             "extjson": "{\"a\" : {\"$oid\" : \"000000000000000000000000\"}}"
         },
         {
             "description": "All ones",
-            "subject": "14000000076100FFFFFFFFFFFFFFFFFFFFFFFF00",
-            "string": "FFFFFFFFFFFFFFFFFFFFFFFF",
-            "extjson": "{\"a\" : {\"$oid\" : \"FFFFFFFFFFFFFFFFFFFFFFFF\"}}"
+            "bson": "14000000076100FFFFFFFFFFFFFFFFFFFFFFFF00",
+            "extjson": "{\"a\" : {\"$oid\" : \"ffffffffffffffffffffffff\"}}"
         },
         {
             "description": "Random",
-            "subject": "1400000007610056E1FC72E0C917E9C471416100",
-            "string": "56E1FC72E0C917E9C4714161",
-            "extjson": "{\"a\" : {\"$oid\" : \"56E1FC72E0C917E9C4714161\"}}"
+            "bson": "1400000007610056E1FC72E0C917E9C471416100",
+            "extjson": "{\"a\" : {\"$oid\" : \"56e1fc72e0c917e9c4714161\"}}"
         }
     ],
     "decodeErrors": [
         {
             "description": "OID truncated",
-            "subject": "1200000007610056E1FC72E0C917E9C471"
+            "bson": "1200000007610056E1FC72E0C917E9C471"
         }
     ]
 }

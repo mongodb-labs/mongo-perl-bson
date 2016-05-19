@@ -5,43 +5,39 @@
     "valid": [
         {
             "description": "Empty",
-            "subject": "0D000000046100050000000000",
-            "string": "[]",
+            "bson": "0D000000046100050000000000",
             "extjson": "{\"a\" : []}"
         },
         {
             "description": "Single Element Array",
-            "subject": "140000000461000C0000001030000A0000000000",
-            "string": "[10]",
+            "bson": "140000000461000C0000001030000A0000000000",
             "extjson": "{\"a\" : [10]}"
         },
         {
             "description": "Single Element Array with index set incorrectly",
-            "subject": "130000000461000B00000010000A0000000000",
-            "string": "[10]",
-            "decodeOnly": true,
+            "bson": "130000000461000B00000010000A0000000000",
+            "canonical_bson": "140000000461000C0000001030000A0000000000",
             "extjson": "{\"a\" : [10]}"
         },
         {
             "description": "Single Element Array with index set incorrectly",
-            "subject": "150000000461000D000000106162000A0000000000",
-            "string": "[10]",
-            "decodeOnly": true,
+            "bson": "150000000461000D000000106162000A0000000000",
+            "canonical_bson": "140000000461000C0000001030000A0000000000",
             "extjson": "{\"a\" : [10]}"
         }
     ],
     "decodeErrors": [
         {
             "description": "Array length too long: eats outer terminator",
-            "subject": "140000000461000D0000001030000A0000000000"
+            "bson": "140000000461000D0000001030000A0000000000"
         },
         {
             "description": "Array length too short: leaks terminator",
-            "subject": "140000000461000B0000001030000A0000000000"
+            "bson": "140000000461000B0000001030000A0000000000"
         },
         {
             "description": "Invalid Array: bad string length in field",
-            "subject": "1A00000004666F6F00100000000230000500000062617A000000"
+            "bson": "1A00000004666F6F00100000000230000500000062617A000000"
         }
     ]
 }

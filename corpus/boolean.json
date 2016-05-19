@@ -5,25 +5,23 @@
     "valid": [
         {
             "description": "True",
-            "subject": "090000000862000100",
-            "string": "true",
+            "bson": "090000000862000100",
             "extjson": "{\"b\" : true}"
         },
         {
             "description": "False",
-            "subject": "090000000862000000",
-            "string": "false",
+            "bson": "090000000862000000",
             "extjson": "{\"b\" : false}"
         }
     ],
     "decodeErrors": [
         {
             "description": "Invalid boolean value of 2",
-            "subject": "090000000862000200"
+            "bson": "090000000862000200"
         },
         {
             "description": "Invalid boolean value of -1",
-            "subject": "09000000086200FF00"
+            "bson": "09000000086200FF00"
         }
     ]
 }

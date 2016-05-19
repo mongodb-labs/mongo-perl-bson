@@ -5,8 +5,7 @@
     "valid": [
         {
             "description": "Null",
-            "subject": "080000000A610000",
-            "string": "null",
+            "bson": "080000000A610000",
             "extjson": "{\"a\" : null}"
         }
     ]

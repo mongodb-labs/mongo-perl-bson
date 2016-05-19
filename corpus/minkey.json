@@ -5,8 +5,7 @@
     "valid": [
         {
             "description": "Minkey",
-            "subject": "08000000FF610000",
-            "string": "Minkey",
+            "bson": "08000000FF610000",
             "extjson": "{\"a\" : {\"$minKey\" : 1}}"
         }
     ]
