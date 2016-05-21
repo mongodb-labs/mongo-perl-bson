@@ -10,7 +10,9 @@ our $VERSION = '0.17';
 use Carp;
 use Math::BigInt;
 
-use Class::Tiny qw/value/;
+use subs qw/value bytes/;
+
+use Class::Tiny qw/value bytes/;
 
 use constant {
     PLIM  => 34,    # precision limit, i.e. max coefficient chars
@@ -21,43 +23,37 @@ use constant {
     BIAS  => 6176,  # offset for encoding exponents
 };
 
-sub new_from_bytes {
-    my ( $class, $bid ) = @_;
-    return $class->new( defined($bid) ? ( value => _bid_to_string($bid) ) : () );
-}
-
 my $digits     = qr/[0-9]+/;
 my $decimal_re = qr{
     ( [-+]? )                                        # maybe a sign
     ( (?:$digits \. $digits? ) | (?: \.? $digits ) ) # decimal-part
     ( (?:e [-+]? $digits)? )                         # maybe exponent
 }ix;
-my $strict_re = qr{
-     (?: NaN )
-  |  (?: -? Inf )                                  # infinities
-  |  (?: -? [0-9]{1,34} )                          # integer form
-  |  (?: -? 0\.[0-9]{1,6} )                        # short decimal form
-  |  (?: -? [0-9]\.[0-9]{1,33} E ([+-] $digits) )  # exponential form
-}x;
 
 sub BUILD {
     my $self = shift;
-    $self->{value} = "" unless defined $self->{value};
 
-    # skip normalization if already in standar form
-    if ( $self->{value} =~ /\A $strict_re \z/x ) {
-        # but if $1 has a value, check that it's in range
-        return if !$1 || ( $1 >= EMIN && $1 <= EMAX );
+    croak "One and only one of 'value' or 'bytes' must be provided"
+        unless 1 == grep { exists $self->{$_} } qw/value bytes/;
+
+    # must check for errors and canonicalize value if provided
+    if (exists $self->{value}) {
+        $self->{value} = _bid_to_string( $self->bytes );
     }
-    $self->{value} = _bid_to_string( _string_to_bid( $self->{value} ) );
+
+    return;
+}
+
+sub value {
+    my $self = shift;
+    return $self->{value} if exists $self->{value};
+    return $self->{value} = _bid_to_string( $self->{bytes} );
 }
 
 sub bytes {
     my $self = shift;
-    no warnings 'once';
-    return _string_to_bid( $self->{value} ) if $BSON::Types::NoCache;
-    return $self->{_bytes} if defined $self->{_bytes};
-    return $self->{_bytes} = _string_to_bid( $self->{value} );
+    return $self->{bytes} if exists $self->{bytes};
+    return $self->{bytes} = _string_to_bid( $self->{value} );
 }
 
 sub _bid_to_string {
@@ -74,7 +70,7 @@ sub _bid_to_string {
         return "NaN";
     }
     if ( $special eq "11110" ) {
-        return $pos ? "Inf" : "-Inf";
+        return $pos ? "Infinity" : "-Infinity";
     }
 
     if ( substr( $binary, 1, 2 ) eq '11' ) {
@@ -101,6 +97,7 @@ sub _bid_to_string {
 
     # convert to scientific form ( e.g. 123E+4 -> 1.23E6 )
     my $adj_exp = $e + length($coef) - 1;
+    # warn "# XXX COEF: $coef; EXP: $e; AEXP: $adj_exp\n";
 
     # exponential notation
     if ( $e > 0 || $adj_exp < -6 ) {
@@ -129,7 +126,7 @@ sub _bid_to_string {
           if length($coef) == abs($e);
 
         # otherwise length(coef) > abs($e), so insert dot after first digit
-        substr( $coef, 1, 0, "." );
+        substr( $coef, $e, 0, "." );
         return $pos ? $coef : "-$coef";
     }
 }
@@ -141,37 +138,69 @@ sub _croak { croak("Couldn't parse '$_[0]' as valid Decimal128") }
 
 sub _erange { croak("Value '$_[0]' is out of range for Decimal128") }
 
+sub _erounding { croak("Value '$_[0]' can't be rounded to Decimal128") }
+
 sub _string_to_bid {
     my $s = shift;
-    # $s = "0" if $s eq "";
 
-    # maybe special
+    # Check special values
     return $bidNaN    if $s =~ /\A NaN \z/ix;
     return $bidPosInf if $s =~ /\A \+?Inf(?:inity)? \z/ix;
     return $bidNegInf if $s =~ /\A -Inf(?:inity)? \z/ix;
 
-    # parse string
+    # Parse string
     my ( $sign, $mant, $exp ) = $s =~ /\A $decimal_re \z/x;
     $sign = "" unless defined $sign;
     $exp = 0 unless defined $exp && length($exp);
     $exp =~ s{^e}{}i;
 
-    _croak($s) unless defined $mant;
+    # Throw error if unparseable
+    _croak($s) unless length $exp && defined $mant;
 
-    # sign bit
+    # Extract sign bit
     my $neg = defined($sign) && $sign eq '-' ? "1" : "0";
 
-    # locate decimal, remove it and adjust the exponent
+    # Remove leading zeroes unless "0."
+    $mant =~ s{^(?:0(?!\.))+}{};
+
+    # Locate decimal, remove it and adjust the exponent
     my $dot = index( $mant, "." );
     $mant =~ s/\.//;
     $exp += $dot - length($mant) if $dot >= 0;
 
-    # clamping
-    if ( $exp > AEMAX && $exp - AEMAX <= PLIM - length($mant) ) {
+    # Remove leading zeros from mantissa (after decimal point removed)
+    $mant =~ s/^0+//;
+    $mant = "0" unless length $mant;
+
+    # Apply exact rounding if necessary
+    if ( length($mant) > PLIM ) {
+        my $plim = PLIM;
+        $mant =~ s{(.{$plim})(0+)$}{$1};
+        $exp += length($2) if defined $2 && length $2;
+    }
+    elsif ( $exp < AEMIN ) {
+        $mant =~ s{(.*[1-9])(0+)$}{$1};
+        $exp += length($2) if defined $2 && length $2;
+    }
+
+    # Apply clamping if possible
+    if ( $mant == 0 ) {
+        if ( $exp > AEMAX ) {
+            $mant = "0";
+            $exp = AEMAX;
+        }
+        elsif ( $exp < AEMIN ) {
+            $mant = "0";
+            $exp = AEMIN;
+        }
+    }
+    elsif ( $exp > AEMAX && $exp - AEMAX <= PLIM - length($mant) ) {
         $mant .= "0" x ( $exp - AEMAX );
         $exp = AEMAX;
     }
 
+    # Throw errors if result won't fit in Decimal128
+    _erounding($s) if length($mant) > PLIM;
     _erange($s) if $exp > AEMAX || $exp < AEMIN;
 
     # Get binary representation of coefficient
@@ -193,7 +222,7 @@ sub _string_to_bid {
         return scalar reverse pack( "B*", $neg . "11" . $biased_exp . $coef );
     }
     else {
-        _croak($s);
+        _erange($s);
     }
 }
 
@@ -210,12 +239,12 @@ format, which represents it as a document as follows:
 =cut
 
 sub TO_JSON {
-    return "$_[0]->{value}" unless $ENV{BSON_EXTJSON};
-    return { '$numberDecimal' => "$_[0]->{value}" };
+    return "" . $_[0]->value unless $ENV{BSON_EXTJSON};
+    return { '$numberDecimal' => "" . ($_[0]->value)  };
 }
 
 use overload (
-    q{""}    => sub { "$_[0]->{value}" },
+    q{""}    => \&value,
     fallback => 1,
 );
 

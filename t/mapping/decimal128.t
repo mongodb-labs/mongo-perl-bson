@@ -29,7 +29,7 @@ is( ref( $hash->{A} ), 'BSON::Decimal128', "BSON::Decimal128->BSON::Decimal128" 
 is( $hash->{A}->value, "3.14159", "value correct" );
 
 # test special decimal128s
-for my $s ( qw/Inf -Inf NaN/ ) {
+for my $s ( qw/Infinity -Infinity NaN/ ) {
     $hash = decode( encode( { A => bson_decimal128($s) } ) );
     is( $hash->{A}->value, $s, "$s value correct" );
 }

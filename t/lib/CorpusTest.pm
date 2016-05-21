@@ -240,8 +240,9 @@ sub _parse_error_tests {
     }
 
     for my $case ( @{ $json->{parseErrors} } ) {
-        eval { $parser->($case->{bson}) };
-        ok( $@, "$case->{description}: parse should throw an error " );
+        eval { $parser->($case->{string}) };
+        ok( $@, "$case->{description}: parse should throw an error " )
+            or diag "Input was: $case->{string}";
     }
 }
 

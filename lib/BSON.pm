@@ -1154,7 +1154,7 @@ sub _decode_bson_pp {
         # Decimal128
         elsif ( $type == 0x13 ) {
             ( my $bytes, $bson ) = unpack( BSON_16BYTES.BSON_REMAINING, $bson );
-            $value = BSON::Decimal128->new_from_bytes( $bytes );
+            $value = BSON::Decimal128->new( bytes => $bytes );
         }
 
         # MinKey
