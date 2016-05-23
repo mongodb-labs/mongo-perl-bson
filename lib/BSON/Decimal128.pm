@@ -44,11 +44,27 @@ sub BUILD {
     return;
 }
 
+=attr value
+
+The Decimal128 value represented as string.  If not provided, it will be
+generated from the C<bytes> attribute on demand.
+
+=cut
+
 sub value {
     my $self = shift;
     return $self->{value} if exists $self->{value};
     return $self->{value} = _bid_to_string( $self->{bytes} );
 }
+
+=attr bytes
+
+The Decimal128 value represented in L<Binary Integer
+Decimal|https://en.wikipedia.org/wiki/Binary_Integer_Decimal> (BID) format.
+If not provided, it will be generated from the C<value> attribute on
+demand.
+
+=cut
 
 sub bytes {
     my $self = shift;
@@ -249,3 +265,38 @@ use overload (
 );
 
 1;
+
+__END__
+
+=for Pod::Coverage BUILD
+
+=head1 SYNOPSIS
+
+    use BSON::Types ':all';
+
+    # string representation
+    $decimal = bson_decimal128( "1.23456789E+1000" );
+
+    # binary representation in BID format
+    $decimal = BSON::Decimal128->new( bytes => $bid ) 
+
+=head1 DESCRIPTION
+
+This module provides a BSON type wrapper for Decimal128 values.
+
+It may be initialized with either a numeric value in string form, or
+with a binary Decimal128 representation (16 bytes), but not both.
+
+Initialization from a string will throw an error if the string cannot be
+parsed as a Decimal128 or if the resulting number would not fit into 128
+bits.  If requires, clamping or exact rounding will be applied to try to
+fit the value into 128 bits.
+
+=head2 OVERLOADING
+
+The stringification operator, C<""> is overloaded to return a (normalized)
+string representation. Fallback overloading is enabled.
+
+=cut
+
+# vim: set ts=4 sts=4 sw=4 et tw=75:

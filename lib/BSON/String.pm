@@ -3,11 +3,18 @@ use strict;
 use warnings;
 
 package BSON::String;
-# ABSTRACT: BSON type wrapper for String
+# ABSTRACT: BSON type wrapper for strings
 
 our $VERSION = '0.17';
 
 use Class::Tiny qw/value/;
+
+=attr value
+
+A scalar value, which will be stringified during construction.  The default
+is the empty string.
+
+=cut
 
 sub BUILDARGS {
     my $class = shift;
@@ -36,7 +43,7 @@ sub BUILDARGS {
 
 =method TO_JSON
 
-Returns value a string.
+Returns value as a string.
 
 =cut
 
@@ -51,49 +58,30 @@ use overload (
 
 __END__
 
+=for Pod::Coverage BUILDARGS
+
 =head1 SYNOPSIS
 
-    use BSON 'encode';
+    use BSON::Types ':all';
 
-    my $str1 = BSON::String->new('Jack Reacher');
-    my $str2 = BSON::String->new('55');
-    my $str3 = BSON::String->new('-1234.7654');
-
-    my $bson = encode( { a => $str1, b => $str2, c => $str3 } );
-
+    bson_string( $string );
 
 =head1 DESCRIPTION
 
-Since Perl does not distinguish between numbers and strings, this module 
-is provides an explicit string type for L<BSON>'s string element.
-It's very simple and does not implement any operator overloading other 
-than C<"">.
+This module provides a BSON type wrapper for a string value.
 
-=head1 METHODS
+Since Perl does not distinguish between numbers and strings, this module
+provides an explicit string type for a scalar value.
 
-=head2 new
+=head2 OVERLOADING
 
-Main constructor which takes a single parameter - the string.
-
-    my $string = BSON::String->new('Hello, there!');
-    print "$string\n";    # Prints 'Hello, there!'
-    if ( "$string" gt "abcde" ) {
-
-        # This will work
-        ...;
-    }
-
-=head2 value
-
-Returns the value of the string.
-
-=head1 OVERLOAD
-
-Only the C<""> operator is overloaded. You won't be able to perform string
-comparison on a BSON::String instance.
+The stringification operator, C<""> is overloaded to return the C<value>
+and fallback overloading is enabled.
 
 =head1 SEE ALSO
 
 L<BSON>
 
 =cut
+
+# vim: set ts=4 sts=4 sw=4 et tw=75:

@@ -301,7 +301,7 @@ sub encode_one {
     $doc = $codec->decode_one( $byte_string, \%options );
 
 Takes a byte string with a BSON-encoded document and returns a
-hash reference representin the decoded document.
+hash reference representing the decoded document.
 
 An optional hash reference of options may be provided.  Valid options include:
 
@@ -403,14 +403,14 @@ sub inflate_extjson {
 # legacy functional interface
 #--------------------------------------------------------------------------#
 
-=function encode
+=func encode
 
     my $bson = encode({ bar => 'foo' }, \%options);
 
-This is the legacy, functional interface and is only expored on demand.
+This is the legacy, functional interface and is only explored on demand.
 It takes a hashref and returns a BSON string.
 
-=function decode
+=func decode
 
     my $hash = decode( $bson, \%options );
 
@@ -1334,6 +1334,8 @@ BEGIN {
 
 __END__
 
+=for Pod::Coverage BUILD
+
 =head1 SYNOPSIS
 
     use BSON qw/encode decode/;
@@ -1428,3 +1430,5 @@ L<BSON::Binary>, L<BSON::Bool>, L<BSON::MinKey>, L<BSON::MaxKey>,
 L<BSON::Timestamp>, L<Tie::IxHash>, L<MongoDB>
 
 =cut
+
+# vim: set ts=4 sts=4 sw=4 et tw=75:

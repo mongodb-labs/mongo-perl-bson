@@ -55,3 +55,5 @@ Legacy methods have been preserved in as compatible a form as possible.
 * L<boolean>
 
 =cut
+
+# vim: set ts=4 sts=4 sw=4 et tw=75:

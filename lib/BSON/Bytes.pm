@@ -11,6 +11,18 @@ use MIME::Base64 ();
 
 use Class::Tiny qw/data subtype/;
 
+=attr data
+
+A scalar, interpreted as bytes.  (I.e. "character" data should be encoded
+to bytes.)  It defaults to the empty string.
+
+=attr subtype
+
+A numeric BSON subtype between 0 and 255.  This defaults to 0 and generally
+should not be modified.  Subtypes 128 to 255 are "user-defined".
+
+=cut
+
 sub BUILD {
     my ($self) = @_;
     $self->{data} = '' unless defined $self->{data};
@@ -47,3 +59,27 @@ BEGIN {
 }
 
 1;
+
+__END__
+
+=for Pod::Coverage BUILD type
+
+=head1 SYNOPSIS
+
+    use BSON::Types ':all';
+
+    my $bytes = bson_bytes( $bytestring );
+
+=head1 DESCRIPTION
+
+This module provides a BSON type wrapper for binary data represented
+as a string of bytes.
+
+=head2 OVERLOADING
+
+The stringification operator, C<""> is overloaded to return the binary data
+and fallback overloading is enabled.
+
+=cut
+
+# vim: set ts=4 sts=4 sw=4 et tw=75:

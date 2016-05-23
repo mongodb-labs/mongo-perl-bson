@@ -10,6 +10,13 @@ our $VERSION = '0.17';
 use Carp;
 use Class::Tiny 'value';
 
+=attr value
+
+A numeric scalar (or the special strings "Inf", "-Inf" or "NaN").  This
+will be coerced to Perl's numeric type.  The default is 0.0.
+
+=cut
+
 sub BUILD {
     my $self = shift;
     # coerce to NV internally
@@ -18,7 +25,7 @@ sub BUILD {
 
 =method TO_JSON
 
-Returns a double, unless the value is 'Inf', '-Inf' or NaN
+Returns a double, unless the value is 'Inf', '-Inf' or 'NaN'
 (which are illegal in JSON), in which case an exception is thrown.
 
 =cut
@@ -36,3 +43,27 @@ use overload (
 );
 
 1;
+
+__END__
+
+=for Pod::Coverage BUILD
+
+=head1 SYNOPSIS
+
+    use BSON::Types ':all';
+
+    my $bytes = bson_double( $number );
+
+=head1 DESCRIPTION
+
+This module provides a BSON type wrapper for a numeric value that
+would be represented in BSON as a double.
+
+=head2 OVERLOADING
+
+The numification operator, C<0+> is overloaded to return the C<value>
+and fallback overloading is enabled.
+
+=cut
+
+# vim: set ts=4 sts=4 sw=4 et tw=75:

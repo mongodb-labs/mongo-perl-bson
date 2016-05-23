@@ -11,6 +11,23 @@ use Carp ();
 
 use Class::Tiny qw/code scope/;
 
+=attr code
+
+A string containing Javascript code. Defaults to the empty string.
+
+=attr scope
+
+An optional hash reference containing variables in the scope of C<code>.
+Defaults to C<undef>.
+
+=cut
+
+=method length
+
+Returns the length of the C<code> attribute.
+
+=cut
+
 sub length {
     length( $_[0]->code );
 }
@@ -70,48 +87,20 @@ sub TO_JSON {
 
 __END__
 
+=for Pod::Coverage BUILD BUILDARGS
+
 =head1 SYNOPSIS
 
-    use BSON;
+    use BSON::Types ':all';
 
-    my $code = BSON::Code->new(q[
-        function be_weird(a) {
-            if ( a > 20 ) {
-                alert("It's too big!")
-            }
-            return function(b){
-                alert(b)
-            }
-        }
-    ]);
+    $code = bson_code( $javascript );
+    $code = bson_code( $javascript, $scope );
 
 =head1 DESCRIPTION
 
-This module is needed for L<BSON> and it manages BSON's code element.
-
-=head1 METHODS
-
-=head2 new
-
-Main constructor which takes two parameters: A string with JavaScript code
-and an optional hashref with scope. 
-
-    my $code = BSON::Code->new($js_code, { a => 6, b => 14 });
-
-=head2 code
-
-Returns the JavaScript code.
-
-=head2 scope
-
-Returns the scope hashref.
-
-=head2 length
-
-Returns the length of the JavaScript code.
-
-=head1 SEE ALSO
-
-L<BSON>
+This module provides a BSON type wrapper for the "Javascript code" type 
+and the "Javascript with Scope" BSON types.
 
 =cut
+
+# vim: set ts=4 sts=4 sw=4 et tw=75:

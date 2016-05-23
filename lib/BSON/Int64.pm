@@ -11,6 +11,12 @@ use Carp;
 use Config;
 use Class::Tiny 'value';
 
+=attr value
+
+A numeric scalar.  It will be coerced to an integer.  The default is 0.
+
+=cut
+
 use if !$Config{use64bitint}, "Math::BigInt";
 
 # With long doubles or a 32-bit integer perl, we're able to directly check
@@ -88,3 +94,32 @@ use overload (
 );
 
 1;
+
+__END__
+
+=for Pod::Coverage BUILD
+
+=head1 SYNOPSIS
+
+    use BSON::Types ':all';
+
+    bson_int64( $number );
+
+=head1 DESCRIPTION
+
+This module provides a BSON type wrapper for a numeric value that
+would be represented in BSON as a 64-bit integer.
+
+If the value won't fit in a 64-bit integer, an error will be thrown.
+
+On a Perl without 64-bit integer support, the value must be a
+L<Math::BigInt> object.
+
+=head2 OVERLOADING
+
+The numification operator, C<0+> is overloaded to return the C<value>
+and fallback overloading is enabled.
+
+=cut
+
+# vim: set ts=4 sts=4 sw=4 et tw=75:

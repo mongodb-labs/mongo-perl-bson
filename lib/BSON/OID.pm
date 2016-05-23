@@ -34,29 +34,51 @@ use threads::shared; # NOP if threads.pm not loaded
     # see if v1.x MongoDB::BSON can do OIDs for us
     BEGIN {
         if ( $INC{'MongoDB'} && MongoDB::BSON->can('generate_oid') ) {
-            *generate_oid = sub { pack( "H*", MongoDB::BSON::generate_oid() ) };
+            *_generate_oid = sub { pack( "H*", MongoDB::BSON::generate_oid() ) };
         }
         else {
-            *generate_oid = \&_packed_oid;
+            *_generate_oid = \&_packed_oid;
         }
     }
 }
 
-use Class::Tiny { oid => \&generate_oid };
+use Class::Tiny qw/oid/;
+
+=attr oid
+
+A 12-byte (packed) Object ID (OID) string.  If not provided, a new OID
+will be generated.
+
+=cut
 
 sub BUILD {
     my ($self) = @_;
+
+    $self->{oid} = _generate_oid() unless defined $self->{oid};
     croak "Invalid 'oid' field: OIDs must be 12 bytes"
       unless length( $self->oid ) == 12;
     return;
 }
 
+=method hex
+
+Returns the C<oid> attributes as 24-byte hexadecimal value
+
+=cut
+
 sub hex {
     my ($self) = @_;
-    return defined $self->{hex}
-      ? $self->{hex}
-      : ( $self->{hex} = unpack( "H*", $self->{oid} ) );
+    return defined $self->{_hex}
+      ? $self->{_hex}
+      : ( $self->{_hex} = unpack( "H*", $self->{oid} ) );
 }
+
+=method get_time
+
+Returns a number corresponding to the portion of the C<oid> value that
+represents seconds since the epoch.
+
+=cut
 
 sub get_time {
     return unpack( "N", substr( $_[0]->{oid}, 0, 4 ) );
@@ -84,7 +106,7 @@ sub TO_JSON {
     return {'$oid' => $_[0]->hex };
 }
 
-
+# For backwards compatibility
 BEGIN {
     *to_string = \&hex;
     *value = \&hex;
@@ -99,11 +121,11 @@ use overload (
 
 __END__
 
-=for Pod::Coverage op_eq to_s
+=for Pod::Coverage op_eq to_string value generate_oid BUILD
 
 =head1 SYNOPSIS
 
-    use BSON::Types;
+    use BSON::Types ':all';
 
     my $oid  = bson_oid();
 
@@ -112,20 +134,18 @@ __END__
 
 =head1 DESCRIPTION
 
-This module provides a wrapper around Object ID.  It will create new ones if
-no C<oid> argument is provided to the constructor.
+This module provides a wrapper around a BSON L<Object
+ID|https://docs.mongodb.com/manual/reference/method/ObjectId/>.
 
 =head1 OVERLOAD
 
 The string operator is overloaded so any string operations will actually use
-the 24-character hex value of the OID.
+the 24-character hex value of the OID.  Fallback overloading is enabled.
 
 =head1 THREADS
 
 This module is thread safe.
 
-=head1 SEE ALSO
-
-L<BSON>
-
 =cut
+
+# vim: set ts=4 sts=4 sw=4 et tw=75:

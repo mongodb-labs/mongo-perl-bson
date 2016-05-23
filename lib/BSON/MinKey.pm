@@ -3,7 +3,7 @@ use strict;
 use warnings;
 
 package BSON::MinKey;
-# ABSTRACT: MinKey data for BSON
+# ABSTRACT: BSON type wrapper for MinKey
 
 our $VERSION = '0.17';
 
@@ -40,24 +40,19 @@ sub TO_JSON {
 
 __END__
 
+=for Pod::Coverage new
+
 =head1 SYNOPSIS
 
-    use BSON;
+    use BSON::Types ':all';
 
-    my $key = BSON::MinKey->new;
+    bson_minkey();
 
 =head1 DESCRIPTION
 
-This module is needed for L<BSON> and it manages BSON's MinKey element.
-
-=head1 METHODS
-
-=head2 new
-
-Object constructor, takes no parameters.
-
-=head1 SEE ALSO
-
-L<BSON>
+This module provides a BSON type wrapper for the special BSON "MinKey" type.
+The object returned is a singleton.
 
 =cut
+
+# vim: set ts=4 sts=4 sw=4 et tw=75:

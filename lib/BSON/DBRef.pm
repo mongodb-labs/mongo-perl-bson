@@ -146,27 +146,28 @@ sub TO_JSON {
 
 __END__
 
+=for Pod::Coverage BUILDARGS
+
 =head1 SYNOPSIS
 
-    my $dbref = BSON::DBRef->new(
-        ref => 'my_collection',
-        id => 123
-    );
+    use BSON::Types ':all';
 
-    $coll->insert( { foo => 'bar', other_doc => $dbref } );
+    my $dbref = bson_dbref( $oid, $collection_name );
 
 =head1 DESCRIPTION
 
-This module provides support for database references (DBRefs) in the Perl
-L<MongoDB> driver. A DBRef is a special embedded document which points to
-another document in the database. DBRefs are not the same as foreign keys
-and do not provide any referential integrity or constraint checking. For example,
-a DBRef may point to a document that no longer exists (or never existed.)
+This module provides a BSON type wrapper for L<MongoDB Database
+References|http://docs.mongodb.org/manual/reference/database-references/>.
 
-Generally, these are not recommended and "manual references" are preferred.
+A DBRef is a special document format which references another document in
+the database.  DBRefs are not the same as foreign keys and do not provide
+any referential integrity or constraint checking. For example, a DBRef may
+point to a document that no longer exists (or never existed.)
 
-See L<Database references|http://docs.mongodb.org/manual/reference/database-references/>
-in the MongoDB manual for more information.
+Use of DBRefs is discouraged, so this module is provided for backwards
+compatibility.  L<"Manual
+references"|https://docs.mongodb.com/manual/reference/database-references/#document-references>
+are preferred when there is a need to reference other documents.
 
 =cut
 

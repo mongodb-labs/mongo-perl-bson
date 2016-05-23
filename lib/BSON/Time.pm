@@ -3,7 +3,7 @@ use strict;
 use warnings;
 
 package BSON::Time;
-# ABSTRACT: Date and time data for BSON
+# ABSTRACT: BSON type wrapper for date and time
 
 our $VERSION = '0.17';
 
@@ -15,7 +15,14 @@ use overload;
 
 use if !$Config{use64bitint}, 'Math::BigInt';
 
-use Class::Tiny qw/value/; # value stores ms since epoch as integer
+use Class::Tiny qw/value/;
+
+=attr value
+
+A integer representing milliseconds since the Unix epoch.  The default
+is 0.
+
+=cut
 
 sub BUILDARGS {
     my $class = shift;
@@ -54,9 +61,23 @@ sub BUILDARGS {
     return \%args;
 }
 
+=method epoch
+
+Returns the number of seconds since the epoch (i.e. a floating-point value).
+
+=cut
+
 sub epoch {
     return int( $_[0]->value / 1000 );
 }
+
+=method as_iso8601
+
+Returns the C<value> as an ISO-8601 formatted string of the form
+C<YYYY-MM-DDThh:mm:ss.sssZ>.  The fractional seconds will be omitted if
+they are zero.
+
+=cut
 
 sub as_iso8601 {
     my $self = shift;
@@ -69,10 +90,23 @@ sub as_iso8601 {
       : sprintf( "%4d-%02d-%02dT%02d:%02d:%02dZ",      $Y, $M, $D, $h, $m, $s );
 }
 
+=method as_datetime
+
+Loads L<DateTime> and returns the C<value> as a L<DateTime> object.
+
+=cut
+
 sub as_datetime {
     require DateTime;
     return DateTime->from_epoch( epoch => $_[0]->{value} / 1000 );
 }
+
+=method as_datetime_tiny
+
+Loads L<DateTime::Tiny> and returns the C<value> as a L<DateTime::Tiny>
+object.
+
+=cut
 
 sub as_datetime_tiny {
     my ($s, $m, $h, $D, $M, $Y) = gmtime($_[0]->epoch);
@@ -85,6 +119,12 @@ sub as_datetime_tiny {
         hour => $h, minute => $m, second => $s
     );
 }
+
+=method as_time_moment
+
+Loads L<Time::Moment> and returns the C<value> as a L<Time::Moment> object.
+
+=cut
 
 sub as_time_moment {
     require Time::Moment;
@@ -122,9 +162,7 @@ use overload (
 
 =method TO_JSON
 
-Returns an ISO-8601 string for this date and time object in this form:
-C<YYYY-MM-DDThh:mm:ss.sssZ>.  The fractional seconds will be omitted
-if they are zero.
+Returns a string formatted by L</as_iso8601>.
 
 If the C<BSON_EXTJSON> option is true, it will instead be compatible with
 MongoDB's L<extended JSON|https://docs.mongodb.org/manual/reference/mongodb-extended-json/>
@@ -143,39 +181,28 @@ sub TO_JSON {
 
 __END__
 
-=for Pod::Coverage op_eq
+=for Pod::Coverage op_eq BUILDARGS
 
 =head1 SYNOPSIS
 
-    use BSON;
+    use BSON::Types ':all';
 
-    my $dt = BSON::Time->new( $epoch );
+    bson_time( $number );
 
 =head1 DESCRIPTION
 
-This module is needed for L<BSON> and it manages BSON's date element.
+This module provides a BSON type wrapper for a date-time value in the form
+of milliseconds since the Unix epoch (UTC only).
 
-=head1 METHODS
+On a Perl without 64-bit integer support, the value must be a
+L<Math::BigInt> object.
 
-=head2 new
+=head2 OVERLOADING
 
-Object constructor. Optional parameter specifies an epoch date.
-If no parameters are passed it will use the current C<time>.
-
-    my $t = BSON::Time->new;    # Time now
-    my $d = BSON::Time->new(123456789);
-
-=head2 value
-
-Returns the stored time in milliseconds since the Epoch. 
-To convert to seconds, divide by 1000.
-
-=head2 epoch
-
-Returns the stored time in seconds since the Epoch. 
-
-=head1 SEE ALSO
-
-L<BSON>
+Both numification, C<0+>, and stringification, C<"">, are overloaded to
+return the result of L</epoch>.  Numeric comparison and string comparison
+are overloading based on those and fallback overloading is enabled.
 
 =cut
+
+# vim: set ts=4 sts=4 sw=4 et tw=75:

@@ -51,8 +51,7 @@ use overload '""' => \&to_s;
 
 __END__
 
-=for Pod::Coverage to_s
-
+=for Pod::Coverage new data type subtype to_s
 
 =head1 DESCRIPTION
 
@@ -64,3 +63,5 @@ implementation on CPAN.
 You are strongly encouraged to use L<BSON::Bytes> instead.
 
 =cut
+
+# vim: set ts=4 sts=4 sw=4 et tw=75:

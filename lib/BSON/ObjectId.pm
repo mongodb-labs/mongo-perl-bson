@@ -61,8 +61,8 @@ Internally, this is now a thin wrapper around L<BSON::OID>.  The only
 difference are:
 
 =for :list
-* The C<new> constructor can take a single argument, either a 12-byte
-  packed OID or a 24-byte hex value
+* The C<new> constructor can take a single argument (not a key/value pair),
+  either a 12-byte packed OID or a 24-byte hex value
 * The C<value> method here returns a 12-byte packed value and may also be
   used as a mutator with either 12-byte packed or 24-byte hex inputs.
 
@@ -100,14 +100,12 @@ Returns true if the 24 character string passed matches an ObjectId.
 =head1 OVERLOAD
 
 The string operator is overloaded so any string operations will actually use
-the 24-character value of the ObjectId.
+the 24-character value of the ObjectId. Fallback overloading is enabled.
 
 =head1 THREADS
 
 This module is thread safe.
 
-=head1 SEE ALSO
-
-L<BSON>
-
 =cut
+
+# vim: set ts=4 sts=4 sw=4 et tw=75:

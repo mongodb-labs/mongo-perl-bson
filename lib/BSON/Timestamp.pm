@@ -3,13 +3,25 @@ use strict;
 use warnings;
 
 package BSON::Timestamp;
-# ABSTRACT: Timestamp data for BSON
+# ABSTRACT: BSON type wrapper for timestamps
 
 our $VERSION = '0.17';
 
 use Carp ();
 
 use Class::Tiny qw/seconds increment/;
+
+=attr seconds
+
+A value representing seconds since the Unix epoch.  The default is
+current value of C<time()>.
+
+=attr increment
+
+A numeric value to disambiguate timestamps in the same second.  The
+default is 0.
+
+=cut
 
 # Support back-compat 'secs' and inc' and legacy constructor shortcut
 sub BUILDARGS {
@@ -67,34 +79,22 @@ sub TO_JSON {
 
 __END__
 
+=for Pod::Coverage BUILDARGS sec inc
+
 =head1 SYNOPSIS
 
-    use BSON;
+    use BSON::Types ':all';
 
-    my $ts = BSON::Timestamp->new(
-        seconds   => $seconds,
-        increment => $increment,
-    );
+    bson_timestamp( $seconds );
+    bson_timestamp( $seconds, $increment );
 
 =head1 DESCRIPTION
 
-This module is needed for L<BSON> and it manages BSON's timestamp element.
-C<Timestamp> is an internal MongoDB type used in replication and sharding.
-The first four bytes are increment and the second four bytes are a timestamp.
-A timestamp value of 0 has special semantics.
+This module provides a BSON type wrapper for a BSON timestamp value.
 
-=head1 METHODS
-
-=head2 seconds
-
-Returns the value of C<seconds>
-
-=head2 increment
-
-Returns the value of C<increment>
-
-=head1 SEE ALSO
-
-L<BSON>
+Generally, it should not be used by end-users, but is provided for
+backwards compatibility.
 
 =cut
+
+# vim: set ts=4 sts=4 sw=4 et tw=75:

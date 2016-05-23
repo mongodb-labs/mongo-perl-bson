@@ -3,11 +3,22 @@ use strict;
 use warnings;
 
 package BSON::Raw;
-# ABSTRACT: BSON type wrapper for pre-encoded BSON bytes
+# ABSTRACT: BSON type wrapper for pre-encoded BSON documents
 
 our $VERSION = '0.17';
 
 use Class::Tiny qw/bson metadata/;
+
+=attr bson
+
+A string containing a BSON-encoded document.  Default is C<undef>.
+
+=attr metadata
+
+A hash reference containing arbitrary metadata about the BSON document.
+Default is C<undef>.
+
+=cut
 
 1;
 
@@ -15,7 +26,7 @@ __END__
 
 =head1 SYNOPSIS
 
-    use BSON::Types;
+    use BSON::Types ':all';
 
     my $ordered = bson_raw( $bson_bytes );
 
@@ -23,8 +34,9 @@ __END__
 
 This module provides a BSON document wrapper for already-encoded BSON bytes.
 
-=head1 SEE ALSO
-
-L<BSON>
+Generally, end-users should have no need for this; it is provided for
+optimization purposes for L<MongoDB> or other client libraries.
 
 =cut
+
+# vim: set ts=4 sts=4 sw=4 et tw=75:

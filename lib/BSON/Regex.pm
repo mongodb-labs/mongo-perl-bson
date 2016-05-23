@@ -13,7 +13,8 @@ use Class::Tiny qw/pattern flags/;
 
 =attr pattern
 
-A string containing a regular expression pattern (without slashes).
+A B<string> containing a PCRE regular expression pattern (not a C<qr> object
+and without slashes).  Default is the empty string.
 
 =cut
 
@@ -22,6 +23,7 @@ A string containing a regular expression pattern (without slashes).
 A string with regular expression flags.  Flags will be sorted and
 duplicates will be removed during object construction.  Supported flags
 include C<imxlsu>.  Invalid flags will cause an exception.
+Default is the empty string;
 
 =cut
 
@@ -56,8 +58,8 @@ expression.  If the pattern or flags can't be compiled, a
 exception will be thrown.
 
 B<SECURITY NOTE>: Executing a regular expression can evaluate arbitrary
-code.  You are strongly advised never to use untrusted input with
-C<try_compile>.
+code if the L<re> 'eval' pragma is in force.  You are strongly advised
+to read L<re> and never to use untrusted input with C<try_compile>.
 
 =cut
 
@@ -93,4 +95,23 @@ sub TO_JSON {
 
 
 1;
+
+__END__
+
+=for Pod::Coverage BUILD
+
+=head1 SYNOPSIS
+
+    use BSON::Types ':all';
+
+    $regex = bson_regex( $pattern );
+    $regex = bson_regex( $pattern, $flags );
+
+=head1 DESCRIPTION
+
+This module provides a BSON type wrapper for a PCRE regular expression and
+optional flags.
+
+=cut
+
 # vim: set ts=4 sts=4 sw=4 et tw=75:

@@ -16,7 +16,7 @@ use BSON::Types ':all';
 
 my ( $bson, $expect, $hash );
 
-my $packed = BSON::OID::generate_oid();
+my $packed = BSON::OID::_generate_oid();
 my $hexoid = unpack( "H*", $packed );
 
 # test constructor

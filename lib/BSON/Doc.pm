@@ -44,19 +44,19 @@ sub _iterator {
 
 __END__
 
+=for Pod::Coverage new
+
 =head1 SYNOPSIS
 
-    use BSON::Types;
+    use BSON::Types ':all';
 
     my $ordered = bson_doc( first => 1, second => 2 );
 
 =head1 DESCRIPTION
 
-This module provides a BSON document wrapper that preserves key-value order.
-It is currently read-only.
-
-=head1 SEE ALSO
-
-L<BSON>
+This module provides a BSON type wrapper representing a document preserves
+key-value order.  It is currently read-only.
 
 =cut
+
+# vim: set ts=4 sts=4 sw=4 et tw=75:
