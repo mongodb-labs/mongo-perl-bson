@@ -7,7 +7,7 @@ use ExtUtils::MakeMaker 6.17;
 
 my %WriteMakefileArgs = (
   "ABSTRACT" => "Pure Perl implementation of MongoDB's BSON serialization",
-  "AUTHOR" => "minimalist <minimalist\@lavabit.com>, David Golden <david\@mongodb.com>",
+  "AUTHOR" => "Stefan G. <minimalist\@lavabit.com>, David Golden <david\@mongodb.com>",
   "CONFIGURE_REQUIRES" => {
     "ExtUtils::MakeMaker" => "6.17"
   },
@@ -36,6 +36,7 @@ my %WriteMakefileArgs = (
     "namespace::clean" => 0,
     "overload" => 0,
     "strict" => 0,
+    "subs" => 0,
     "threads::shared" => 0,
     "warnings" => 0
   },
@@ -47,7 +48,6 @@ my %WriteMakefileArgs = (
     "Path::Tiny" => 0,
     "Test::Deep" => 0,
     "Test::More" => "0.96",
-    "Test::Number::Delta" => 0,
     "lib" => 0,
     "re" => 0,
     "utf8" => 0
@@ -77,7 +77,6 @@ my %FallbackPrereqs = (
   "Sys::Hostname" => 0,
   "Test::Deep" => 0,
   "Test::More" => "0.96",
-  "Test::Number::Delta" => 0,
   "Tie::IxHash" => 0,
   "Time::HiRes" => 0,
   "Time::Local" => 0,
@@ -90,6 +89,7 @@ my %FallbackPrereqs = (
   "overload" => 0,
   "re" => 0,
   "strict" => 0,
+  "subs" => 0,
   "threads::shared" => 0,
   "utf8" => 0,
   "warnings" => 0

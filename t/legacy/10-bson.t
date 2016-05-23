@@ -5,7 +5,6 @@ use warnings;
 
 use Test::More tests => 17;
 use Test::Deep;
-use Test::Number::Delta;
 use Tie::IxHash;
 use Math::BigInt;
 require re;
@@ -21,6 +20,12 @@ sub _dump_bson {
     my $bson = unpack("H*",shift);
     $bson =~ s/(..)/$1 /g;
     return $bson;
+}
+
+sub _delta_ok {
+    my ($lhs, $rhs, $label);
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
+    ok( abs($lhs - $rhs) < 1e-6, $label );
 }
 
 # Int32
@@ -142,7 +147,7 @@ subtest double => sub {
 
     my $hash = decode( $bson );
     for my $k ( sort keys %$hash ) {
-        delta_ok( $hash->{$k}, $h{$k}, "Double decode $h{$k}" );
+        _delta_ok( $hash->{$k}, $h{$k}, "Double decode $h{$k}" );
     }
 };
 
