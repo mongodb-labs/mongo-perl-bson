@@ -23,7 +23,7 @@ sub _dump_bson {
 }
 
 sub _delta_ok {
-    my ($lhs, $rhs, $label);
+    my ($lhs, $rhs, $label) = @_;;
     local $Test::Builder::Level = $Test::Builder::Level + 1;
     ok( abs($lhs - $rhs) < 1e-6, $label );
 }
