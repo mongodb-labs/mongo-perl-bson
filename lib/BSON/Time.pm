@@ -197,7 +197,7 @@ of milliseconds since the Unix epoch (UTC only).
 On a Perl without 64-bit integer support, the value must be a
 L<Math::BigInt> object.
 
-=head2 OVERLOADING
+=head1 OVERLOADING
 
 Both numification, C<0+>, and stringification, C<"">, are overloaded to
 return the result of L</epoch>.  Numeric comparison and string comparison

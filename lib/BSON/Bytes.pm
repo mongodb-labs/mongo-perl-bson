@@ -68,14 +68,14 @@ __END__
 
     use BSON::Types ':all';
 
-    my $bytes = bson_bytes( $bytestring );
+    $bytes = bson_bytes( $bytestring );
 
 =head1 DESCRIPTION
 
 This module provides a BSON type wrapper for binary data represented
 as a string of bytes.
 
-=head2 OVERLOADING
+=head1 OVERLOADING
 
 The stringification operator, C<""> is overloaded to return the binary data
 and fallback overloading is enabled.

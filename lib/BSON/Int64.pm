@@ -115,7 +115,7 @@ If the value won't fit in a 64-bit integer, an error will be thrown.
 On a Perl without 64-bit integer support, the value must be a
 L<Math::BigInt> object.
 
-=head2 OVERLOADING
+=head1 OVERLOADING
 
 The numification operator, C<0+> is overloaded to return the C<value>
 and fallback overloading is enabled.

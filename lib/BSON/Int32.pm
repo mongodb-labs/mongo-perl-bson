@@ -63,7 +63,7 @@ would be represented in BSON as a 32-bit integer.
 
 If the value won't fit in a 32-bit integer, an error will be thrown.
 
-=head2 OVERLOADING
+=head1 OVERLOADING
 
 The numification operator, C<0+> is overloaded to return the C<value>
 and fallback overloading is enabled.

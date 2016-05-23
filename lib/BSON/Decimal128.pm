@@ -292,7 +292,7 @@ parsed as a Decimal128 or if the resulting number would not fit into 128
 bits.  If requires, clamping or exact rounding will be applied to try to
 fit the value into 128 bits.
 
-=head2 OVERLOADING
+=head1 OVERLOADING
 
 The stringification operator, C<""> is overloaded to return a (normalized)
 string representation. Fallback overloading is enabled.

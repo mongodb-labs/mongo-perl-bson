@@ -73,7 +73,7 @@ This module provides a BSON type wrapper for a string value.
 Since Perl does not distinguish between numbers and strings, this module
 provides an explicit string type for a scalar value.
 
-=head2 OVERLOADING
+=head1 OVERLOADING
 
 The stringification operator, C<""> is overloaded to return the C<value>
 and fallback overloading is enabled.

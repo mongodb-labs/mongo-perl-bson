@@ -59,7 +59,7 @@ __END__
 This module provides a BSON type wrapper for a numeric value that
 would be represented in BSON as a double.
 
-=head2 OVERLOADING
+=head1 OVERLOADING
 
 The numification operator, C<0+> is overloaded to return the C<value>
 and fallback overloading is enabled.
