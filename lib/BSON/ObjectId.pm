@@ -50,7 +50,7 @@ sub to_s { $_[0]->to_string }
 
 __END__
 
-=for Pod::Coverage to_s
+=for Pod::Coverage to_s is_legal new value
 
 =head1 DESCRIPTION
 
