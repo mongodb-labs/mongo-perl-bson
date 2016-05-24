@@ -7,7 +7,7 @@ use ExtUtils::MakeMaker 6.17;
 
 my %WriteMakefileArgs = (
   "ABSTRACT" => "Pure Perl implementation of MongoDB's BSON serialization",
-  "AUTHOR" => "Stefan G. <minimalist\@lavabit.com>, David Golden <david\@mongodb.com>",
+  "AUTHOR" => "David Golden <david\@mongodb.com>, Stefan G. <minimalist\@lavabit.com>",
   "CONFIGURE_REQUIRES" => {
     "ExtUtils::MakeMaker" => "6.17"
   },
