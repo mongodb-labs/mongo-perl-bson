@@ -42,17 +42,7 @@ __END__
 This module has been deprecated as it was not compatible with
 other common boolean implementations on CPAN.
 
-Internally, this is now a thin wrapper around L<boolean>.
-
 You are strongly encouraged to use L<boolean> directly instead.
-
-Legacy methods have been preserved in as compatible a form as possible.
-
-=head1 SEE ALSO
-
-=for :list
-* L<BSON>
-* L<boolean>
 
 =cut
 

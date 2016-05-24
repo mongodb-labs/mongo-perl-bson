@@ -23,7 +23,7 @@ and without slashes).  Default is the empty string.
 A string with regular expression flags.  Flags will be sorted and
 duplicates will be removed during object construction.  Supported flags
 include C<imxlsu>.  Invalid flags will cause an exception.
-Default is the empty string;
+Default is the empty string.
 
 =cut
 

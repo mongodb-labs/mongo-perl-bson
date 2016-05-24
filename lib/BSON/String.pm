@@ -75,12 +75,8 @@ provides an explicit string type for a scalar value.
 
 =head1 OVERLOADING
 
-The stringification operator, C<""> is overloaded to return the C<value>
+The stringification operator (C<"">) is overloaded to return the C<value>
 and fallback overloading is enabled.
-
-=head1 SEE ALSO
-
-L<BSON>
 
 =cut
 

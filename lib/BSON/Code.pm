@@ -65,7 +65,7 @@ MongoDB's L<extended JSON|https://docs.mongodb.org/manual/reference/mongodb-exte
 format, which represents it as a document as follows:
 
     {"$code" : "<code>"}
-    {"$code" : "<code>", "$scope" : <scope-document> }
+    {"$code" : "<code>", "$scope" : { ... } }
 
 If the C<BSON_EXTJSON> option is false, an error is thrown, as this value
 can't otherwise be represented in JSON.

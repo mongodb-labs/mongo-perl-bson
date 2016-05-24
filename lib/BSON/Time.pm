@@ -191,17 +191,17 @@ __END__
 
 =head1 DESCRIPTION
 
-This module provides a BSON type wrapper for a date-time value in the form
-of milliseconds since the Unix epoch (UTC only).
+This module provides a BSON type wrapper for a 64-bit date-time value in
+the form of milliseconds since the Unix epoch (UTC only).
 
 On a Perl without 64-bit integer support, the value must be a
 L<Math::BigInt> object.
 
 =head1 OVERLOADING
 
-Both numification, C<0+>, and stringification, C<"">, are overloaded to
+Both numification (C<0+>) and stringification (C<"">) are overloaded to
 return the result of L</epoch>.  Numeric comparison and string comparison
-are overloading based on those and fallback overloading is enabled.
+are overloaded based on those and fallback overloading is enabled.
 
 =cut
 

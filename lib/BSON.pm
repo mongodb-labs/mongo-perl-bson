@@ -1423,12 +1423,6 @@ harmonization with L<MongoDB driver|MongoDB> BSON classes and some API
 enhancements so this can provide a pure-Perl alternative serializer for the
 MongoDB driver.
 
-=head1 SEE ALSO
-
-L<BSON::String>, L<BSON::Time>, L<BSON::ObjectId>, L<BSON::Code>,
-L<BSON::Binary>, L<BSON::Bool>, L<BSON::MinKey>, L<BSON::MaxKey>,
-L<BSON::Timestamp>, L<Tie::IxHash>, L<MongoDB>
-
 =cut
 
 # vim: set ts=4 sts=4 sw=4 et tw=75:

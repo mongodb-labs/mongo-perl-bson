@@ -14,9 +14,7 @@ use namespace::clean -except => 'meta';
 =attr id
 
 Required. The C<_id> value of the referenced document. If the
-C<_id> is an ObjectID, then you must use a L<MongoDB::OID> object.
-
-This may also be specified in the constructor as C<'$id'>.
+C<_id> is an ObjectID, then you must use a L<BSON::OID> object.
 
 =cut
 

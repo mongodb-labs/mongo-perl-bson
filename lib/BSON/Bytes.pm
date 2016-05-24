@@ -69,6 +69,7 @@ __END__
     use BSON::Types ':all';
 
     $bytes = bson_bytes( $bytestring );
+    $bytes = bson_bytes( $bytestring, $subtype );
 
 =head1 DESCRIPTION
 
@@ -77,7 +78,7 @@ as a string of bytes.
 
 =head1 OVERLOADING
 
-The stringification operator, C<""> is overloaded to return the binary data
+The stringification operator (C<"">) is overloaded to return the binary data
 and fallback overloading is enabled.
 
 =cut
