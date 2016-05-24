@@ -125,10 +125,11 @@ has max_length => (
 
 =attr op_char
 
-This is a single character to use for special operators.  If a key starts
-with C<op_char>, the C<op_char> character will be replaced with "$".
+This is a single character to use for special MongoDB-specific query
+operators.  If a key starts with C<op_char>, the C<op_char> character will
+be replaced with "$".
 
-The default is "$".
+The default is "$", meaning that no replacement is necessary.
 
 =cut
 
@@ -139,14 +140,16 @@ has op_char => (
 
 =attr ordered
 
-If set to a true value decoding will return a tied hash that preserves
-key order. Otherwise, a regular unordered hash will be returned.
+If set to a true value, then decoding will return a reference to a tied
+hash that preserves key order. Otherwise, a regular (unordered) hash
+reference will be returned.
 
 B<IMPORTANT CAVEATS>:
 
 =for :list
-* Users must not rely on the return value being any particular tied hash
-  implementation.  It may change in the future for efficiency.
+* When 'ordered' is true, users must not rely on the return value being any
+  particular tied hash implementation.  It may change in the future for
+  efficiency.
 * Turning this option on entails a significant speed penalty as tied hashes
   are slower than regular Perl hashes.
 
@@ -162,7 +165,12 @@ has ordered => (
 
 If set to true, scalar values that look like a numeric value will be
 encoded as a BSON numeric type.  When false, if the scalar value was ever
-used as a string, it will be encoded as a BSON UTF-8 string.
+used as a string, it will be encoded as a BSON UTF-8 string, otherwise
+it will be encoded as a numeric type.
+
+B<IMPORTANT CAVEAT>: the heuristics for determining whether something is a
+string or number are less accurate on older Perls.  See L<BSON::Types>
+for wrapper classes that specify exact serialization types.
 
 The default is false.
 
@@ -174,9 +182,10 @@ has prefer_numeric => (
 
 =attr wrap_dbrefs
 
-If set to true, during decoding, documents with C<$id> and C<$ref> fields
-will be wrapped as L<BSON::DBRef> objects.  If false, they are decoded into
-ordinary hash references (or ordered hashes, if C<ordered> is true).
+If set to true, during decoding, documents with the fields C<'$id'> and
+C<'$ref'> (literal dollar signs, not variables) will be wrapped as
+L<BSON::DBRef> objects.  If false, they are decoded into ordinary hash
+references (or ordered hashes, if C<ordered> is true).
 
 The default is true.
 
@@ -407,8 +416,9 @@ sub inflate_extjson {
 
     my $bson = encode({ bar => 'foo' }, \%options);
 
-This is the legacy, functional interface and is only explored on demand.
+This is the legacy, functional interface and is only exported on demand.
 It takes a hashref and returns a BSON string.
+It uses an internal codec singleton with default attributes.
 
 =func decode
 
@@ -416,6 +426,7 @@ It takes a hashref and returns a BSON string.
 
 This is the legacy, functional interface and is only exported on demand.
 It takes a BSON string and returns a hashref.
+It uses an internal codec singleton with default attributes.
 
 =cut
 
@@ -1338,90 +1349,49 @@ __END__
 
 =head1 SYNOPSIS
 
-    use BSON qw/encode decode/;
-    use boolean;
+    my $codec = BSON->new;
 
-    my $document = {
-        _id      => BSON::ObjectId->new,
-        date     => BSON::Time->new,
-        name     => 'James Bond',
-        age      => 45,
-        amount   => 24587.45,
-        badass   => true,
-        password => BSON::String->new('12345')
-    };
-
-    my $bson = encode( $document );
-    my $doc2 = decode( $bson, %options );
+    my $bson = $codec->encode_one( $document );
+    my $doc  = $codec->decode_one( $bson     );
 
 =head1 DESCRIPTION
 
-This module implements BSON serialization and deserialization as described at
-L<http://bsonspec.org>. BSON is the primary data representation for MongoDB.
+This class implements a BSON encoder/decoder ("codec").  It consumes
+"documents" (typically hash references) and emits BSON strings and vice
+versa in accordance with the L<BSON Specification|http://bsonspec.org>.
 
-=head1 EXPORT
+BSON is the primary data representation for L<MongoDB>.  While this module
+has several features that support MongoDB-specific needs and conventions,
+it can be used as a standalone serialization format.
 
-The module does not export anything. You have to request C<encode> and/or
-C<decode> manually.
+The codec may be customized through attributes on the codec option as well
+as encode/decode specific options on methods:
 
-    use BSON qw/encode decode/;
+    my $codec = BSON->new( \%global_attributes );
 
-=head1 SUBROUTINES
+    my $bson = $codec->encode_one( $document, \%encode_options );
+    my $doc  = $codec->decode_one( $bson    , \%decode_options );
 
-=head2 encode
+Because BSON is strongly-typed and Perl is not, this module supports
+a number of "type wrappers" – classes that wrap Perl data to indicate how
+they should serialize. The L<BSON::Types> module describes these and
+provides associated helper functions.
 
-Takes a hashref and returns a BSON string.
+When decoding, type wrappers are used for any data that has no native Perl
+representation.  Optionally, all data may be wrapped for precise control of
+round-trip encoding.
 
-    my $bson = encode({ bar => 'foo' });
-
-=head2 decode
-
-Takes a BSON string and returns a hashref.
-
-    my $hash = decode( $bson, ixhash => 1 );
-
-The options after C<$bson> are optional and they can be any of the following:
-
-=head3 options
-
-=over
-
-=item 1
-
-ixhash => 1|0
-
-If set to 1 C<decode> will return a L<Tie::IxHash> ordered hash. Otherwise,
-a regular unordered hash will be returned. Turning this option on entails a
-significant speed penalty as Tie::IxHash is slower than a regular Perl hash.
-The default value for this option is 0.
-
-=back
+Please read the configuration attributes carefully to understand more about
+how to control encoding and decoding.
 
 =head1 THREADS
 
 This module is thread safe.
 
-=head1 LIMITATION
-
-MongoDB sets a limit for any BSON record to 16MB. This module does not enforce this
-limit and you can use it to C<encode> and C<decode> structures as large as you
-please.
-
-=head1 CAVEATS
-
-BSON uses zero terminated strings and Perl allows the \0 character to be anywhere
-in a string. If you expect your strings to contain \0 characters, use L<BSON::Binary>
-instead.
-
-=head1 HISTORY AND ROADMAP
+=head1 HISTORY
 
 This module was originally written by Stefan G.  In 2014, he graciously
 transferred ongoing maintenance to MongoDB, Inc.
-
-Going forward, work will focus on restoration of a pure-Perl dependency chain,
-harmonization with L<MongoDB driver|MongoDB> BSON classes and some API
-enhancements so this can provide a pure-Perl alternative serializer for the
-MongoDB driver.
 
 =cut
 
