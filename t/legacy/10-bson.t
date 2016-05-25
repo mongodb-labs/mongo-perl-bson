@@ -266,7 +266,7 @@ subtest hash => sub {
 subtest regex => sub {
     plan tests => 9;
 
-    my @sp = BSON::_split_re(qr/\w/i);
+    my @sp = BSON::PP::_split_re(qr/\w/i);
     is_deeply(\@sp, ['\w', 'i']);
 
     my $re1_str = q!"(?:[^"\\\]++|\\\.)*+"!;
