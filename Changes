@@ -2,6 +2,60 @@ Revision history for BSON
 
 {{$NEXT}}
 
+    [!!! Incompatible Changes !!!]
+
+    - Internal representation of BSON::Bool changed to make it a subclass
+      of boolean.pm for conistency with other "boolean" type classes on
+      CPAN.
+
+    [*** Deprecations ***]
+
+    - BSON::Binary deprecated in favor of the new BSON::Bytes module.
+
+    - BSON::Bool deprecated in favor of direct use of boolean.pm.
+
+    - BSON::ObjectID deprecated in favor of the new BSON::OID module.
+
+    - The 'ixhash' option is deprecated in favor of 'ordered' and the
+      resulting tied object is no longer guaranteed to be Tie::IxHash.
+      This will allow future optimization, as Tie::IxHash is extremely
+      slow.
+
+    [API]
+
+    - BSON module is now object-oriented, with an API and options directly
+      compatible with the MongoDB driver.  Options set as constructor
+      attributes apply to all encoding/decoding, unless options given to methods
+      override them.
+
+    - Added a method for inflation of MongoDB's extended JSON format to
+      BSON type wrapper objects.
+
+    [BSON types]
+
+    - Added new type wrappers to cover all BSON Types, including
+      forthcoming Decimal128.
+
+    - Rationalized/harmonized BSON type classes for compatibility with
+      pre-existing MongoDB BSON classes. Classes that could not be made to
+      interoperate are deprecated as listed above.
+
+    [Bug fixes]
+
+    - Fixed numerous encoding and decoding bugs revealed by greater test
+      coverage (e.g. fixes to UTF-8 encoding/decoding).
+
+    [Testing]
+
+    - Significantly improved test coverage, including tests using a
+      standardized BSON corpus.
+
+    [~Internal Changes~]
+
+    - Pure-perl implementation split into a separate module to avoid
+      its load time in the future when an XS implementation becomes
+      available.
+
 0.16      2015-09-25 10:54:41-04:00 America/New_York
 
     [CHANGES]
