@@ -114,13 +114,14 @@ sub _ordered {
 
 =method TO_JSON
 
-Returns Base64 encoded string equivalent to the data attribute.
-
-If the C<BSON_EXTJSON> option is true, it will instead be compatible with
+If the C<BSON_EXTJSON> option is true, returns a hashref compatible with
 MongoDB's L<extended JSON|https://docs.mongodb.org/manual/reference/mongodb-extended-json/>
 format, which represents it as a document as follows:
 
-    {"$binary" : "<base64 data>", "$type" : "<type>"}
+    { "$ref": "<collection name>", "$id": "<id>" }
+
+If the C<BSON_EXTJSON> option is false, an error is thrown, as this value
+can't otherwise be represented in JSON.
 
 =cut
 
