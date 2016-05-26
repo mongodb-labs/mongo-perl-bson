@@ -344,6 +344,8 @@ sub clone {
 
 =method inflate_extjson
 
+    use JSON::MaybeXS;
+    $data = decode_json( $json_string );
     $bson->inflate_extjson( $data );
 
 Given a hash reference, this method walks the hash, replacing any
@@ -592,7 +594,18 @@ __END__
 
 =head1 SYNOPSIS
 
+    use BSON;
+    use BSON::Types ':all';
+    use boolean;
+
     my $codec = BSON->new;
+
+    my $document = {
+        _id             => bson_oid(),
+        creation_time   => bson_time(),
+        zip_code        => bson_string("08544"),
+        hidden          => false,
+    };
 
     my $bson = $codec->encode_one( $document );
     my $doc  = $codec->decode_one( $bson     );
@@ -627,14 +640,141 @@ round-trip encoding.
 Please read the configuration attributes carefully to understand more about
 how to control encoding and decoding.
 
+=head1 PERL-BSON TYPE MAPPING
+
+BSON has numerous data types and Perl does not.
+
+When B<decoding>, each BSON type should result in a single, predictable
+Perl type.  Where no native Perl type is appropriate, BSON decodes to an
+object of a particular class (a "type wrapper").
+
+When B<encoding>, for historical reasons, there may be many Perl
+representations that should encode to a particular BSON type.  For example,
+all the popular "boolean" type modules on CPAN should encode to the BSON
+boolean type.  Likewise, as this module is intended to supersede the
+type wrappers that have shipped with the L<MongoDB> module, those
+type wrapper are supported by this codec.
+
+The table below describes the BSON/Perl mapping for both encoding and
+decoding.
+
+On the left are all the Perl types or classes this BSON codec
+knows how to serialize to BSON.  The middle column is the BSON type for
+each class.  The right-most column is the Perl type or class that the BSON
+type deserializes to.  Footnotes indicate variations or special behaviors.
+
+    Perl type/class ->          BSON type        -> Perl type/class
+    -------------------------------------------------------------------
+    float[1]                    0x01 DOUBLE         float[2]
+    BSON::Double
+    -------------------------------------------------------------------
+    string[3]                   0x02 UTF8           string[2]
+    BSON::String
+    -------------------------------------------------------------------
+    hashref                     0x03 DOCUMENT       hashref[4][5]
+    BSON::Doc
+    BSON::Raw
+    MongoDB::BSON::Raw[d]
+    Tie::IxHash
+    Hash::Ordered
+    -------------------------------------------------------------------
+    arrayref                    0x04 ARRAY          arrayref
+    -------------------------------------------------------------------
+    BSON::Bytes                 0x05 BINARY         BSON::Bytes
+    scalarref
+    BSON::Binary[d]
+    MongoDB::BSON::Binary[d]
+    -------------------------------------------------------------------
+    n/a                         0x06 UNDEFINED[d]   undef
+    -------------------------------------------------------------------
+    BSON::OID                   0x07 OID            BSON::OID
+    BSON::ObjectId[d]
+    MongoDB::OID[d]
+    -------------------------------------------------------------------
+    boolean                     0x08 BOOL           boolean
+    BSON::Bool[d]
+    JSON::XS::Boolean
+    JSON::PP::Boolean
+    JSON::Tiny::_Bool
+    Mojo::JSON::_Bool
+    Cpanel::JSON::XS::Boolean
+    Types::Serialiser::Boolean
+    -------------------------------------------------------------------
+    BSON::Time                  0x09 DATE_TIME      BSON::Time
+    DateTime
+    DateTime::Tiny
+    Time::Moment
+    -------------------------------------------------------------------
+    undef                       0x0a NULL           undef
+    -------------------------------------------------------------------
+    BSON::Regex                 0x0b REGEX          BSON::Regex
+    qr// reference
+    MongoDB::BSON::Regexp[d]
+    -------------------------------------------------------------------
+    n/a                         0x0c DBPOINTER[d]   (fatal)
+    -------------------------------------------------------------------
+    BSON::Code[6]               0x0d CODE           BSON::Code
+    MongoDB::Code[6]
+    -------------------------------------------------------------------
+    n/a                         0x0e SYMBOL[d]      string
+    -------------------------------------------------------------------
+    BSON::Code[6]               0x0f CODEWSCOPE     BSON::Code
+    MongoDB::Code[6]
+    -------------------------------------------------------------------
+    integer[7][8]               0x10 INT32          integer[2]
+    BSON::Int32
+    -------------------------------------------------------------------
+    BSON::Timestamp             0x11 TIMESTAMP      BSON::Timestamp
+    MongoDB::Timestamp[d]
+    -------------------------------------------------------------------
+    integer[7]                  0x12 INT64          integer[2][9]
+    BSON::Int64
+    Math::BigInt
+    Math::Int64
+    -------------------------------------------------------------------
+    BSON::MaxKey                0x7F MAXKEY         BSON::MaxKey
+    MongoDB::MaxKey[d]
+    -------------------------------------------------------------------
+    BSON::MinKey                0xFF MINKEY         BSON::MinKey
+    MongoDB::MinKey[d]
+
+    [d] Deprecated or soon to be deprecated.
+    [1] Scalar with "NV" internal representation no "PV"
+        representation, or a string that looks like a float if the
+        'prefer_numeric' option is true.
+    [2] If the 'wrap_numbers' option is true, numeric types will be wrapped
+        as BSON::Double, BSON::Int32 or BSON::Int64 as appropriate to ensure
+        round-tripping. If the 'wrap_strings' option is true, strings will
+        be wrapped as BSON::String, likewise.
+    [3] Scalar with "PV" representation and not identified as a number
+        by notes [1] or [7].
+    [4] If 'ordered' option is set, will return a tied hash that preserves
+        order (deprecated 'ixhash' option still works).
+    [5] If the document appears to contain a DBRef and a 'dbref_callback'
+        exists, that callback is executed with the deserialized document.
+    [6] Code is serialized as CODE or CODEWSCOPE depending on whether a
+        scope hashref exists in BSON::Code/MongoDB::Code.
+    [7] Scalar with "IV" internal representation and no "PV"
+        representation, or a string that looks like an integer if the
+        'prefer_numeric' option is true.
+    [8] Only if the integer fits in 32 bits.
+    [9] On 32-bit platforms, 64-bit integers are deserialized to
+        Math::BigInt objects (even if subsequently wrapped into
+        BSON::Int64 if 'wrap_scalars' is true).
+
 =head1 THREADS
 
 This module is thread safe.
 
-=head1 HISTORY
+=head1 HISTORY AND ROADMAP
 
 This module was originally written by Stefan G.  In 2014, he graciously
 transferred ongoing maintenance to MongoDB, Inc.
+
+Currently, this module includes a pure-Perl BSON implementation.  In the
+future, we plan to release an XS implementation as a separate module.  When
+that happens, this module will be updated to prefer the XS implementation
+if available.
 
 =cut
 
