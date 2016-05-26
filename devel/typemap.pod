@@ -56,7 +56,7 @@ type deserializes to.  Footnotes indicate variations or special behaviors.
     qr// reference
     MongoDB::BSON::Regexp[d]
     -------------------------------------------------------------------
-    n/a                         0x0c DBPOINTER[d]   (fatal)
+    n/a                         0x0c DBPOINTER[d]   BSON::DBRef
     -------------------------------------------------------------------
     BSON::Code[6]               0x0d CODE           BSON::Code
     MongoDB::Code[6]
