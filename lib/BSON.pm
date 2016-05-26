@@ -631,7 +631,8 @@ as encode/decode specific options on methods:
 Because BSON is strongly-typed and Perl is not, this module supports
 a number of "type wrappers" – classes that wrap Perl data to indicate how
 they should serialize. The L<BSON::Types> module describes these and
-provides associated helper functions.
+provides associated helper functions.  See L</PERL-BSON TYPE MAPPING>
+for more details.
 
 When decoding, type wrappers are used for any data that has no native Perl
 representation.  Optionally, all data may be wrapped for precise control of
@@ -711,7 +712,7 @@ type deserializes to.  Footnotes indicate variations or special behaviors.
     qr// reference
     MongoDB::BSON::Regexp[d]
     -------------------------------------------------------------------
-    n/a                         0x0c DBPOINTER[d]   (fatal)
+    n/a                         0x0c DBPOINTER[d]   BSON::DBRef
     -------------------------------------------------------------------
     BSON::Code[6]               0x0d CODE           BSON::Code
     MongoDB::Code[6]
