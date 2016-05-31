@@ -65,7 +65,7 @@ sub _validity_tests {
 
         my $desc = $case->{description};
         my $wrap = $bson_type =~ /\A(?:0x01|0x10|0x12)\z/;
-        my $codec = BSON->new( wrap_numbers => $wrap, ordered => 1 );
+        my $codec = BSON->new( prefer_numeric => 1, wrap_numbers => $wrap, ordered => 1 );
         my $lossy = $case->{lossy};
 
         my $B = $case->{bson};

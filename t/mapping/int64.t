@@ -19,6 +19,9 @@ my $max_int64 =
 my $min_int64 =
   $Config{use64bitint} ? -9223372036854775808 : Math::BigInt->new("-9223372036854775808");
 
+my $max_int32_p1 = Math::BigInt->new("2147483648");
+my $min_int31_m1 = Math::BigInt->new("-2147483649");
+
 my $bigpos = Math::BigInt->new("9223372036854775808");
 my $bigneg = Math::BigInt->new("-9223372036854775809");
 
@@ -38,22 +41,22 @@ packed_is( "q", bson_int64($bigpos), $max_int64, "bson_int64(bigpos)" );
 packed_is( "q", bson_int64($bigneg), $min_int64, "bson_int64(bigpos)" );
 
 # test overloading
-packed_is( "q", bson_int64(2**32+1), 2**32+1, "overloading correct" );
+packed_is( "q", bson_int64($max_int32_p1), $max_int32_p1, "overloading correct" );
 
 subtest 'native (64-bit perls)' => sub {
     plan skip_all => 'not a 64-bit perl' unless $Config{use64bitint};
 
     # int64 -> int64
-    $bson = $expect = encode( { A => 2**32+1 } );
+    $bson = $expect = encode( { A => $max_int32_p1 } );
     $hash = decode( $bson );
     is( sv_type( $hash->{A} ), 'IV', "int64->int64" );
-    packed_is( "q", $hash->{A}, 2**32+1, "value correct" );
+    packed_is( "q", $hash->{A}, $max_int32_p1, "value correct" );
 
     # BSON::Int64 -> int64
-    $bson = encode( { A => bson_int64(2**32+1) } );
+    $bson = encode( { A => bson_int64($max_int32_p1) } );
     $hash = decode( $bson );
     is( sv_type( $hash->{A} ), 'IV', "BSON::Int64->int64" );
-    packed_is( "q", $hash->{A}, 2**32+1, "value correct" );
+    packed_is( "q", $hash->{A}, $max_int32_p1, "value correct" );
     bytes_are( $bson, $expect, "BSON correct" );
 
     # BSON::Int64(string) -> int64
@@ -85,16 +88,16 @@ subtest 'Math::BigInt (32-bit perls)' => sub {
     plan skip_all => 'not a 32-bit perl' if $Config{use64bitint};
 
     # NV -> Math::BigInt
-    $bson = $expect = encode( { A => 2**32+1 } );
+    $bson = $expect = encode( { A => $max_int32_p1 } );
     $hash = decode( $bson );
     is( ref( $hash->{A} ), 'Math::BigInt', "int64->Math::BigInt" );
-    packed_is( "q", $hash->{A}, 2**32+1, "value correct" );
+    packed_is( "q", $hash->{A}, $max_int32_p1, "value correct" );
 
     # BSON::Int64 -> Math::BigInt
-    $bson = encode( { A => bson_int64(2**32+1) } );
+    $bson = encode( { A => bson_int64($max_int32_p1) } );
     $hash = decode( $bson );
     is( ref( $hash->{A} ), 'Math::BigInt', "BSON::Int64->Math::BigInt" );
-    packed_is( "q", $hash->{A}, 2**32+1, "value correct" );
+    packed_is( "q", $hash->{A}, $max_int32_p1, "value correct" );
     bytes_are( $bson, $expect, "BSON correct" );
 
     # BSON::Int64(string) -> Math::BigInt
@@ -124,16 +127,16 @@ subtest 'Math::BigInt (32-bit perls)' => sub {
 
 subtest 'wrapped' => sub {
     # int64 -> BSON::Int64
-    $bson = $expect = encode( { A => 2**32+1 } );
+    $bson = $expect = encode( { A => $max_int32_p1 } );
     $hash = decode( $bson, wrap_numbers => 1 );
     is( ref( $hash->{A} ), 'BSON::Int64', "int64->BSON::Int64" );
-    packed_is( "q", $hash->{A}, 2**32+1, "value correct" );
+    packed_is( "q", $hash->{A}, $max_int32_p1, "value correct" );
 
     # BSON::Int64 -> BSON::Int64
-    $bson = encode( { A => bson_int64(2**32+1) } );
+    $bson = encode( { A => bson_int64($max_int32_p1) } );
     $hash = decode( $bson, wrap_numbers => 1 );
     is( ref( $hash->{A} ), 'BSON::Int64', "int64->BSON::Int64" );
-    packed_is( "q", $hash->{A}, 2**32+1, "value correct" );
+    packed_is( "q", $hash->{A}, $max_int32_p1, "value correct" );
     bytes_are( $bson, $expect, "BSON correct" );
 
     # BSON::Int64(string) -> BSON::Int64
