@@ -46,7 +46,7 @@ sub packed_is {
     my $ok;
     if ( $template eq 'q' && ! $Config{use64bitint} ) {
         if ( !ref($got) && !ref($exp) ) {
-            # must fit in 32 bits, so downgrade the template
+            # regular scalar will fit in 32 bits, so downgrade the template
             $template = 'l';
         }
         else {
