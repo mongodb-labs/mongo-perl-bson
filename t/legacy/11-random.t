@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-my $RUNS = 500;    # Number of random documents to create
+my $RUNS = $ENV{AUTOMATED_TESTING} || $ENV{AUTHOR_TESTING} ? 500 : 50;    # Number of random documents to create
 my $DEEP = 2;      # Max depth level of embedded hashes
 my $KEYS = 20;     # Number of keys per hash
 
