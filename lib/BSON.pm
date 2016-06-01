@@ -799,6 +799,22 @@ This module is thread safe.
   backend implementation.  It must implement the same API as
   C<BSON::PP>.
 
+=head1 SEMANTIC VERSIONING SCHEME
+
+Starting with BSON C<v0.999.0>, this module is using a "tick-tock"
+three-part version-tuple numbering scheme: C<vX.Y.Z>
+
+=for :list
+* In stable releases, C<X> will be incremented for incompatible API
+  changes.
+* Even-value increments of C<Y> indicate stable releases with new
+  functionality.  C<Z> will be incremented for bug fixes.
+* Odd-value increments of C<Y> indicate unstable ("development") releases
+  that should not be used in production.  C<Z> increments have no semantic
+  meaning; they indicate only successive development releases.  Development
+  releases may have API-breaking changes, usually indicated by C<Y> equal
+  to "999".
+
 =head1 HISTORY AND ROADMAP
 
 This module was originally written by Stefan G.  In 2014, he graciously
