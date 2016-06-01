@@ -5,6 +5,7 @@ use warnings;
 package BSON::String;
 # ABSTRACT: BSON type wrapper for strings
 
+use version;
 our $VERSION = '0.17';
 
 use Moo;

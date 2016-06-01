@@ -5,6 +5,7 @@ use warnings;
 package BSON::Decimal128;
 # ABSTRACT: BSON type wrapper for Decimal128
 
+use version;
 our $VERSION = '0.17';
 
 use Carp;

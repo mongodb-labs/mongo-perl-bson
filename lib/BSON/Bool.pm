@@ -5,6 +5,7 @@ use warnings;
 package BSON::Bool;
 # ABSTRACT: Legacy BSON type wrapper for Booleans (DEPRECATED)
 
+use version;
 our $VERSION = '0.17';
 
 use boolean ();

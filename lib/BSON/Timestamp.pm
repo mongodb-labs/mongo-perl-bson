@@ -5,6 +5,7 @@ use warnings;
 package BSON::Timestamp;
 # ABSTRACT: BSON type wrapper for timestamps
 
+use version;
 our $VERSION = '0.17';
 
 use Carp ();

@@ -5,6 +5,7 @@ use warnings;
 package BSON::OID;
 # ABSTRACT: BSON type wrapper for Object IDs
 
+use version;
 our $VERSION = '0.17';
 
 use Carp;

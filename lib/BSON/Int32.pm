@@ -5,6 +5,7 @@ use warnings;
 package BSON::Int32;
 # ABSTRACT: BSON type wrapper for Int32
 
+use version;
 our $VERSION = '0.17';
 
 use Carp;

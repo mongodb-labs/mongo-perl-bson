@@ -37,6 +37,7 @@ my %WriteMakefileArgs = (
     "overload" => 0,
     "strict" => 0,
     "threads::shared" => 0,
+    "version" => 0,
     "warnings" => 0
   },
   "TEST_REQUIRES" => {
@@ -90,6 +91,7 @@ my %FallbackPrereqs = (
   "strict" => 0,
   "threads::shared" => 0,
   "utf8" => 0,
+  "version" => 0,
   "warnings" => 0
 );
 

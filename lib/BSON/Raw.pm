@@ -5,6 +5,7 @@ use warnings;
 package BSON::Raw;
 # ABSTRACT: BSON type wrapper for pre-encoded BSON documents
 
+use version;
 our $VERSION = '0.17';
 
 use Moo;

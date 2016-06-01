@@ -5,6 +5,7 @@ use warnings;
 package BSON::Binary;
 # ABSTRACT: Legacy BSON type wrapper for binary data (DEPRECATED)
 
+use version;
 our $VERSION = '0.17';
 
 our $TYPE_SIMPLE       = 0x00;

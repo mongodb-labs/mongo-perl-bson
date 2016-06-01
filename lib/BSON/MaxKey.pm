@@ -5,6 +5,7 @@ use warnings;
 package BSON::MaxKey;
 # ABSTRACT: BSON type wrapper for MaxKey
 
+use version;
 our $VERSION = '0.17';
 
 use Carp;

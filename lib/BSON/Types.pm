@@ -5,6 +5,7 @@ use warnings;
 package BSON::Types;
 # ABSTRACT: Helper functions to wrap BSON type classes
 
+use version;
 our $VERSION = '0.17';
 
 use base 'Exporter';

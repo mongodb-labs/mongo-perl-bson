@@ -5,6 +5,7 @@ use warnings;
 package BSON::Doc;
 # ABSTRACT: BSON type wrapper for ordered documents
 
+use version;
 our $VERSION = '0.17';
 
 use Carp qw/croak/;

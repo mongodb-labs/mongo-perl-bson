@@ -5,6 +5,7 @@ use warnings;
 package BSON::Double;
 # ABSTRACT: BSON type wrapper for Double
 
+use version;
 our $VERSION = '0.17';
 
 use Carp;

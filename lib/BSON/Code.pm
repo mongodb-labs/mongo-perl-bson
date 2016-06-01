@@ -5,6 +5,7 @@ use warnings;
 package BSON::Code;
 # ABSTRACT: BSON type wrapper for Javascript code
 
+use version;
 our $VERSION = '0.17';
 
 use Carp ();

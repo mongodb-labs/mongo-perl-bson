@@ -8,6 +8,7 @@ package BSON;
 use base 'Exporter';
 our @EXPORT_OK = qw/encode decode/;
 
+use version;
 our $VERSION = '0.17';
 
 use Carp;

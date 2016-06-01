@@ -5,6 +5,7 @@ use warnings;
 package BSON::DBRef;
 # ABSTRACT: BSON type wrapper for MongoDB DBRefs
 
+use version;
 our $VERSION = '0.17';
 
 use Tie::IxHash;

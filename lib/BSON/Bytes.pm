@@ -5,6 +5,7 @@ use warnings;
 package BSON::Bytes;
 # ABSTRACT: BSON type wrapper for binary byte strings
 
+use version;
 our $VERSION = '0.17';
 
 use MIME::Base64 ();

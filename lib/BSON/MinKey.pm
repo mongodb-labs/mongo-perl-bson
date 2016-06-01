@@ -5,6 +5,7 @@ use warnings;
 package BSON::MinKey;
 # ABSTRACT: BSON type wrapper for MinKey
 
+use version;
 our $VERSION = '0.17';
 
 use Carp;

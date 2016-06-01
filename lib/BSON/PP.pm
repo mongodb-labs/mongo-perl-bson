@@ -5,6 +5,7 @@ use warnings;
 package BSON::PP;
 # ABSTRACT: Pure Perl BSON implementation
 
+use version;
 our $VERSION = '0.17';
 
 use B;

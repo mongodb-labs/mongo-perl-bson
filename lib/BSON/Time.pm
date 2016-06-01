@@ -5,6 +5,7 @@ use warnings;
 package BSON::Time;
 # ABSTRACT: BSON type wrapper for date and time
 
+use version;
 our $VERSION = '0.17';
 
 use Carp qw/croak/;
