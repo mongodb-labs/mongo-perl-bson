@@ -8,13 +8,19 @@ package BSON::Int32;
 our $VERSION = '0.17';
 
 use Carp;
-use Class::Tiny 'value';
+use Moo;
 
 =attr value
 
 A numeric scalar.  It will be coerced to an integer.  The default is 0.
 
 =cut
+
+has 'value' => (
+    is => 'ro'
+);
+
+use namespace::clean -except => 'meta';
 
 my $max_int32 = 2147483647;
 my $min_int32 = -2147483648;

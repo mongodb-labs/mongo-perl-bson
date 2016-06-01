@@ -9,7 +9,7 @@ our $VERSION = '0.17';
 
 use Carp ();
 
-use Class::Tiny qw/code scope/;
+use Moo;
 
 =attr code
 
@@ -21,6 +21,12 @@ An optional hash reference containing variables in the scope of C<code>.
 Defaults to C<undef>.
 
 =cut
+
+has [ qw/code scope/ ] => (
+    is => 'ro'
+);
+
+use namespace::clean -except => 'meta';
 
 =method length
 

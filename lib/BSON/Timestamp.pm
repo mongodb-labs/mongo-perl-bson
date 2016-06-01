@@ -9,7 +9,7 @@ our $VERSION = '0.17';
 
 use Carp ();
 
-use Class::Tiny qw/seconds increment/;
+use Moo;
 
 =attr seconds
 
@@ -22,6 +22,12 @@ A numeric value to disambiguate timestamps in the same second.  The
 default is 0.
 
 =cut
+
+has [qw/seconds increment/] => (
+    is => 'ro'
+);
+
+use namespace::clean -except => 'meta';
 
 # Support back-compat 'secs' and inc' and legacy constructor shortcut
 sub BUILDARGS {
@@ -73,7 +79,6 @@ sub TO_JSON {
 
     Carp::croak( "The value '$_[0]' is illegal in JSON" );
 }
-
 
 1;
 

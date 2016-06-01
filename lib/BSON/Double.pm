@@ -8,7 +8,6 @@ package BSON::Double;
 our $VERSION = '0.17';
 
 use Carp;
-use Class::Tiny 'value';
 
 =attr value
 
@@ -16,6 +15,14 @@ A numeric scalar (or the special strings "Inf", "-Inf" or "NaN").  This
 will be coerced to Perl's numeric type.  The default is 0.0.
 
 =cut
+
+use Moo;
+
+has 'value' => (
+    is => 'ro'
+);
+
+use namespace::clean -except => 'meta';
 
 sub BUILD {
     my $self = shift;

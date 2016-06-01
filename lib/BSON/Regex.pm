@@ -9,7 +9,7 @@ our $VERSION = '0.17';
 
 use Carp ();
 
-use Class::Tiny qw/pattern flags/;
+use Moo;
 
 =attr pattern
 
@@ -26,6 +26,12 @@ include C<imxlsu>.  Invalid flags will cause an exception.
 Default is the empty string.
 
 =cut
+
+has [qw/pattern flags/] => (
+    is => 'ro'
+);
+
+use namespace::clean -except => 'meta';
 
 my %ALLOWED_FLAGS = map { $_ => 1 } qw/i m x l s u/;
 

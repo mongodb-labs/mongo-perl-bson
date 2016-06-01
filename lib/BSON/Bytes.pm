@@ -9,7 +9,7 @@ our $VERSION = '0.17';
 
 use MIME::Base64 ();
 
-use Class::Tiny qw/data subtype/;
+use Moo;
 
 =attr data
 
@@ -22,6 +22,12 @@ A numeric BSON subtype between 0 and 255.  This defaults to 0 and generally
 should not be modified.  Subtypes 128 to 255 are "user-defined".
 
 =cut
+
+has [qw/data subtype/] => (
+    is      => 'ro',
+);
+
+use namespace::clean -except => 'meta';
 
 sub BUILD {
     my ($self) = @_;

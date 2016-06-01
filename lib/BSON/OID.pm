@@ -12,6 +12,21 @@ use Digest::MD5 'md5';
 use Sys::Hostname;
 use threads::shared; # NOP if threads.pm not loaded
 
+use Moo;
+
+=attr oid
+
+A 12-byte (packed) Object ID (OID) string.  If not provided, a new OID
+will be generated.
+
+=cut
+
+has 'oid' => (
+    is => 'ro'
+);
+
+use namespace::clean -except => 'meta';
+
 # OID generation
 {
     my $_inc : shared;
@@ -41,15 +56,6 @@ use threads::shared; # NOP if threads.pm not loaded
         }
     }
 }
-
-use Class::Tiny qw/oid/;
-
-=attr oid
-
-A 12-byte (packed) Object ID (OID) string.  If not provided, a new OID
-will be generated.
-
-=cut
 
 sub BUILD {
     my ($self) = @_;

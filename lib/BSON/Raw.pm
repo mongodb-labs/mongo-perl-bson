@@ -7,7 +7,7 @@ package BSON::Raw;
 
 our $VERSION = '0.17';
 
-use Class::Tiny qw/bson metadata/;
+use Moo;
 
 =attr bson
 
@@ -19,6 +19,12 @@ A hash reference containing arbitrary metadata about the BSON document.
 Default is C<undef>.
 
 =cut
+
+has [qw/bson metadata/] => (
+    is => 'ro'
+);
+
+use namespace::clean -except => 'meta';
 
 1;
 

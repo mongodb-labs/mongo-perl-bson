@@ -7,7 +7,7 @@ package BSON::String;
 
 our $VERSION = '0.17';
 
-use Class::Tiny qw/value/;
+use Moo;
 
 =attr value
 
@@ -15,6 +15,12 @@ A scalar value, which will be stringified during construction.  The default
 is the empty string.
 
 =cut
+
+has 'value' => (
+    is => 'ro'
+);
+
+use namespace::clean -except => 'meta';
 
 sub BUILDARGS {
     my $class = shift;

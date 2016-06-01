@@ -9,7 +9,7 @@ our $VERSION = '0.17';
 
 use Carp;
 use Config;
-use Class::Tiny 'value';
+use Moo;
 
 =attr value
 
@@ -17,7 +17,13 @@ A numeric scalar.  It will be coerced to an integer.  The default is 0.
 
 =cut
 
+has 'value' => (
+    is => 'ro'
+);
+
 use if !$Config{use64bitint}, "Math::BigInt";
+
+use namespace::clean -except => 'meta';
 
 # With long doubles or a 32-bit integer perl, we're able to directly check
 # if a value exceeds the maximum bounds of an int64_t.  On a 64-bit Perl

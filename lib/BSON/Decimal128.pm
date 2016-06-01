@@ -10,9 +10,33 @@ our $VERSION = '0.17';
 use Carp;
 use Math::BigInt;
 
-use subs qw/value bytes/;
+use Moo;
 
-use Class::Tiny qw/value bytes/;
+=attr value
+
+The Decimal128 value represented as string.  If not provided, it will be
+generated from the C<bytes> attribute on demand.
+
+=cut
+
+has 'value' => (
+    is => 'lazy',
+);
+
+=attr bytes
+
+The Decimal128 value represented in L<Binary Integer
+Decimal|https://en.wikipedia.org/wiki/Binary_Integer_Decimal> (BID) format.
+If not provided, it will be generated from the C<value> attribute on
+demand.
+
+=cut
+
+has 'bytes' => (
+    is => 'lazy',
+);
+
+use namespace::clean -except => 'meta';
 
 use constant {
     PLIM  => 34,    # precision limit, i.e. max coefficient chars
@@ -30,6 +54,14 @@ my $decimal_re = qr{
     ( (?:e [-+]? $digits)? )                         # maybe exponent
 }ix;
 
+sub _build_value {
+    return _bid_to_string( $_[0]->{bytes} );
+}
+
+sub _build_bytes {
+    return _string_to_bid( $_[0]->{value} );
+}
+
 sub BUILD {
     my $self = shift;
 
@@ -42,34 +74,6 @@ sub BUILD {
     }
 
     return;
-}
-
-=attr value
-
-The Decimal128 value represented as string.  If not provided, it will be
-generated from the C<bytes> attribute on demand.
-
-=cut
-
-sub value {
-    my $self = shift;
-    return $self->{value} if exists $self->{value};
-    return $self->{value} = _bid_to_string( $self->{bytes} );
-}
-
-=attr bytes
-
-The Decimal128 value represented in L<Binary Integer
-Decimal|https://en.wikipedia.org/wiki/Binary_Integer_Decimal> (BID) format.
-If not provided, it will be generated from the C<value> attribute on
-demand.
-
-=cut
-
-sub bytes {
-    my $self = shift;
-    return $self->{bytes} if exists $self->{bytes};
-    return $self->{bytes} = _string_to_bid( $self->{value} );
 }
 
 sub _bid_to_string {
@@ -260,7 +264,7 @@ sub TO_JSON {
 }
 
 use overload (
-    q{""}    => \&value,
+    q{""}    => sub { $_[0]->value },
     fallback => 1,
 );
 

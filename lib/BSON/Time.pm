@@ -15,7 +15,7 @@ use overload;
 
 use if !$Config{use64bitint}, 'Math::BigInt';
 
-use Class::Tiny qw/value/;
+use Moo;
 
 =attr value
 
@@ -23,6 +23,12 @@ A integer representing milliseconds since the Unix epoch.  The default
 is 0.
 
 =cut
+
+has 'value' => (
+    is => 'ro'
+);
+
+use namespace::clean -except => 'meta';
 
 sub BUILDARGS {
     my $class = shift;
