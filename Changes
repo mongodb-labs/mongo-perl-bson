@@ -8,6 +8,9 @@ Revision history for BSON
       of boolean.pm for conistency with other "boolean" type classes on
       CPAN.
 
+    - All BSON type wrapper classes are now immutable; accessors have
+      been changed to read-only.
+
     [*** Deprecations ***]
 
     - BSON::Binary deprecated in favor of the new BSON::Bytes module.
