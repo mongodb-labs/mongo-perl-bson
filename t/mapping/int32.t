@@ -3,6 +3,8 @@ use strict;
 use warnings;
 
 use Test::More 0.96;
+BEGIN { $ENV{PERL_BSON_BACKEND} = undef }
+BEGIN { $INC{"BSON/XS.pm"} = undef }
 use Math::BigInt;
 
 use lib 't/lib';

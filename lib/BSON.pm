@@ -15,6 +15,7 @@ use Config;
 use Scalar::Util qw/blessed/;
 
 use Moo;
+use Module::Runtime qw/require_module/;
 use BSON::Types (); # loads types for extjson inflation
 use boolean;
 
@@ -30,9 +31,26 @@ my $bools_re = qr/::(?:Boolean|_Bool|Bool)\z/;
 use namespace::clean -except => 'meta';
 
 BEGIN {
-    require BSON::PP;
-    *_encode_bson = \&BSON::PP::_encode_bson;
-    *_decode_bson = \&BSON::PP::_decode_bson;
+    my $class;
+    if ( $class = $ENV{PERL_BSON_BACKEND} ) {
+        eval { require_module($class) };
+        if ( my $err = $@ ) {
+            $err =~ s{ at \S+ line .*}{};
+            die "Error: PERL_BSON_BACKEND '$class' could not be loaded: $err\n";
+        }
+        unless ($class->can("_encode_bson") && $class->can("_decode_bson") ) {
+            die "Error: PERL_BSON_BACKEND '$class' does not implement the correct API.\n";
+        }
+    }
+    elsif ( eval { require_module( $class = "BSON::XS" ); $INC{'BSON/XS.pm'} } ) {
+        # module loaded; nothing else to do
+    }
+    else {
+        require_module( $class = "BSON::PP" );
+    }
+
+    *_encode_bson = $class->can("_encode_bson");
+    *_decode_bson = $class->can("_decode_bson");
 }
 
 #--------------------------------------------------------------------------#
@@ -641,6 +659,11 @@ round-trip encoding.
 Please read the configuration attributes carefully to understand more about
 how to control encoding and decoding.
 
+At compile time, this module will select an implementation backend.  It
+will prefer C<BSON::XS> (released separately) if available, or will fall
+back to L<BSON::PP> (bundled with this module).  See L</ENVIRONMENT> for
+a way to control the selection of the backend.
+
 =head1 PERL-BSON TYPE MAPPING
 
 BSON has numerous data types and Perl does not.
@@ -767,15 +790,18 @@ type deserializes to.  Footnotes indicate variations or special behaviors.
 
 This module is thread safe.
 
+=head1 ENVIRONMENT
+
+=for :list
+* PERL_BSON_BACKEND – if set at compile time, this will be treated
+  as a module name.  The module will be loaded and used as the BSON
+  backend implementation.  It must implement the same API as
+  C<BSON::PP>.
+
 =head1 HISTORY AND ROADMAP
 
 This module was originally written by Stefan G.  In 2014, he graciously
 transferred ongoing maintenance to MongoDB, Inc.
-
-Currently, this module includes a pure-Perl BSON implementation.  In the
-future, we plan to release an XS implementation as a separate module.  When
-that happens, this module will be updated to prefer the XS implementation
-if available.
 
 =cut
 

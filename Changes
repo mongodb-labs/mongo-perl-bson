@@ -56,6 +56,9 @@ Revision history for BSON
       its load time in the future when an XS implementation becomes
       available.
 
+    - Will prefer BSON::XS (when released) or fallback to BSON::PP;
+      PERL_BSON_BACKEND environment variable will override.
+
 0.16      2015-09-25 10:54:41-04:00 America/New_York
 
     [CHANGES]

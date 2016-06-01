@@ -4,6 +4,8 @@ use strict;
 use warnings;
 
 use Test::More;
+BEGIN { $ENV{PERL_BSON_BACKEND} = undef }
+BEGIN { $INC{"BSON/XS.pm"} = undef }
 
 if ( eval("use Test::Exception; 1") ) {
     plan tests => 2;

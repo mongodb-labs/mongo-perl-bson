@@ -4,6 +4,8 @@ use strict;
 use warnings;
 
 use Test::More tests => 103;
+BEGIN { $ENV{PERL_BSON_BACKEND} = undef }
+BEGIN { $INC{"BSON/XS.pm"} = undef }
 use BSON;
 
 my $am = "We're all living in America!";

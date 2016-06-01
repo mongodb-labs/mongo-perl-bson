@@ -4,6 +4,8 @@ use warnings;
 use utf8;
 
 use Test::More 0.96;
+BEGIN { $ENV{PERL_BSON_BACKEND} = undef }
+BEGIN { $INC{"BSON/XS.pm"} = undef }
 
 binmode( Test::More->builder->$_, ":utf8" )
   for qw/output failure_output todo_output/;

@@ -4,6 +4,8 @@ use strict;
 use warnings;
 
 use Test::More tests => 5;
+BEGIN { $ENV{PERL_BSON_BACKEND} = undef }
+BEGIN { $INC{"BSON/XS.pm"} = undef }
 use BSON;
 
 ok(BSON::Bool->new(1));
