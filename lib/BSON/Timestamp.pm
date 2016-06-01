@@ -54,10 +54,9 @@ sub BUILDARGS {
     return \%args;
 }
 
-BEGIN {
-    *sec = \&seconds;
-    *inc = \&increment;
-}
+# For backwards compatibility
+*sec = \&seconds;
+*inc = \&increment;
 
 =method TO_JSON
 

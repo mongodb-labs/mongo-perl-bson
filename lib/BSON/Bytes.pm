@@ -60,9 +60,8 @@ use overload (
     fallback => 1,
 );
 
-BEGIN {
-    *type = \&subtype;
-}
+# backwards compatibility alias
+*type = \&subtype;
 
 1;
 

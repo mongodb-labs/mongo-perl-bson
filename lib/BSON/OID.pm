@@ -113,10 +113,8 @@ sub TO_JSON {
 }
 
 # For backwards compatibility
-BEGIN {
-    *to_string = \&hex;
-    *value = \&hex;
-}
+*to_string = \&hex;
+*value = \&hex;
 
 use overload (
     '""'     => \&hex,
