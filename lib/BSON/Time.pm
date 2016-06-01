@@ -11,7 +11,6 @@ use Carp qw/croak/;
 use Config;
 use Time::HiRes qw/time/;
 use Scalar::Util qw/looks_like_number/;
-use overload;
 
 use if !$Config{use64bitint}, 'Math::BigInt';
 
