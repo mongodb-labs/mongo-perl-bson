@@ -72,7 +72,11 @@ for my $s ( qw/Inf -Inf NaN/ ) {
 }
 
 # to JSON
-is( to_myjson({a=>bson_double(0.0)}), q[{"a":0}], 'bson_double(0.0) (XXX lossy!)' );
+
+# Depending on the JSON parser (and version), 0.0 might get encoded in various
+# lossy ways, so we check with a regex for any of the various things we might see
+like( to_myjson({a=>bson_double(0.0)}), qr/\{"a":(?:0\.0|"0"|0)\}/, 'bson_double(0.0) (XXX lossy!)' );
+
 is( to_myjson({a=>bson_double(42)}), q[{"a":42}], 'bson_double(42) (XXX lossy!)' );
 is( to_myjson({a=>bson_double(0.1)}), q[{"a":0.1}], 'bson_double(0.1)' );
 eval { to_myjson({a=>bson_double("Inf"/1.0)}) };
