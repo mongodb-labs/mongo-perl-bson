@@ -2,6 +2,15 @@ Revision history for BSON
 
 {{$NEXT}}
 
+    [Testing]
+
+    - Checks for JSON serialization of 0.0 with a regular expression to
+      account for the way that different JSON backends will handle it.
+
+    [~Internal Changes~]
+
+    - Disambiguates calls to 'ref' in BSON::DBRef to avoid warnings.
+
 v0.999.0  2016-06-01 18:27:43-04:00 America/New_York (TRIAL RELEASE)
 
     [!!! Incompatible Changes !!!]
