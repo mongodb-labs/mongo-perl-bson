@@ -35,10 +35,10 @@ This may also be specified in the constructor as C<'$ref'>.
 
 =cut
 
-has ref => (
+has 'ref' => (
     is        => 'ro',
     required  => 1,
-    coerce    => sub { ref($_[0]) eq 'MongoDB::Collection' ? $_[0]->name : $_[0] },
+    coerce    => sub { CORE::ref($_[0]) eq 'MongoDB::Collection' ? $_[0]->name : $_[0] },
     isa       => sub { die "must be a non-empty string" unless defined($_[0]) && length($_[0]) },
 );
 
@@ -57,7 +57,7 @@ This may also be specified in the constructor as C<'$db'>.
 
 has db => (
     is        => 'ro',
-    coerce    => sub { ref($_[0]) eq 'MongoDB::DataBase' ? $_[0]->name : $_[0] },
+    coerce    => sub { CORE::ref($_[0]) eq 'MongoDB::DataBase' ? $_[0]->name : $_[0] },
     isa       => sub { return if ! defined($_[0]); die "must be a non-empty string" unless length($_[0]) },
 );
 
@@ -88,9 +88,9 @@ around BUILDARGS => sub {
             : exists( $hr->{id} )    ? delete $hr->{id}
             :                          undef
         ),
-        ref => (
+        'ref' => (
               exists( $hr->{'$ref'} ) ? delete $hr->{'$ref'}
-            : exists( $hr->{ref} )    ? delete $hr->{ref}
+            : exists( $hr->{'ref'})    ? delete $hr->{'ref'}
             :                           undef
         ),
         db => (

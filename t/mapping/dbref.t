@@ -58,7 +58,7 @@ SKIP: {
     skip( "MongoDB::DBRef v1.0.0+ not installed", 4 )
       unless $INC{'MongoDB/DBRef.pm'} && eval {MongoDB::DBRef->VERSION("v1.0.0")};
     $bson =
-      encode( { A => MongoDB::DBRef->new( id => $dbref->id, ref => $dbref->ref ) } );
+      encode( { A => MongoDB::DBRef->new( id => $dbref->id, 'ref' => $dbref->ref ) } );
     $hash = decode($bson);
     is( ref( $hash->{A} ), 'BSON::DBRef', "MongoDB::DBRef->BSON::DBRef" );
     is( $hash->{A}->id,    $dbref->id,    "DBRef id" );
