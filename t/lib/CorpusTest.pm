@@ -6,12 +6,17 @@ use Test::Deep qw/!blessed/;
 
 use BSON;
 use BSON::Types ':all';
+use Config;
 use Path::Tiny;
 use JSON::MaybeXS;
 use Data::Dumper;
 
 # from t/lib
 use TestUtils;
+
+use constant {
+    IS_JSON_PP => ref( JSON::MaybeXS->new ) eq 'JSON::PP'
+};
 
 use base 'Exporter';
 our @EXPORT = qw/test_corpus_file/;
@@ -119,6 +124,9 @@ sub _extjson_ok {
     my ($type, $E) = @_;
 
     if ( $type eq "0x01" ) {
+        # JSON::PP seems to lose precision when decoding floats
+        # on 32-bit perls, so we just skip that platform
+        return if ! $Config{use64bitint} && IS_JSON_PP;
         return if $E =~ /\d\.0\D/; # trailing zeros wind up as integers
         return if $E =~ '-0(\.0)?'; # negative zero not preserved in Perl
     }
@@ -126,7 +134,7 @@ sub _extjson_ok {
     # JSON::PP has trouble when TO_JSON returns a false value; in our case
     # it could stringify 0 as "0" rather than treat it as a number; see
     # https://github.com/makamaka/JSON-PP/pull/23
-    if ( ( $type eq "0x10" || $type eq "0x12" ) && ref( JSON::MaybeXS->new ) eq 'JSON::PP' ) {
+    if ( ( $type eq "0x10" || $type eq "0x12" ) && IS_JSON_PP ) {
         return if $E =~ /:\s*0/;
     }
 

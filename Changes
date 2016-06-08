@@ -11,6 +11,9 @@ Revision history for BSON
     - Skip testing TO_JSON under JSON::PP if the value to be converted
       is false. See https://github.com/makamaka/JSON-PP/pull/23 for why.
 
+    - Skip some BSON double tests on 32-bit perls with JSON::PP to work
+      around a JSON::PP bug.
+
     [~Internal Changes~]
 
     - Disambiguates calls to 'ref' in BSON::DBRef to avoid warnings.
