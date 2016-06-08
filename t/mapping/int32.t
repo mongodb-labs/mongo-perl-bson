@@ -6,6 +6,7 @@ use Test::More 0.96;
 BEGIN { $ENV{PERL_BSON_BACKEND} = undef }
 BEGIN { $INC{"BSON/XS.pm"} = undef }
 use Math::BigInt;
+use JSON::MaybeXS;
 
 use lib 't/lib';
 use TestUtils;
@@ -82,11 +83,21 @@ subtest 'wrapped' => sub {
 };
 
 # to JSON
-is( to_myjson({a=>bson_int32(0)}), q[{"a":0}], 'bson_int32(0)' );
+SKIP: {
+    skip "JSON::PP has trouble with TO_JSON being false", 1
+        if ref JSON::MaybeXS->new eq 'JSON::PP';
+    is( to_myjson({a=>bson_int32(0)}), q[{"a":0}], 'bson_int32(0)' );
+}
+
 is( to_myjson({a=>bson_int32(42)}), q[{"a":42}], 'bson_int32(42)' );
 
 # to extended JSON
-is( to_extjson({a=>bson_int32(0)}), q[{"a":0}], 'extjson: bson_int32(0)' );
+SKIP: {
+    skip "JSON::PP has trouble with TO_JSON being false", 1
+        if ref JSON::MaybeXS->new eq 'JSON::PP';
+    is( to_extjson({a=>bson_int32(0)}), q[{"a":0}], 'extjson: bson_int32(0)' );
+}
+
 is( to_extjson({a=>bson_int32(42)}), q[{"a":42}], 'extjson: bson_int32(42)' );
 
 done_testing;

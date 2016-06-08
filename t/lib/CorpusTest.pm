@@ -123,6 +123,13 @@ sub _extjson_ok {
         return if $E =~ '-0(\.0)?'; # negative zero not preserved in Perl
     }
 
+    # JSON::PP has trouble when TO_JSON returns a false value; in our case
+    # it could stringify 0 as "0" rather than treat it as a number; see
+    # https://github.com/makamaka/JSON-PP/pull/23
+    if ( ( $type eq "0x10" || $type eq "0x12" ) && ref( JSON::MaybeXS->new ) eq 'JSON::PP' ) {
+        return if $E =~ /:\s*0/;
+    }
+
     return 1;
 }
 
