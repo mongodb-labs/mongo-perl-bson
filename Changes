@@ -4,8 +4,9 @@ Revision history for BSON
 
     [Testing]
 
-    - Checks for JSON serialization of 0.0 with a regular expression to
-      account for the way that different JSON backends will handle it.
+    - Checks for JSON serialization of doubles with no fractional part with
+      a regular expression to account for the way that different JSON
+      backends will handle it.
 
     - Skip testing TO_JSON under JSON::PP if the value to be converted
       is false. See https://github.com/makamaka/JSON-PP/pull/23 for why.

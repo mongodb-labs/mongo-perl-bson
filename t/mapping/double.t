@@ -73,11 +73,11 @@ for my $s ( qw/Inf -Inf NaN/ ) {
 
 # to JSON
 
-# Depending on the JSON parser (and version), 0.0 might get encoded in various
+# Depending on the JSON parser (and version), .0 might get encoded in various
 # lossy ways, so we check with a regex for any of the various things we might see
 like( to_myjson({a=>bson_double(0.0)}), qr/\{"a":(?:0\.0|"0"|0)\}/, 'bson_double(0.0) (XXX lossy!)' );
+like( to_myjson({a=>bson_double(42)}), qr/\{"a":(?:42\.0|"42"|42)\}/, 'bson_double(42) (XXX lossy!)' );
 
-is( to_myjson({a=>bson_double(42)}), q[{"a":42}], 'bson_double(42) (XXX lossy!)' );
 is( to_myjson({a=>bson_double(0.1)}), q[{"a":0.1}], 'bson_double(0.1)' );
 eval { to_myjson({a=>bson_double("Inf"/1.0)}) };
 like( $@, qr/illegal in JSON/, 'throws: bson_double("Inf"/1.0)' );
