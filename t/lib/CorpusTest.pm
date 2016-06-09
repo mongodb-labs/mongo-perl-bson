@@ -124,9 +124,6 @@ sub _extjson_ok {
     my ($type, $E) = @_;
 
     if ( $type eq "0x01" ) {
-        # JSON::PP seems to lose precision when decoding floats
-        # on 32-bit perls, so we just skip that platform
-        return if ! $Config{use64bitint} && IS_JSON_PP;
         return if $E =~ /\d\.0\D/; # trailing zeros wind up as integers
         return if $E =~ '-0(\.0)?'; # negative zero not preserved in Perl
     }
