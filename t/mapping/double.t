@@ -44,31 +44,37 @@ is( ref( $hash->{A} ), 'BSON::Double', "BSON::Double->BSON::Double" );
 packed_is( "d", $hash->{A}->value, 3.14159, "value correct" );
 
 # test special doubles
+my %special = (
+    "Inf"  => BSON::Double::pInf(),
+    "-Inf" => BSON::Double::nInf(),
+    "NaN"  => BSON::Double::NaN(),
+);
+
 for my $s ( qw/Inf -Inf NaN/ ) {
-    $hash = decode( encode( { A => $s/1.0 } ) );
+    $hash = decode( encode( { A => $special{$s} } ) );
     is( sv_type( $hash->{A} ), 'PVNV', "$s as double->double" );
-    packed_is( "d", $hash->{A}, $s/1.0, "value correct" );
+    packed_is( "d", $hash->{A}, $special{$s}, "value correct" );
 }
 
 for my $s ( qw/Inf -Inf NaN/ ) {
-    $hash = decode( encode( { A => $s/1.0 } ), wrap_numbers => 1 );
+    $hash = decode( encode( { A => $special{$s} } ), wrap_numbers => 1 );
     is( ref( $hash->{A} ), 'BSON::Double', "$s as double->BSON::Double" )
         or diag explain $hash;
-    packed_is( "d", $hash->{A}, $s/1.0, "value correct" );
+    packed_is( "d", $hash->{A}, $special{$s}, "value correct" );
 }
 
 # test special BSON::Double
 for my $s ( qw/Inf -Inf NaN/ ) {
-    $hash = decode( encode( { A => bson_double($s) } ) );
+    $hash = decode( encode( { A => bson_double($special{$s}) } ) );
     is( sv_type( $hash->{A} ), 'PVNV', "$s as BSON::Double->BSON::Double" );
-    packed_is( "d", $hash->{A}, $s/1.0, "value correct" );
+    packed_is( "d", $hash->{A}, $special{$s}, "value correct" );
 }
 
 for my $s ( qw/Inf -Inf NaN/ ) {
-    $hash = decode( encode( { A => bson_double($s) } ), wrap_numbers => 1 );
+    $hash = decode( encode( { A => bson_double($special{$s}) } ), wrap_numbers => 1 );
     is( ref( $hash->{A} ), 'BSON::Double', "$s as BSON::Double->BSON::Double" )
         or diag explain $hash;
-    packed_is( "d", $hash->{A}, $s/1.0, "value correct" );
+    packed_is( "d", $hash->{A}, $special{$s}, "value correct" );
 }
 
 # to JSON
@@ -79,8 +85,8 @@ like( to_myjson({a=>bson_double(0.0)}), qr/\{"a":(?:0\.0|"0"|0)\}/, 'bson_double
 like( to_myjson({a=>bson_double(42)}), qr/\{"a":(?:42\.0|"42"|42)\}/, 'bson_double(42) (XXX lossy!)' );
 
 is( to_myjson({a=>bson_double(0.1)}), q[{"a":0.1}], 'bson_double(0.1)' );
-eval { to_myjson({a=>bson_double("Inf"/1.0)}) };
-like( $@, qr/illegal in JSON/, 'throws: bson_double("Inf"/1.0)' );
+eval { to_myjson({a=>bson_double(BSON::Double::pInf())}) };
+like( $@, qr/illegal in JSON/, 'throws: bson_double(BSON::Double:pInf())' );
 
 # to extended JSON; XXX not implemented yet by mognod;
 # see https://jira.mongodb.org/browse/SERVER-23204

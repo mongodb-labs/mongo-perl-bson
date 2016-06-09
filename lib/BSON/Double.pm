@@ -25,6 +25,12 @@ has 'value' => (
 
 use namespace::clean -except => 'meta';
 
+use constant {
+    nInf  => unpack("d",pack("H*","000000000000f0ff")),
+    pInf  => unpack("d",pack("H*","000000000000f07f")),
+    NaN   => unpack("d",pack("H*","000000000000f8ff")),
+};
+
 sub BUILD {
     my $self = shift;
     # coerce to NV internally
@@ -54,7 +60,7 @@ use overload (
 
 __END__
 
-=for Pod::Coverage BUILD
+=for Pod::Coverage BUILD nInf pInf NaN
 
 =head1 SYNOPSIS
 
@@ -66,6 +72,18 @@ __END__
 
 This module provides a BSON type wrapper for a numeric value that
 would be represented in BSON as a double.
+
+=head1 INFINITY AND NAN
+
+Some Perls may not support converting "Inf" or "NaN" strings to their
+double equivalent.  They are available as functions from the L<POSIX>
+module, but as a lighter alternative to POSIX, the following functions are
+available:
+
+=for :list
+* BSON::Double::pInf() – positive infinity
+* BSON::Double::nInf() – negative infinity
+* BSON::Double::NaN() – not-a-number
 
 =head1 OVERLOADING
 
