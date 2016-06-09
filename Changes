@@ -2,6 +2,10 @@ Revision history for BSON
 
 {{$NEXT}}
 
+    [Testing]
+
+    - Replace double test cases for better portability.
+
 v0.999.1  2016-06-08 16:03:23-04:00 America/New_York (TRIAL RELEASE)
 
     [Testing]
