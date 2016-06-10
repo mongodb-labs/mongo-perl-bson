@@ -16,6 +16,9 @@ BEGIN { $INC{"BSON/XS.pm"} = undef }
 
 use BSON;
 
+use Sub::Defer;
+Sub::Defer::undefer_all();
+
 my $o1 = BSON::ObjectId->new();
 ok( $o1->is_legal($o1), 'oid generate' );
 
@@ -41,6 +44,7 @@ isnt( $try, 1, 'Dies 2' );
 
 SKIP: {
     skip "No threads", 39 unless $Config{useithreads};
+    skip "Threads not supported before 5.8.5", 39 if $] lt "5.008005";
     my @threads = map {
         threads->create(
             sub {
