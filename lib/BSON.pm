@@ -789,7 +789,8 @@ type deserializes to.  Footnotes indicate variations or special behaviors.
 
 =head1 THREADS
 
-This module is thread safe.
+Threads are never recommended in Perl, but this module is thread safe for
+Perl 5.8.5 or later.  Threads are not supported on older Perls.
 
 =head1 ENVIRONMENT
 
