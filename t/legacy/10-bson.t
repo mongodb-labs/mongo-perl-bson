@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use Test::More tests => 17;
-BEGIN { $ENV{PERL_BSON_BACKEND} = undef }
+BEGIN { $ENV{PERL_BSON_BACKEND} = "" }
 BEGIN { $INC{"BSON/XS.pm"} = undef }
 use Test::Deep;
 use Tie::IxHash;

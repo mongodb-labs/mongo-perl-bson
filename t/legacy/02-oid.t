@@ -11,7 +11,7 @@ BEGIN {
 
 use Config;
 use Test::More tests => 45;
-BEGIN { $ENV{PERL_BSON_BACKEND} = undef }
+BEGIN { $ENV{PERL_BSON_BACKEND} = "" }
 BEGIN { $INC{"BSON/XS.pm"} = undef }
 
 use BSON;

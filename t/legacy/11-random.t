@@ -9,7 +9,7 @@ my $KEYS = 20;     # Number of keys per hash
 
 use Config;
 use Test::More 0.86;
-BEGIN { $ENV{PERL_BSON_BACKEND} = undef }
+BEGIN { $ENV{PERL_BSON_BACKEND} = "" }
 BEGIN { $INC{"BSON/XS.pm"} = undef }
 
 plan tests => $RUNS;
