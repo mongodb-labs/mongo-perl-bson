@@ -6,7 +6,7 @@ package BSON::Double;
 # ABSTRACT: BSON type wrapper for Double
 
 use version;
-our $VERSION = 'v0.999.2';
+our $VERSION = 'v0.999.3';
 
 use Carp;
 
