@@ -7,6 +7,9 @@ Revision history for BSON
     - Added full "minimum set" of overloaded operations to numeric and
       string type wrappers.
 
+    - Added convenience functions to provide "Infinity" and "NaN" double
+      values.
+
     [Testing]
 
     - Replace double test cases for better portability.
