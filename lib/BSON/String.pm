@@ -102,8 +102,9 @@ provides an explicit string type for a scalar value.
 
 =head1 OVERLOADING
 
-The stringification operator (C<"">) is overloaded to return the C<value>
-and fallback overloading is enabled.
+The stringification operator (C<"">) is overloaded to return the C<value>,
+the full "minimal set" of overloaded operations is provided (per L<overload>
+documentation) and fallback overloading is enabled.
 
 =cut
 
