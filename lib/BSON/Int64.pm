@@ -100,15 +100,15 @@ use overload (
     q{0+} => sub { $_[0]->{value} },
     q{~}  => sub { ~( $_[0]->{value} ) },
     # Binary
-    ( map { $_ => eval "sub { return \$_[0]->{value} $_ \$_[1] }" } qw( + * ) ),
+    ( map { $_ => eval "sub { return \$_[0]->{value} $_ \$_[1] }" } qw( + * ) ), ## no critic
     (
         map {
-            $_ => eval
+            $_ => eval ## no critic
               "sub { return \$_[2] ? \$_[1] $_ \$_[0]->{value} : \$_[0]->{value} $_ \$_[1] }"
         } qw( - / % ** << >> x <=> cmp & | ^ )
     ),
     (
-        map { $_ => eval "sub { return $_(\$_[0]->{value}) }" }
+        map { $_ => eval "sub { return $_(\$_[0]->{value}) }" } ## no critic
           qw( cos sin exp log sqrt int )
     ),
     q{atan2} => sub {
