@@ -57,7 +57,27 @@ Returns value as a string.
 sub TO_JSON { return "$_[0]->{value}" }
 
 use overload (
-    q{""}    => sub { $_[0]->{value} },
+    # Unary
+    q{""} => sub { $_[0]->{value} },
+    q{0+} => sub { 0+ $_[0]->{value} },
+    q{~}  => sub { ~( $_[0]->{value} ) },
+    # Binary
+    ( map { $_ => eval "sub { return \$_[0]->{value} $_ \$_[1] }" } qw( + * ) ),
+    (
+        map {
+            $_ => eval
+              "sub { return \$_[2] ? \$_[1] $_ \$_[0]->{value} : \$_[0]->{value} $_ \$_[1] }"
+        } qw( - / % ** << >> x <=> cmp & | ^ )
+    ),
+    (
+        map { $_ => eval "sub { return $_(\$_[0]->{value}) }" }
+          qw( cos sin exp log sqrt int )
+    ),
+    q{atan2} => sub {
+        return $_[2] ? atan2( $_[1], $_[0]->{value} ) : atan2( $_[0]->{value}, $_[1] );
+    },
+
+    # Special
     fallback => 1,
 );
 
