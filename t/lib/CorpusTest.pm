@@ -7,7 +7,7 @@ use Test::Deep qw/!blessed/;
 use BSON;
 use BSON::Types ':all';
 use Config;
-use Path::Tiny;
+use Path::Tiny 0.054; # better basename
 use JSON::MaybeXS;
 use Data::Dumper;
 
