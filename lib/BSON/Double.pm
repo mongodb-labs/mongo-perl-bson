@@ -44,9 +44,13 @@ Returns a double, unless the value is 'Inf', '-Inf' or 'NaN'
 
 =cut
 
+my $win32_specials = qr/-?1.\#IN[DF]/i;
+my $unix_specials = qr/-?(?:inf|nan)/i;
+my $illegal = $^O eq 'MSWin32' && $] lt "5.022" ? qr/^$win32_specials/ : qr/^$unix_specials/;
+
 sub TO_JSON {
     my $copy = "$_[0]->{value}"; # avoid changing value to PVNV
-    return $_[0]->{value}/1.0 unless $copy =~ /^(?:Inf|-Inf|NaN)/i;
+    return $_[0]->{value}/1.0 unless $copy =~ $illegal;
 
     croak( "The value '$copy' is illegal in JSON" );
 }
