@@ -7,6 +7,9 @@ Revision history for BSON
     - Fixed detection of Infinity/NaN during serialization of BSON::Double
       to JSON for Windows perls before 5.22.0.
 
+    - Work around compilation ambiguities involving the core keyword 'ref'
+      and the BSON::DBRef attribute 'ref' in certain versions of Moo.
+
     [Testing]
 
     - Require newer Path::Tiny with full-featured "basename" method.

@@ -35,9 +35,10 @@ This may also be specified in the constructor as C<'$ref'>.
 
 =cut
 
-has 'ref' => (
+has _ref => (
     is        => 'ro',
     required  => 1,
+    init_arg  => 'ref',
     coerce    => sub { CORE::ref($_[0]) eq 'MongoDB::Collection' ? $_[0]->name : $_[0] },
     isa       => sub { die "must be a non-empty string" unless defined($_[0]) && length($_[0]) },
 );
@@ -141,6 +142,18 @@ sub TO_JSON {
     Carp::croak( "The value '$self' is illegal in JSON" );
 }
 
+# Normally, Moo defers installation of the 'new' subroutine until first
+# use.  We need force that to happen immediately to allow the compiler
+# to correctly differentiate between 'ref' there and our accessor 'ref',
+# aliased later.  We also undefer all other subroutines, just in case.
+__PACKAGE__->new(ref => "a", id => "0");
+
+# Alias 'ref' to attribute '_ref' now that all other compilation is
+# complete.
+{
+    no warnings 'once';
+    *ref = \&_ref;
+}
 
 1;
 
