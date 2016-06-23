@@ -25,6 +25,7 @@ before_install:
   - build-perl
   - perl -V
 install:
+  - perl -S cpanm --verbose --no-interactive --no-man-pages --notest Moo # force latest Moo
   - cpan-install --deps       # installs prereqs, including recommends
   - cpan-install --coverage   # installs converage prereqs, if enabled
 before_script:
