@@ -6,7 +6,7 @@ package BSON::Binary;
 # ABSTRACT: Legacy BSON type wrapper for binary data (DEPRECATED)
 
 use version;
-our $VERSION = 'v0.999.3';
+our $VERSION = 'v0.999.4';
 
 our $TYPE_SIMPLE       = 0x00;
 our $TYPE_BYTES        = 0x02;
