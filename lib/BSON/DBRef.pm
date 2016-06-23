@@ -145,7 +145,7 @@ sub TO_JSON {
 # Normally, Moo defers installation of the 'new' subroutine until first
 # use.  We need force that to happen immediately to allow the compiler
 # to correctly differentiate between 'ref' there and our accessor 'ref',
-# aliased later.  We also undefer all other subroutines, just in case.
+# aliased later.
 __PACKAGE__->new(ref => "a", id => "0");
 
 # Alias 'ref' to attribute '_ref' now that all other compilation is
