@@ -16,9 +16,6 @@ BEGIN { $INC{"BSON/XS.pm"} = undef }
 
 use BSON;
 
-use Sub::Defer;
-Sub::Defer::undefer_all();
-
 my $o1 = BSON::ObjectId->new();
 ok( $o1->is_legal($o1), 'oid generate' );
 
