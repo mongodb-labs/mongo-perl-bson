@@ -15,7 +15,7 @@ use Carp;
 use Config;
 use Scalar::Util qw/blessed/;
 
-use Moo;
+use Moo 2.002003; # safer generated code
 use Module::Runtime qw/require_module/;
 use BSON::Types (); # loads types for extjson inflation
 use boolean;
