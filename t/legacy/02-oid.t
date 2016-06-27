@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use constant COVERTEST => $ENV{HARNESS_PERL_SWITCHES} =~ /Devel::Cover/;
+use constant COVERTEST => ( $ENV{HARNESS_PERL_SWITCHES} || "" ) =~ /Devel::Cover/;
 
 BEGIN {
     use Config;
