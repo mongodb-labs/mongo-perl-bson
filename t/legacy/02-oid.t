@@ -3,10 +3,12 @@
 use strict;
 use warnings;
 
+use constant COVERTEST => $ENV{HARNESS_PERL_SWITCHES} =~ /Devel::Cover/;
+
 BEGIN {
     use Config;
-    use if $Config{useithreads}, 'threads';
-    use if $Config{useithreads}, 'threads::shared';
+    use if !COVERTEST && $Config{useithreads}, 'threads';
+    use if !COVERTEST && $Config{useithreads}, 'threads::shared';
 }
 
 use Config;
@@ -40,6 +42,7 @@ isnt( $try, 1, 'Dies 2' );
 
 
 SKIP: {
+    skip "No threads during coverage testing", 39 if COVERTEST;
     skip "No threads", 39 unless $Config{useithreads};
     skip "Threads not supported before 5.8.5", 39 if $] lt "5.008005";
     my @threads = map {
