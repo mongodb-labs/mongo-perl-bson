@@ -2,6 +2,12 @@ Revision history for BSON
 
 {{$NEXT}}
 
+    [Prereqs]
+
+    - Bump boolean prereq to 0.45 to avoid conflicts between some versions
+      of JSON::XS and older boolean.pm releases that had read-only
+      singletons.
+
 v0.999.4  2016-06-27 23:19:56-04:00 America/New_York (TRIAL RELEASE)
 
     [Prereqs]
