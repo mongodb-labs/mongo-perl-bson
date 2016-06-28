@@ -6,7 +6,7 @@ package BSON::DBRef;
 # ABSTRACT: BSON type wrapper for MongoDB DBRefs
 
 use version;
-our $VERSION = 'v0.999.4';
+our $VERSION = 'v0.999.5';
 
 use Tie::IxHash;
 use Moo 2.002004;
