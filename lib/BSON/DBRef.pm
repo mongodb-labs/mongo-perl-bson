@@ -9,7 +9,7 @@ use version;
 our $VERSION = 'v0.999.4';
 
 use Tie::IxHash;
-use Moo;
+use Moo 2.002004;
 use namespace::clean -except => 'meta';
 
 =attr id
@@ -35,10 +35,9 @@ This may also be specified in the constructor as C<'$ref'>.
 
 =cut
 
-has _ref => (
+has 'ref' => (
     is        => 'ro',
     required  => 1,
-    init_arg  => 'ref',
     coerce    => sub { CORE::ref($_[0]) eq 'MongoDB::Collection' ? $_[0]->name : $_[0] },
     isa       => sub { die "must be a non-empty string" unless defined($_[0]) && length($_[0]) },
 );
@@ -140,19 +139,6 @@ sub TO_JSON {
     }
 
     Carp::croak( "The value '$self' is illegal in JSON" );
-}
-
-# Normally, Moo defers installation of the 'new' subroutine until first
-# use.  We need force that to happen immediately to allow the compiler
-# to correctly differentiate between 'ref' there and our accessor 'ref',
-# aliased later.
-__PACKAGE__->new(ref => "a", id => "0");
-
-# Alias 'ref' to attribute '_ref' now that all other compilation is
-# complete.
-{
-    no warnings 'once';
-    *ref = \&_ref;
 }
 
 1;
