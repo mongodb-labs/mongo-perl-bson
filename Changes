@@ -2,6 +2,10 @@ Revision history for BSON
 
 {{$NEXT}}
 
+    [Documentation]
+
+    - Document BSON::Decimal128 as experimental
+
 v0.999.5  2016-06-29 11:31:51-04:00 America/New_York (TRIAL RELEASE)
 
     [Prereqs]
