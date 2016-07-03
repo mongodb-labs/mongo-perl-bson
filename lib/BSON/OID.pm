@@ -10,6 +10,7 @@ our $VERSION = 'v1.1.0';
 
 use Carp;
 use Digest::MD5 'md5';
+use Scalar::Util 'looks_like_number';
 use Sys::Hostname;
 use threads::shared; # NOP if threads.pm not loaded
 
@@ -40,8 +41,9 @@ use namespace::clean -except => 'meta';
 
     #<<<
     sub _packed_oid {
+        my $time = defined $_[0] ? $_[0] : time;
         return pack(
-            'Na3na3', time, $_host, $$ % 0xFFFF,
+            'Na3na3', $time, $_host, $$ % 0xFFFF,
             substr( pack( 'N', do { lock($_inc); $_inc++; $_inc %= 0xFFFFFF }), 1, 3)
         );
     }
@@ -65,6 +67,23 @@ sub BUILD {
     croak "Invalid 'oid' field: OIDs must be 12 bytes"
       unless length( $self->oid ) == 12;
     return;
+}
+
+=method from_epoch
+
+Returns a new OID generated using the given epoch time (in seconds).
+
+=cut
+
+sub from_epoch {
+    my ($self, $epoch) = @_;
+
+    croak "argument to BSON::OID::from_epoch must be epoch seconds, not '$epoch'"
+      unless looks_like_number( $epoch );
+
+    $self->{oid} = _packed_oid(int($epoch));
+    delete $self->{_hex};
+    return $self;
 }
 
 =method hex
@@ -133,6 +152,7 @@ __END__
     use BSON::Types ':all';
 
     my $oid  = bson_oid();
+    my $oid  = bson_oid->from_epoch(1467543496);
 
     my $bytes = $oid->oid;
     my $hex   = $oid->hex;
