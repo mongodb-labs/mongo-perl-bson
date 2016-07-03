@@ -16,7 +16,7 @@ use TestUtils;
 use BSON qw/encode decode/;
 use BSON::Types ':all';
 
-my ( $bson, $expect, $hash );
+my ( $bson, $expect, $hash, $epoch );
 
 my $packed = BSON::OID::_generate_oid();
 my $hexoid = unpack( "H*", $packed );
@@ -39,6 +39,10 @@ $bson = $expect = encode( { A => bson_oid($packed) } );
 $hash = decode($bson);
 is( ref( $hash->{A} ), 'BSON::OID', "BSON::OID->BSON::OID" );
 is( "$hash->{A}",      $hexoid,     "value correct" );
+
+# BSON::OID from_epoch
+$epoch = 1467545180;
+is( bson_oid->from_epoch($epoch)->get_time, $epoch, "from_epoch roundtrip ok" );
 
 # BSON::ObjectId (deprecated) -> BSON::OID
 $hash = encode( { A => BSON::ObjectId->new($packed) } );
