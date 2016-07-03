@@ -20,7 +20,7 @@ sub new {
         $self->value( $value );
     }
     else {
-        $self->{oid} = $self->_packed_oid();
+        $self->{oid} = BSON::OID::_packed_oid();
     }
     return $self;
 }
