@@ -216,7 +216,7 @@ so is somewhat backwards compatible with C<dt_type> in the L<MongoDB>
 driver.
 
 Other acceptable values are L<BSON::Time> (explicitly), L<DateTime>,
-L<Time::Moment>, L<DateTime::Tiny>.
+L<Time::Moment>, L<DateTime::Tiny>, L<Mango::BSON::Time>.
 
 Because BSON::Time objects have methods to convert to DateTime,
 Time::Moment or DateTime::Tiny, use of this field is discouraged.  Users
@@ -729,6 +729,7 @@ type deserializes to.  Footnotes indicate variations or special behaviors.
     DateTime
     DateTime::Tiny
     Time::Moment
+    Mango::BSON::Time
     -------------------------------------------------------------------
     undef                       0x0a NULL           undef
     -------------------------------------------------------------------

@@ -172,6 +172,18 @@ subtest "dt_type" => sub {
         is( ref( $hash->{A} ), 'Time::Moment', "dt_type = Time::Moment" );
     }
 
+    # Mango::BSON::Time
+    SKIP: {
+        eval { require Mango::BSON::Time };
+        skip( "Mango::BSON::Time not installed", 1 )
+          unless $INC{'Mango/BSON/Time.pm'};
+
+        my $obj = _BSON( dt_type => "Mango::BSON::Time" );
+        my $bson = $obj->encode_one( { A => bson_time() } );
+        my $hash = $obj->decode_one($bson);
+        is( ref( $hash->{A} ), 'Mango::BSON::Time', "dt_type = Mango::BSON::Time" );
+    }
+
     # unknown
     {
         my $obj = _BSON( dt_type => 'BOGUS' );
