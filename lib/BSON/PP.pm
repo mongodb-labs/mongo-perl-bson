@@ -281,6 +281,9 @@ sub _encode_bson {
                 );
                 $bson .= pack( BSON_TYPE_NAME, 0x09, $utf8_key ) . _pack_int64( $epoch * 1000 );
             }
+            elsif ( $type eq 'Mango::BSON::Time' ) {
+                $bson .= pack( BSON_TYPE_NAME, 0x09, $utf8_key ) . _pack_int64( $value->{time} );
+            }
 
             # Timestamp
             elsif ( $type eq 'BSON::Timestamp' ) {
@@ -625,12 +628,14 @@ sub _decode_bson {
                 $value = _int64_to_bigint($value);
             }
             $value = BSON::Time->new( value => $value );
-            if ( defined $opt->{dt_type} && $opt->{dt_type} ne 'BSON::Time' ) {
+            my $dt_type = $opt->{dt_type};
+            if ( defined $dt_type && $dt_type ne 'BSON::Time' ) {
                 $value =
-                    $opt->{dt_type} eq 'Time::Moment'   ? $value->as_time_moment
-                  : $opt->{dt_type} eq 'DateTime'       ? $value->as_datetime
-                  : $opt->{dt_type} eq 'DateTime::Tiny' ? $value->as_datetime_tiny
-                  :   croak("Unsupported dt_type '$opt->{dt_type}'");
+                    $dt_type eq 'Time::Moment'      ? $value->as_time_moment
+                  : $dt_type eq 'DateTime'          ? $value->as_datetime
+                  : $dt_type eq 'DateTime::Tiny'    ? $value->as_datetime_tiny
+                  : $dt_type eq 'Mango::BSON::Time' ? $value->as_mango_time
+                  :   croak("Unsupported dt_type '$dt_type'");
             }
         }
 

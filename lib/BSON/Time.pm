@@ -126,6 +126,18 @@ sub as_datetime_tiny {
     );
 }
 
+=method as_mango_time
+
+Loads L<Mango::BSON::Time> and returns the C<value> as a L<Mango::BSON::Time>
+object.
+
+=cut
+
+sub as_mango_time {
+    require Mango::BSON::Time;
+    return Mango::BSON::Time->new( $_[0]->{value} );
+}
+
 =method as_time_moment
 
 Loads L<Time::Moment> and returns the C<value> as a L<Time::Moment> object.

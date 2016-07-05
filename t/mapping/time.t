@@ -48,7 +48,7 @@ SKIP: {
     # conversion
     my $obj = $hash->{A}->as_datetime;
     isa_ok( $obj, 'DateTime', 'as_datetime' );
-    is($obj->epoch, $now, "epoch"); 
+    is($obj->epoch, $now, "epoch");
 }
 
 # DateTime::Tiny -> BSON::Time
@@ -70,7 +70,7 @@ SKIP: {
     # conversion
     my $obj = $hash->{A}->as_datetime_tiny;
     isa_ok( $obj, 'DateTime::Tiny', 'as_datetime_tiny' );
-    is($obj->as_string . "Z", $hash->{A}->as_iso8601, "iso8601"); 
+    is($obj->as_string . "Z", $hash->{A}->as_iso8601, "iso8601");
 }
 
 # Time::Moment -> BSON::Time
@@ -87,7 +87,24 @@ SKIP: {
     # conversion
     my $obj = $hash->{A}->as_time_moment;
     isa_ok( $obj, 'Time::Moment', 'as_time_moment' );
-    is($obj->epoch, $now, "epoch"); 
+    is($obj->epoch, $now, "epoch");
+}
+
+# Mango::BSON::Time -> BSON::Time
+SKIP: {
+    eval { require Mango::BSON::Time };
+    skip( "Mango::BSON::Time not installed", 1 )
+      unless $INC{'Mango/BSON/Time.pm'};
+    $bson = encode( { A => Mango::BSON::Time->new( $now * 1000 ) } );
+    $hash = decode($bson);
+    is( ref( $hash->{A} ), 'BSON::Time', "Mango::BSON::Time->BSON::Time" );
+    is( "$hash->{A}",      $now,         "value correct" );
+    is( $bson,             $expect,      "BSON correct" );
+
+    # conversion
+    my $obj = $hash->{A}->as_mango_time;
+    isa_ok( $obj, 'Mango::BSON::Time', 'as_mango_time' );
+    is( $obj->to_epoch, $now, "to_epoch" );
 }
 
 # to JSON
