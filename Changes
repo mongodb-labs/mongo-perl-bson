@@ -2,77 +2,6 @@ Revision history for BSON
 
 {{$NEXT}}
 
-    [Documentation]
-
-    - Document BSON::Decimal128 as experimental
-
-v0.999.5  2016-06-29 11:31:51-04:00 America/New_York (TRIAL RELEASE)
-
-    [Prereqs]
-
-    - Bump boolean prereq to 0.45 to avoid conflicts between some versions
-      of JSON::XS and older boolean.pm releases that had read-only
-      singletons.
-
-v0.999.4  2016-06-27 23:19:56-04:00 America/New_York (TRIAL RELEASE)
-
-    [Prereqs]
-
-    - Bump Moo prereq to 2.002004 to work around core sub shadowing
-      bug in generated constructor.  Removed workround added to BSON::DBRef
-      in v0.999.3.
-
-v0.999.3  2016-06-23 00:44:37-04:00 America/New_York (TRIAL RELEASE)
-
-    [Bug fixes]
-
-    - Fixed detection of Infinity/NaN during serialization of BSON::Double
-      to JSON for Windows perls before 5.22.0.
-
-    - Work around compilation ambiguities involving the core keyword 'ref'
-      and the BSON::DBRef attribute 'ref' in certain versions of Moo.
-
-    [Testing]
-
-    - Require newer Path::Tiny with full-featured "basename" method.
-
-v0.999.2  2016-06-13 16:02:54-04:00 America/New_York (TRIAL RELEASE)
-
-    [Added]
-
-    - Added full "minimum set" of overloaded operations to numeric and
-      string type wrappers.
-
-    - Added convenience functions to provide "Infinity" and "NaN" double
-      values.
-
-    [Testing]
-
-    - Replace double test cases for better portability.
-
-    - Skip threads tests before 5.8.5 because of problems with
-      weak references during global destruction.
-
-v0.999.1  2016-06-08 16:03:23-04:00 America/New_York (TRIAL RELEASE)
-
-    [Testing]
-
-    - Checks for JSON serialization of doubles with no fractional part with
-      a regular expression to account for the way that different JSON
-      backends will handle it.
-
-    - Skip testing TO_JSON under JSON::PP if the value to be converted
-      is false. See https://github.com/makamaka/JSON-PP/pull/23 for why.
-
-    - Skip some BSON double tests on 32-bit perls with JSON::PP to work
-      around a JSON::PP bug.
-
-    [~Internal Changes~]
-
-    - Disambiguates calls to 'ref' in BSON::DBRef to avoid warnings.
-
-v0.999.0  2016-06-01 18:27:43-04:00 America/New_York (TRIAL RELEASE)
-
     [!!! Incompatible Changes !!!]
 
     - Internal representation of BSON::Bool changed to make it a subclass
@@ -108,7 +37,8 @@ v0.999.0  2016-06-01 18:27:43-04:00 America/New_York (TRIAL RELEASE)
     [BSON types]
 
     - Added new type wrappers to cover all BSON Types, including
-      forthcoming Decimal128.
+      forthcoming Decimal128 (but Decimal128 is still considered
+      'experimental' and subject to change).
 
     - Rationalized/harmonized BSON type classes for compatibility with
       pre-existing MongoDB BSON classes. Classes that could not be made to
@@ -124,6 +54,20 @@ v0.999.0  2016-06-01 18:27:43-04:00 America/New_York (TRIAL RELEASE)
     - Significantly improved test coverage, including tests using a
       standardized BSON corpus.
 
+    - Skip threads tests before 5.8.5 because of problems with
+      weak references during global destruction.
+
+    - Require newer Path::Tiny with full-featured "basename" method.
+
+    [Prereqs]
+
+    - Bump boolean prereq to 0.45 to avoid conflicts between some versions
+      of JSON::XS and older boolean.pm releases that had read-only
+      singletons.
+
+    - Bump Moo prereq to 2.002004 to work around core sub shadowing
+      bug in generated constructor.
+
     [~Internal Changes~]
 
     - Pure-perl implementation split into a separate module to avoid
@@ -132,6 +76,18 @@ v0.999.0  2016-06-01 18:27:43-04:00 America/New_York (TRIAL RELEASE)
 
     - Will prefer BSON::XS (when released) or fallback to BSON::PP;
       PERL_BSON_BACKEND environment variable will override.
+
+v0.999.5  2016-06-29 11:31:51-04:00 America/New_York (TRIAL RELEASE)
+
+v0.999.4  2016-06-27 23:19:56-04:00 America/New_York (TRIAL RELEASE)
+
+v0.999.3  2016-06-23 00:44:37-04:00 America/New_York (TRIAL RELEASE)
+
+v0.999.2  2016-06-13 16:02:54-04:00 America/New_York (TRIAL RELEASE)
+
+v0.999.1  2016-06-08 16:03:23-04:00 America/New_York (TRIAL RELEASE)
+
+v0.999.0  2016-06-01 18:27:43-04:00 America/New_York (TRIAL RELEASE)
 
 0.16      2015-09-25 10:54:41-04:00 America/New_York
 
