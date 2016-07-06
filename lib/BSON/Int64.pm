@@ -6,7 +6,7 @@ package BSON::Int64;
 # ABSTRACT: BSON type wrapper for Int64
 
 use version;
-our $VERSION = 'v1.0.1';
+our $VERSION = 'v1.1.0';
 
 use Carp;
 use Config;
