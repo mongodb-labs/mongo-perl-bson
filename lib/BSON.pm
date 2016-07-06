@@ -821,6 +821,9 @@ three-part version-tuple numbering scheme: C<vX.Y.Z>
 This module was originally written by Stefan G.  In 2014, he graciously
 transferred ongoing maintenance to MongoDB, Inc.
 
+The C<bson_xxxx> helper functions in L<BSON::Types> were inspired by similar
+work in L<Mango::BSON> by Sebastian Riedel.
+
 =cut
 
 # vim: set ts=4 sts=4 sw=4 et tw=75:
