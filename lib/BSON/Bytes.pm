@@ -6,7 +6,7 @@ package BSON::Bytes;
 # ABSTRACT: BSON type wrapper for binary byte strings
 
 use version;
-our $VERSION = 'v0.999.6';
+our $VERSION = 'v1.0.1';
 
 use MIME::Base64 ();
 

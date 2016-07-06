@@ -2,6 +2,8 @@ Revision history for BSON
 
 {{$NEXT}}
 
+v1.0.0    2016-07-06 12:39:38-04:00 America/New_York
+
     [!!! Incompatible Changes !!!]
 
     - Internal representation of BSON::Bool changed to make it a subclass

@@ -6,7 +6,7 @@ package BSON::Decimal128;
 # ABSTRACT: BSON type wrapper for Decimal128 (EXPERIMENTAL)
 
 use version;
-our $VERSION = 'v0.999.6';
+our $VERSION = 'v1.0.1';
 
 use Carp;
 use Math::BigInt;
