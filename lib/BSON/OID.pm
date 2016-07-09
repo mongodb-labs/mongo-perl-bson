@@ -9,9 +9,17 @@ use version;
 our $VERSION = 'v1.1.0';
 
 use Carp;
+use Config;
 use Digest::MD5 'md5';
+use Scalar::Util 'looks_like_number';
 use Sys::Hostname;
 use threads::shared; # NOP if threads.pm not loaded
+
+use constant {
+    HAS_INT64 => $Config{use64bitint},
+    INT64_MAX => 9223372036854775807,
+    INT32_MAX => 2147483647,
+};
 
 use Moo;
 
@@ -40,10 +48,30 @@ use namespace::clean -except => 'meta';
 
     #<<<
     sub _packed_oid {
+        my $time = defined $_[0] ? $_[0] : time;
         return pack(
-            'Na3na3', time, $_host, $$ % 0xFFFF,
+            'Na3na3', $time, $_host, $$ % 0xFFFF,
             substr( pack( 'N', do { lock($_inc); $_inc++; $_inc %= 0xFFFFFF }), 1, 3)
         );
+    }
+    sub _packed_oid_special {
+        my ($time, $fill) = @_;
+
+        croak "BSON::OID::from_epoch: second argument must be an interger"
+          unless looks_like_number( $fill );
+
+        # Zero-filled OID with custom time
+        if ($fill == 0) {
+            return pack('Na8', $time, "\0" x 8);
+        }
+
+        # Random OID with custom time
+        if (HAS_INT64) {
+           return pack( 'Nq', $time, (rand(INT64_MAX) + 1) );
+        }
+
+        sub randmax32 () { rand(INT32_MAX) + 1 }
+        return pack('N3', $time, randmax32, randmax32);
     }
     #>>>
 
@@ -65,6 +93,57 @@ sub BUILD {
     croak "Invalid 'oid' field: OIDs must be 12 bytes"
       unless length( $self->oid ) == 12;
     return;
+}
+
+=method from_epoch
+
+Returns a new OID generated using the given epoch time (in seconds) to be
+used in queries.
+
+B<Warning!> You should never insert documents with an OID generated with
+this method. It is unsafe because the uniqueness of the OID is no longer
+guaranteed.
+
+There are 3 ways to use this method:
+
+  my $oid = BSON::OID->from_epoch(1467545180);
+
+This generates a standard OID with given epoch. You should not use this
+form in newly written code. It is here for compatibility.
+
+  my $oid = BSON::OID->from_epoch(1467545180, 0);
+
+The additional C<0> at the end means you want a zero-ed OID. All the fields
+will be set to zero except the date. This is particularly useful when looking
+for documents by their insertion date: you can simply look for OIDs which are
+greater or lower than the one generated with this method.
+
+  my $oid = BSON::OID->from_epoch(1467545180, 1);
+
+Any value different from zero as a second argument means you want a randomized
+OID: the date field is set to the given epoch but the rest of the OID is just
+a 64 bit random number. This should be enough to avoid collisions in most cases.
+
+=cut
+
+sub from_epoch {
+    my ($self, $epoch, $fill) = @_;
+
+    croak "BSON::OID::from_epoch expects an epoch in seconds, not '$epoch'"
+      unless looks_like_number( $epoch );
+
+    my $oid = defined $fill
+      ? _packed_oid_special($epoch, $fill)
+      : _packed_oid($epoch);
+
+    if (ref $self) {
+        $self->{oid} = $oid;
+    }
+    else {
+        $self = $self->new(oid => $oid);
+    }
+
+    return $self;
 }
 
 =method hex
@@ -133,6 +212,7 @@ __END__
     use BSON::Types ':all';
 
     my $oid  = bson_oid();
+    my $oid  = bson_oid->from_epoch(1467543496);
 
     my $bytes = $oid->oid;
     my $hex   = $oid->hex;
