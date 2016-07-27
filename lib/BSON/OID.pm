@@ -87,7 +87,7 @@ sub BUILD {
 
     my $oid = BSON::OID->new( oid => $twelve_bytes );
 
-This is the prefererd way to generate an OID.  Without arguments, a
+This is the preferred way to generate an OID.  Without arguments, a
 unique OID will be generated.  With a 12-byte string, an object can
 be created around an existing OID byte-string.
 
