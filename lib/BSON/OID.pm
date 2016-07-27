@@ -19,6 +19,7 @@ use constant {
     HAS_INT64 => $Config{use64bitint},
     INT64_MAX => 9223372036854775807,
     INT32_MAX => 2147483647,
+    ZERO_FILL => ("\0" x 8),
 };
 
 use Moo;
@@ -56,22 +57,7 @@ use namespace::clean -except => 'meta';
     }
     sub _packed_oid_special {
         my ($time, $fill) = @_;
-
-        croak "BSON::OID::from_epoch: second argument must be an interger"
-          unless looks_like_number( $fill );
-
-        # Zero-filled OID with custom time
-        if ($fill == 0) {
-            return pack('Na8', $time, "\0" x 8);
-        }
-
-        # Random OID with custom time
-        if (HAS_INT64) {
-           return pack( 'Nq', $time, (rand(INT64_MAX) + 1) );
-        }
-
-        sub randmax32 () { rand(INT32_MAX) + 1 }
-        return pack('N3', $time, randmax32, randmax32);
+        return pack('Na8', $time, $fill);
     }
     #>>>
 
@@ -97,32 +83,54 @@ sub BUILD {
 
 =method from_epoch
 
-Returns a new OID generated using the given epoch time (in seconds) to be
-used in queries.
+    # generate a new OID
 
-B<Warning!> You should never insert documents with an OID generated with
-this method. It is unsafe because the uniqueness of the OID is no longer
-guaranteed.
+    my $oid = BSON::OID->from_epoch( $epoch, 0); # other bytes zeroed
+    my $oid = BSON::OID->from_epoch( $epoch, $eight_more_bytes );
 
-There are 3 ways to use this method:
+    # reset an existing OID
 
-  my $oid = BSON::OID->from_epoch(1467545180);
+    $oid->from_epoch( $new_epoch, 0 );
+    $oid->from_epoch( $new_epoch, $eight_more_bytes );
 
-This generates a standard OID with given epoch. You should not use this
-form in newly written code. It is here for compatibility.
+B<Warning!> You should not rely on this method for a source of unique ID,
+because the uniqueness of the OID is no longer guaranteed.  Use this method
+for query boundaries, only.
 
-  my $oid = BSON::OID->from_epoch(1467545180, 0);
+An OID is a twelve-byte string.  Typically, the first four bytes represent
+integer seconds since the Unix epoch in big-endian format.
 
-The additional C<0> at the end means you want a zero-ed OID. All the fields
-will be set to zero except the date. This is particularly useful when looking
-for documents by their insertion date: you can simply look for OIDs which are
-greater or lower than the one generated with this method.
+The first argument to this method is an epoch time (in integer seconds).
+The second argument is the remaining eight-bytes to append to the string.
 
-  my $oid = BSON::OID->from_epoch(1467545180, 1);
+When called as a class method, it returns a new BSON::OID object.  When
+called as an object method, it mutates the existing internal OID value.
 
-Any value different from zero as a second argument means you want a randomized
-OID: the date field is set to the given epoch but the rest of the OID is just
-a 64 bit random number. This should be enough to avoid collisions in most cases.
+As a special case, if the second argument is B<defined> and "0" or (number)
+0, the remaining bytes will be zeroed.
+
+    my $oid = BSON::OID->from_epoch(1467545180, 0);
+
+All the fields will be set to zero except the date. This is particularly
+useful when looking for documents by their insertion date: you can simply
+look for OIDs which are greater or lower than the one generated with this
+method.
+
+For backwards compatibility with L<Mango>, if called without a second
+argument, the method generates the remainder of the fields "like usual".
+This is equivalent to calling BSON::OID->new and replacing the first four
+bytes with the packed epoch value.
+
+    # UNSAFE: don't do this unless you have to
+
+    my $oid = BSON::OID(1467545180);
+
+If you insist on creating a unique OID with C<from_epoch>, set the
+remaining eight bytes in a way that guarantees uniqueness, such as from a
+reliable source of randomness (see L<Crypt::URandom>).
+
+  use Crypt::Random 'urandom';
+  my $oid = BSON::OID->from_epoch(1467545180, urandom(8));
 
 =cut
 
@@ -131,6 +139,11 @@ sub from_epoch {
 
     croak "BSON::OID::from_epoch expects an epoch in seconds, not '$epoch'"
       unless looks_like_number( $epoch );
+
+    $fill = ZERO_FILL if defined $fill && looks_like_number($fill) && $fill == 0;
+
+    croak "BSON::OID expects the second argument to be missing, 0 or an 8-byte string"
+      unless @_ == 2 || length($fill) == 8;
 
     my $oid = defined $fill
       ? _packed_oid_special($epoch, $fill)
