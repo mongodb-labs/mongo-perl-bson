@@ -9,9 +9,18 @@ use version;
 our $VERSION = 'v1.1.0';
 
 use Carp;
+use Config;
 use Digest::MD5 'md5';
+use Scalar::Util 'looks_like_number';
 use Sys::Hostname;
 use threads::shared; # NOP if threads.pm not loaded
+
+use constant {
+    HAS_INT64 => $Config{use64bitint},
+    INT64_MAX => 9223372036854775807,
+    INT32_MAX => 2147483647,
+    ZERO_FILL => ("\0" x 8),
+};
 
 use Moo;
 
@@ -40,10 +49,15 @@ use namespace::clean -except => 'meta';
 
     #<<<
     sub _packed_oid {
+        my $time = defined $_[0] ? $_[0] : time;
         return pack(
-            'Na3na3', time, $_host, $$ % 0xFFFF,
+            'Na3na3', $time, $_host, $$ % 0xFFFF,
             substr( pack( 'N', do { lock($_inc); $_inc++; $_inc %= 0xFFFFFF }), 1, 3)
         );
+    }
+    sub _packed_oid_special {
+        my ($time, $fill) = @_;
+        return pack('Na8', $time, $fill);
     }
     #>>>
 
@@ -65,6 +79,94 @@ sub BUILD {
     croak "Invalid 'oid' field: OIDs must be 12 bytes"
       unless length( $self->oid ) == 12;
     return;
+}
+
+=method new
+
+    my $oid = BSON::OID->new;
+
+    my $oid = BSON::OID->new( oid => $twelve_bytes );
+
+This is the preferred way to generate an OID.  Without arguments, a
+unique OID will be generated.  With a 12-byte string, an object can
+be created around an existing OID byte-string.
+
+=method from_epoch
+
+    # generate a new OID
+
+    my $oid = BSON::OID->from_epoch( $epoch, 0); # other bytes zeroed
+    my $oid = BSON::OID->from_epoch( $epoch, $eight_more_bytes );
+
+    # reset an existing OID
+
+    $oid->from_epoch( $new_epoch, 0 );
+    $oid->from_epoch( $new_epoch, $eight_more_bytes );
+
+B<Warning!> You should not rely on this method for a source of unique IDs.
+Use this method for query boundaries, only.
+
+An OID is a twelve-byte string.  Typically, the first four bytes represent
+integer seconds since the Unix epoch in big-endian format.  The remaining
+bytes ensure uniqueness.
+
+With this method, the first argument to this method is an epoch time (in
+integer seconds).  The second argument is the remaining eight-bytes to
+append to the string.
+
+When called as a class method, it returns a new BSON::OID object.  When
+called as an object method, it mutates the existing internal OID value.
+
+As a special case, if the second argument is B<defined> and zero ("0"),
+then the remaining bytes will be zeroed.
+
+    my $oid = BSON::OID->from_epoch(1467545180, 0);
+
+This is particularly useful when looking for documents by their insertion
+date: you can simply look for OIDs which are greater or lower than the one
+generated with this method.
+
+For backwards compatibility with L<Mango>, if called without a second
+argument, the method generates the remainder of the fields "like usual".
+This is equivalent to calling C<< BSON::OID->new >> and replacing the first
+four bytes with the packed epoch value.
+
+    # UNSAFE: don't do this unless you have to
+
+    my $oid = BSON::OID->from_epoch(1467545180);
+
+If you insist on creating a unique OID with C<from_epoch>, set the
+remaining eight bytes in a way that guarantees thread-safe uniqueness, such
+as from a reliable source of randomness (see L<Crypt::URandom>).
+
+  use Crypt::Random 'urandom';
+  my $oid = BSON::OID->from_epoch(1467545180, urandom(8));
+
+=cut
+
+sub from_epoch {
+    my ($self, $epoch, $fill) = @_;
+
+    croak "BSON::OID::from_epoch expects an epoch in seconds, not '$epoch'"
+      unless looks_like_number( $epoch );
+
+    $fill = ZERO_FILL if defined $fill && looks_like_number($fill) && $fill == 0;
+
+    croak "BSON::OID expects the second argument to be missing, 0 or an 8-byte string"
+      unless @_ == 2 || length($fill) == 8;
+
+    my $oid = defined $fill
+      ? _packed_oid_special($epoch, $fill)
+      : _packed_oid($epoch);
+
+    if (ref $self) {
+        $self->{oid} = $oid;
+    }
+    else {
+        $self = $self->new(oid => $oid);
+    }
+
+    return $self;
 }
 
 =method hex
@@ -133,6 +235,7 @@ __END__
     use BSON::Types ':all';
 
     my $oid  = bson_oid();
+    my $oid  = bson_oid->from_epoch(1467543496, 0); # for queries only
 
     my $bytes = $oid->oid;
     my $hex   = $oid->hex;
