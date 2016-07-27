@@ -81,6 +81,16 @@ sub BUILD {
     return;
 }
 
+=method new
+
+    my $oid = BSON::OID->new;
+
+    my $oid = BSON::OID->new( oid => $twelve_bytes );
+
+This is the prefererd way to generate an OID.  Without arguments, a
+unique OID will be generated.  With a 12-byte string, an object can
+be created around an existing OID byte-string.
+
 =method from_epoch
 
     # generate a new OID
@@ -93,41 +103,41 @@ sub BUILD {
     $oid->from_epoch( $new_epoch, 0 );
     $oid->from_epoch( $new_epoch, $eight_more_bytes );
 
-B<Warning!> You should not rely on this method for a source of unique ID,
-because the uniqueness of the OID is no longer guaranteed.  Use this method
-for query boundaries, only.
+B<Warning!> You should not rely on this method for a source of unique IDs.
+Use this method for query boundaries, only.
 
 An OID is a twelve-byte string.  Typically, the first four bytes represent
-integer seconds since the Unix epoch in big-endian format.
+integer seconds since the Unix epoch in big-endian format.  The remaining
+bytes ensure uniqueness.
 
-The first argument to this method is an epoch time (in integer seconds).
-The second argument is the remaining eight-bytes to append to the string.
+With this method, the first argument to this method is an epoch time (in
+integer seconds).  The second argument is the remaining eight-bytes to
+append to the string.
 
 When called as a class method, it returns a new BSON::OID object.  When
 called as an object method, it mutates the existing internal OID value.
 
-As a special case, if the second argument is B<defined> and "0" or (number)
-0, the remaining bytes will be zeroed.
+As a special case, if the second argument is B<defined> and zero ("0"),
+then the remaining bytes will be zeroed.
 
     my $oid = BSON::OID->from_epoch(1467545180, 0);
 
-All the fields will be set to zero except the date. This is particularly
-useful when looking for documents by their insertion date: you can simply
-look for OIDs which are greater or lower than the one generated with this
-method.
+This is particularly useful when looking for documents by their insertion
+date: you can simply look for OIDs which are greater or lower than the one
+generated with this method.
 
 For backwards compatibility with L<Mango>, if called without a second
 argument, the method generates the remainder of the fields "like usual".
-This is equivalent to calling BSON::OID->new and replacing the first four
-bytes with the packed epoch value.
+This is equivalent to calling C<< BSON::OID->new >> and replacing the first
+four bytes with the packed epoch value.
 
     # UNSAFE: don't do this unless you have to
 
-    my $oid = BSON::OID(1467545180);
+    my $oid = BSON::OID->from_epoch(1467545180);
 
 If you insist on creating a unique OID with C<from_epoch>, set the
-remaining eight bytes in a way that guarantees uniqueness, such as from a
-reliable source of randomness (see L<Crypt::URandom>).
+remaining eight bytes in a way that guarantees thread-safe uniqueness, such
+as from a reliable source of randomness (see L<Crypt::URandom>).
 
   use Crypt::Random 'urandom';
   my $oid = BSON::OID->from_epoch(1467545180, urandom(8));
@@ -225,7 +235,7 @@ __END__
     use BSON::Types ':all';
 
     my $oid  = bson_oid();
-    my $oid  = bson_oid->from_epoch(1467543496);
+    my $oid  = bson_oid->from_epoch(1467543496, 0); # for queries only
 
     my $bytes = $oid->oid;
     my $hex   = $oid->hex;
