@@ -701,7 +701,6 @@ type deserializes to.  Footnotes indicate variations or special behaviors.
     BSON::Raw
     MongoDB::BSON::Raw[d]
     Tie::IxHash
-    Hash::Ordered
     -------------------------------------------------------------------
     arrayref                    0x04 ARRAY          arrayref
     -------------------------------------------------------------------

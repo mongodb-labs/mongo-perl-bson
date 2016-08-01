@@ -2,6 +2,10 @@ Revision history for BSON
 
 {{$NEXT}}
 
+    [Documentation]
+
+    - Hash::Ordered is not yet supported
+
 v1.0.0    2016-07-06 12:39:38-04:00 America/New_York
 
     [!!! Incompatible Changes !!!]
