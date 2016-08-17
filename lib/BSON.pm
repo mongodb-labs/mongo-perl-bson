@@ -9,7 +9,7 @@ use base 'Exporter';
 our @EXPORT_OK = qw/encode decode/;
 
 use version;
-our $VERSION = 'v1.1.0';
+our $VERSION = 'v1.2.1';
 
 use Carp;
 use Config;
