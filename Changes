@@ -2,7 +2,15 @@ Revision history for BSON
 
 {{$NEXT}}
 
+    [Added]
+
+    - Added dt_type support for Mango::BSON::Time
+
+    - Added 'from_epoch' constructor method to BSON::OID
+
     [Documentation]
+
+    - Credited Sebastian Riedel for inspiration regarding helper functions
 
     - Hash::Ordered is not yet supported
 
