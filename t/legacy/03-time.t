@@ -4,8 +4,9 @@ use strict;
 use warnings;
 
 use Test::More tests => 7;
-BEGIN { $ENV{PERL_BSON_BACKEND} = "" }
-BEGIN { $INC{"BSON/XS.pm"} = undef }
+use lib 't/lib';
+use CleanEnv;
+
 use BSON;
 
 my $n = time;

@@ -3,11 +3,10 @@ use strict;
 use warnings;
 
 use Test::More 0.96;
-BEGIN { $ENV{PERL_BSON_BACKEND} = "" }
-BEGIN { $INC{"BSON/XS.pm"} = undef }
 use Path::Tiny;
 
 use lib 't/lib';
+use CleanEnv;
 use CorpusTest;
 
 test_corpus_file( path($0)->basename(".t") . ".json" );

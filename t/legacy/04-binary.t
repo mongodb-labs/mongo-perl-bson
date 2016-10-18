@@ -4,8 +4,9 @@ use strict;
 use warnings;
 
 use Test::More tests => 8;
-BEGIN { $ENV{PERL_BSON_BACKEND} = "" }
-BEGIN { $INC{"BSON/XS.pm"} = undef }
+use lib 't/lib';
+use CleanEnv;
+
 use BSON;
 
 my $bin = BSON::Binary->new( [ 1, 2, 3, 4, 5 ] );

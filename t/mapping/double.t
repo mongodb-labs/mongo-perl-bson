@@ -3,10 +3,9 @@ use strict;
 use warnings;
 
 use Test::More 0.96;
-BEGIN { $ENV{PERL_BSON_BACKEND} = "" }
-BEGIN { $INC{"BSON/XS.pm"} = undef }
 
 use lib 't/lib';
+use CleanEnv;
 use TestUtils;
 
 use BSON qw/encode decode/;

@@ -6,6 +6,7 @@ use Test::More 0.96;
 use Path::Tiny;
 
 use lib 't/lib';
+use CleanEnv;
 use CorpusTest;
 
 test_corpus_file( path($0)->basename(".t") . ".json" );

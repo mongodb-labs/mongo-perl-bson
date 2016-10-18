@@ -4,15 +4,14 @@ use warnings;
 use utf8;
 
 use Test::More 0.96;
-BEGIN { $ENV{PERL_BSON_BACKEND} = "PPSubclass" }
-BEGIN { $INC{"BSON/XS.pm"} = undef }
 
 binmode( Test::More->builder->$_, ":utf8" )
   for qw/output failure_output todo_output/;
 
 use lib 't/lib';
+use CleanEnv;
 
-use BSON::Types ':all';
+$ENV{PERL_BSON_BACKEND} = "PPSubclass";
 
 eval { require BSON };
 is( $@, '', "BSON loads with PERL_BSON_BACKEND set" );

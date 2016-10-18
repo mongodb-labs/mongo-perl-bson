@@ -3,12 +3,11 @@ use strict;
 use warnings;
 
 use Test::More 0.96;
-BEGIN { $ENV{PERL_BSON_BACKEND} = "" }
-BEGIN { $INC{"BSON/XS.pm"} = undef }
 use Math::BigInt;
 use JSON::MaybeXS;
 
 use lib 't/lib';
+use CleanEnv;
 use TestUtils;
 
 use Config;
