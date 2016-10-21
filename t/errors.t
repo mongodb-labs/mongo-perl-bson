@@ -26,12 +26,33 @@ use BSON::Types ':all';
     my $glob = *foo;
     eval { encode( { a => $glob } ) };
     like( $@, qr/For key 'a', can't encode value '\*main::foo'/, "encoding glob is fatal" );
+
+    eval { encode( \$glob ) };
+    like( $@, qr/Can't encode non-container of type 'GLOB'/, "encoding non-container is fatal" );
 }
 
 {
     my $with_null= "Hello\0World";
     eval { encode( { $with_null => 123 } ) };
     like( $@, qr/Key 'Hello\\x00World' contains null character/, "encoding embedded null is fatal" );
+}
+
+{
+    eval { encode( "Hello world" ) };
+    like( $@, qr/Can't encode scalars/, "encoding scalar is fatal" );
+}
+
+
+{
+    eval { encode( qr/abc/ ) };
+    like( $@, qr/Can't encode non-container of type '.*'/, "encoding non-container is fatal" );
+}
+
+{
+    my $str = "123";
+    my $obj = bless \$str, "Some::Object";
+    eval { encode( $obj ) };
+    like( $@, qr/Can't encode non-container of type 'Some::Object'/, "encoding hash-type object is fatal" );
 }
 
 

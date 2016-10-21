@@ -11,7 +11,7 @@ our $VERSION = 'v1.2.1';
 use B;
 use Carp;
 use Config;
-use Scalar::Util qw/blessed looks_like_number refaddr/;
+use Scalar::Util qw/blessed looks_like_number refaddr reftype/;
 use Tie::IxHash;
 
 use BSON::Types ();
@@ -153,8 +153,17 @@ sub _pack_int64 {
     }
 }
 
+sub _reftype_check {
+    my $doc = shift;
+    my $type = ref($doc);
+    my $reftype = reftype($doc);
+    die "Can't encode non-container of type '$type'" unless $reftype eq 'HASH';
+    return;
+}
+
 sub _encode_bson {
     my ($doc, $opt) = @_;
+
     my $refaddr = refaddr($doc);
     die "circular reference detected" if $opt->{_circular}{$refaddr}++;
 
@@ -171,7 +180,7 @@ sub _encode_bson {
       : $doc_type eq 'Tie::IxHash'    ? _ixhash_iterator($doc)
       : $doc_type eq 'BSON::DBRef'    ? _ixhash_iterator( $doc->_ordered )
       : $doc_type eq 'MongoDB::DBRef' ? _ixhash_iterator( $doc->_ordered )
-      :                                 undef;
+      :                                 do { _reftype_check($doc); undef };
 
     my $op_char = defined($opt->{op_char}) ? $opt->{op_char} : '';
     my $invalid =

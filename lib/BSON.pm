@@ -266,9 +266,18 @@ An optional hash reference of options may be provided.  Valid options include:
 
 sub encode_one {
     my ( $self, $document, $options ) = @_;
+    my $type = ref($document);
+
+    Carp::croak "Can't encode scalars" unless $type;
+    # qr// is blessed to 'Regexp';
+    if ( $type eq "Regexp"
+        || !( blessed($document) || $type eq 'HASH' || $type eq 'ARRAY' ) )
+    {
+        Carp::croak "Can't encode non-container of type '$type'";
+    }
 
     $document = BSON::Doc->new(@$document)
-      if ref($document) eq 'ARRAY';
+      if $type eq 'ARRAY';
 
     my $merged_opts = { %$self, ( $options ? %$options : () ) };
 
