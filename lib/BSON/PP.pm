@@ -438,7 +438,11 @@ sub _encode_bson {
         else {
 
             my $flags = B::svref_2object(\$value)->FLAGS;
-            if ( $flags & B::SVf_NOK() ) {
+            if ( $flags & B::SVf_POK() ) {
+                utf8::encode($value);
+                $bson .= pack( BSON_TYPE_NAME.BSON_STRING, 0x02, $utf8_key, $value );
+            }
+            elsif ( $flags & B::SVf_NOK() ) {
                 $bson .= pack( BSON_TYPE_NAME.BSON_DOUBLE, 0x01, $utf8_key, $value );
             }
             elsif ( $flags & B::SVf_IOK() ) {
@@ -451,10 +455,6 @@ sub _encode_bson {
                 else {
                     $bson .= pack( BSON_TYPE_NAME . BSON_INT32, 0x10, $utf8_key, $value );
                 }
-            }
-            elsif ( $flags & B::SVf_POK() ) {
-                utf8::encode($value);
-                $bson .= pack( BSON_TYPE_NAME.BSON_STRING, 0x02, $utf8_key, $value );
             }
             elsif ( $] lt '5.010' && $flags & B::SVp_IOK() ) {
                 if ( $value > $max_int64 || $value < $min_int64 ) {
