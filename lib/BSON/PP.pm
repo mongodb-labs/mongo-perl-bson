@@ -468,7 +468,9 @@ sub _encode_bson {
                 }
             }
             else {
-                croak("For key '$key', can't encode value '$value'");
+                # Last resort, string
+                utf8::encode($value);
+                $bson .= pack( BSON_TYPE_NAME.BSON_STRING, 0x02, $utf8_key, $value );
             }
 
         }
