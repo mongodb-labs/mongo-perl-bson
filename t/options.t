@@ -23,7 +23,8 @@ subtest "error_callback" => sub {
     my $obj = _BSON( error_callback => sub { push @errs, [@_] } );
     $obj->decode_one($bad);
     is( 0+ @errs, 1, "error_callback ran" );
-    like( $errs[0][0], qr/not null terminated/, "error_callback arg 0" );
+    # 'error reading' is from BSON::XS
+    like( $errs[0][0], qr/error reading|not null terminated/i, "error_callback arg 0" );
     is( ${ $errs[0][1] }, $bad,         "error_callback arg 1" );
     is( $errs[0][2],      'decode_one', "error_callback arg 2" );
 };
