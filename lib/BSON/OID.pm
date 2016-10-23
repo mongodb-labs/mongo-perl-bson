@@ -61,10 +61,10 @@ use namespace::clean -except => 'meta';
     }
     #>>>
 
-    # see if v1.x MongoDB::BSON can do OIDs for us
+    # see if we have XS OID generation
     BEGIN {
-        if ( $INC{'MongoDB'} && MongoDB::BSON->can('generate_oid') ) {
-            *_generate_oid = sub { pack( "H*", MongoDB::BSON::generate_oid() ) };
+        if ( $INC{'BSON/XS.pm'} && BSON::XS->can('_generate_oid') ) {
+            *_generate_oid = sub { pack( "H*", BSON::XS::_generate_oid() ) };
         }
         else {
             *_generate_oid = \&_packed_oid;

@@ -17,7 +17,6 @@ use Scalar::Util qw/blessed/;
 
 use Moo 2.002004; # safer generated code
 use Module::Runtime qw/require_module/;
-use BSON::Types (); # loads types for extjson inflation
 use boolean;
 
 use constant {
@@ -53,6 +52,9 @@ BEGIN {
     *_encode_bson = $class->can("_encode_bson");
     *_decode_bson = $class->can("_decode_bson");
 }
+
+# LOAD AFTER XS/PP, so that modules can pick up right version of helpers
+use BSON::Types (); # loads types for extjson inflation
 
 #--------------------------------------------------------------------------#
 # public attributes
