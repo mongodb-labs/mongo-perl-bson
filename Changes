@@ -4,8 +4,19 @@ Revision history for BSON
 
     [Fixed]
 
-    - Improved detection and error messages when trying to encode
-      non-container types.
+    - Detects (and throws error) during encoding for non-container types
+
+    - Fix BSON::Time for 32-bit Perls
+
+    [Changed]
+
+    - Switch to BSON::XS for optimized OID generation if available
+
+    - Always stringify plain scalars as a last resort in encoding
+
+    [Testing]
+
+    - Add test module to reset environment and hide XS
 
 v1.2.0    2016-08-17 15:51:50-04:00 America/New_York
 
