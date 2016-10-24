@@ -281,7 +281,9 @@ provided, the current time from L<Time::HiRes> is used.
 
 sub bson_time {
     return BSON::Time->new unless defined $_[0];
-    return BSON::Time->new( value => 1000 * $_[0] );
+    # Old constructor format handles floating point math right on
+    # 32-bit platforms.
+    return BSON::Time->new( $_[0] );
 }
 
 =func bson_timestamp

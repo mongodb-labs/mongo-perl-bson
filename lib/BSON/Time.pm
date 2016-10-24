@@ -14,6 +14,7 @@ use Time::HiRes qw/time/;
 use Scalar::Util qw/looks_like_number/;
 
 use if !$Config{use64bitint}, 'Math::BigInt';
+use if !$Config{use64bitint}, 'Math::BigFloat';
 
 use Moo;
 
@@ -36,21 +37,47 @@ sub BUILDARGS {
 
     my %args;
     if ( $n == 0 ) {
-        $args{value} = 1000 * time();
+        if ( $Config{use64bitint} ) {
+            $args{value} =  time() * 1000;
+        }
+        else {
+            $args{value} = Math::BigFloat->new(time());
+            $args{value}->bmul(1000);
+            $args{value} = int($args{value});
+        }
     }
     elsif ( $n == 1 ) {
         croak "argument to BSON::Time::new must be epoch seconds, not '$_[0]'"
           unless looks_like_number( $_[0] );
-        $args{value} = 1000 * shift;
+
+        if ( !$Config{use64bitint} && ref($args{value}) ne 'Math::BigInt' ) {
+            $args{value} = Math::BigFloat->new(shift);
+            $args{value}->bmul(1000);
+            $args{value} = int($args{value});
+        }
+        else {
+            $args{value} = 1000 * shift;
+        }
     }
     elsif ( $n % 2 == 0 ) {
         %args = @_;
         if ( defined $args{value} ) {
             croak "argument to BSON::Time::new must be epoch seconds, not '$args{value}'"
               unless looks_like_number( $args{value} ) || overload::Overloaded($args{value});
+
+            if ( !$Config{use64bitint} && ref($args{value}) ne 'Math::BigInt' ) {
+                $args{value} = Math::BigInt->new($args{value});
+            }
         }
         else {
-            $args{value} = 1000 * time();
+            if ( !$Config{use64bitint} && ref($args{value}) ne 'Math::BigInt' ) {
+                $args{value} = Math::BigFloat->new(shift);
+                $args{value}->bmul(1000);
+                $args{value} = int($args{value});
+            }
+            else {
+                $args{value} = 1000 * shift;
+            }
         }
     }
     else {
@@ -59,10 +86,6 @@ sub BUILDARGS {
 
     # normalize all to integer ms
     $args{value} = int( $args{value} );
-
-    if ( !$Config{use64bitint} && ref($args{value}) ne 'Math::BigInt' ) {
-        $args{value} = Math::BigInt->new($args{value});
-    }
 
     return \%args;
 }
