@@ -44,14 +44,10 @@ sub BUILD {
 
     if ( length $self->{flags} ) {
         my %seen;
-        my $last = ""; # lt any valid flag
         my @flags = grep { !$seen{$_}++ } split '', $self->{flags};
         foreach my $f (@flags) {
             Carp::croak("Regex flag $f is not supported")
               if not exists $ALLOWED_FLAGS{$f};
-            Carp::croak("Regex flag $f is out of order")
-              if $f lt $last;
-            $last = $f;
         }
 
         # sort flags
