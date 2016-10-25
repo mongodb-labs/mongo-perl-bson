@@ -64,7 +64,7 @@ use namespace::clean -except => 'meta';
     # see if we have XS OID generation
     BEGIN {
         if ( $INC{'BSON/XS.pm'} && BSON::XS->can('_generate_oid') ) {
-            *_generate_oid = sub { pack( "H*", BSON::XS::_generate_oid() ) };
+            *_generate_oid = \&BSON::XS::_generate_oid;
         }
         else {
             *_generate_oid = \&_packed_oid;
