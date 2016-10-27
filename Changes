@@ -7,6 +7,10 @@ Revision history for BSON
     - Removed Module::Runtime prerequisite and improved error messages
       when no backends were loaded.
 
+    [Testing]
+
+    - Add testing for BSON::Regex flag ordering
+
 v1.2.1    2016-10-24 20:56:51-04:00 America/New_York
 
     [Fixed]
