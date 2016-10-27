@@ -16,7 +16,6 @@ use Config;
 use Scalar::Util qw/blessed/;
 
 use Moo 2.002004; # safer generated code
-use Module::Runtime qw/require_module/;
 use boolean;
 
 use constant {
@@ -30,10 +29,20 @@ my $bools_re = qr/::(?:Boolean|_Bool|Bool)\z/;
 
 use namespace::clean -except => 'meta';
 
+# Dependency-free equivalent of what we need from Module::Runtime
+sub _try_load {
+    my ( $mod, $ver ) = @_;
+    ( my $file = "$mod.pm" ) =~ s{::}{/}g;
+    my $load = eval { require $file; $mod->VERSION($ver) if defined $ver; 1 };
+    delete $INC{$file} if !$load; # for old, broken perls
+    die $@ if !$load;
+    return 1;
+}
+
 BEGIN {
-    my $class;
+    my ($class, @errs);
     if ( $class = $ENV{PERL_BSON_BACKEND} ) {
-        eval { require_module($class) };
+        eval { _try_load($class) };
         if ( my $err = $@ ) {
             $err =~ s{ at \S+ line .*}{};
             die "Error: PERL_BSON_BACKEND '$class' could not be loaded: $err\n";
@@ -42,11 +51,15 @@ BEGIN {
             die "Error: PERL_BSON_BACKEND '$class' does not implement the correct API.\n";
         }
     }
-    elsif ( eval { require_module( $class = "BSON::XS" ); $INC{'BSON/XS.pm'} } ) {
+    elsif ( eval { _try_load( $class = "BSON::XS" ) } or do { push @errs, $@; 0 } ) {
+        # module loaded; nothing else to do
+    }
+    elsif ( eval { _try_load( $class = "BSON::PP" ) } or do { push @errs, $@; 0 } ) {
         # module loaded; nothing else to do
     }
     else {
-        require_module( $class = "BSON::PP" );
+        s/\n/ /g for @errs;
+        die join( "\n* ", "Error: Couldn't load a BSON backend:", @errs ) . "\n";
     }
 
     *_encode_bson = $class->can("_encode_bson");
