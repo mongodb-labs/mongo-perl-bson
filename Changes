@@ -2,6 +2,8 @@ Revision history for BSON
 
 {{$NEXT}}
 
+v1.2.2    2016-10-27 17:51:52-04:00 America/New_York
+
     [Changed]
 
     - Removed Module::Runtime prerequisite and improved error messages
