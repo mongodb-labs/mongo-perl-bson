@@ -18,6 +18,6 @@ run_in_dir $ENV{REPO_DIR} => sub {
     configure();
     make();
 
-    # Archive both built blib and local deps for reuse
-    try_system(qw/tar -czf build.tar.gz Makefile blib local/);
+    # Archive local deps for reuse
+    try_system(qw/tar -czf build.tar.gz local/);
 };

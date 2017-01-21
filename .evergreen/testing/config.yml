@@ -64,9 +64,14 @@ functions:
         file: expansion.yml
 
   "fetchSource" :
-    command: git.get_project
-    params:
-      directory: mongo-perl-bson
+    - command: git.get_project
+      params:
+        directory: src
+    - command: shell.exec
+      params:
+        script: |
+          ${prepare_shell}
+          mv src ${repo_directory}
 
   "testModule" :
     command: shell.exec
