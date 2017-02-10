@@ -3,7 +3,7 @@ use strict;
 use warnings;
 
 package BSON::Decimal128;
-# ABSTRACT: BSON type wrapper for Decimal128 (EXPERIMENTAL)
+# ABSTRACT: BSON type wrapper for Decimal128
 
 use version;
 our $VERSION = 'v1.2.3';
@@ -284,11 +284,6 @@ __END__
 
     # binary representation in BID format
     $decimal = BSON::Decimal128->new( bytes => $bid ) 
-
-=head1 WARNING
-
-B<EXPERIMENTAL>: The semantics of Decimal128 are not yet finalized.  This
-module API and/or behavior are subject to change without warnings.
 
 =head1 DESCRIPTION
 
