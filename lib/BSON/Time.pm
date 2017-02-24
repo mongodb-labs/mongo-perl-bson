@@ -43,7 +43,7 @@ sub BUILDARGS {
         else {
             $args{value} = Math::BigFloat->new(time());
             $args{value}->bmul(1000);
-            $args{value} = int($args{value});
+            $args{value} = $args{value}->as_number('zero');
         }
     }
     elsif ( $n == 1 ) {
@@ -53,7 +53,7 @@ sub BUILDARGS {
         if ( !$Config{use64bitint} && ref($args{value}) ne 'Math::BigInt' ) {
             $args{value} = Math::BigFloat->new(shift);
             $args{value}->bmul(1000);
-            $args{value} = int($args{value});
+            $args{value} = $args{value}->as_number('zero');
         }
         else {
             $args{value} = 1000 * shift;
@@ -73,7 +73,7 @@ sub BUILDARGS {
             if ( !$Config{use64bitint} && ref($args{value}) ne 'Math::BigInt' ) {
                 $args{value} = Math::BigFloat->new(shift);
                 $args{value}->bmul(1000);
-                $args{value} = int($args{value});
+                $args{value} = $args{value}->as_number('zero');
             }
             else {
                 $args{value} = 1000 * shift;
