@@ -26,9 +26,9 @@ has 'value' => (
 use namespace::clean -except => 'meta';
 
 use constant {
-    nInf  => unpack("d",pack("H*","000000000000f0ff")),
-    pInf  => unpack("d",pack("H*","000000000000f07f")),
-    NaN   => unpack("d",pack("H*","000000000000f8ff")),
+    nInf  => unpack("d<",pack("H*","000000000000f0ff")),
+    pInf  => unpack("d<",pack("H*","000000000000f07f")),
+    NaN   => unpack("d<",pack("H*","000000000000f8ff")),
 };
 
 sub BUILD {

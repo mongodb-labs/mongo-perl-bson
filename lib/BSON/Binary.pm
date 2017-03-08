@@ -43,7 +43,7 @@ sub subtype {
 sub to_s {
     my $self = shift;
     my @data = @{ $self->data };
-    return pack( 'lC*', scalar(@data), $self->type, @data );
+    return pack( 'l<C*', scalar(@data), $self->type, @data );
 }
 
 use overload '""' => \&to_s;

@@ -56,7 +56,7 @@ BEGIN {
         }
     }
     else {
-        my $packed_min_int64 = pack("q", $min_int64);
+        my $packed_min_int64 = pack("q<", $min_int64);
         *BUILD = sub {
             my $self = shift;
 
@@ -65,7 +65,7 @@ BEGIN {
             if ( $value >= 0 && $value > $max_int64 ) {
                 $value = $max_int64;
             }
-            elsif ( $value < 0 && pack("q", $value) eq $packed_min_int64 ) {
+            elsif ( $value < 0 && pack("q<", $value) eq $packed_min_int64 ) {
                 $value = $min_int64;
             }
 
