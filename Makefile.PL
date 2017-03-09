@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use 5.008001;
+use 5.010001;
 
 use ExtUtils::MakeMaker 6.17;
 
@@ -13,7 +13,7 @@ my %WriteMakefileArgs = (
   },
   "DISTNAME" => "BSON",
   "LICENSE" => "apache",
-  "MIN_PERL_VERSION" => "5.008001",
+  "MIN_PERL_VERSION" => "5.010001",
   "NAME" => "BSON",
   "PREREQ_PM" => {
     "B" => 0,

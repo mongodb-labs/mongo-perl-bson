@@ -2,6 +2,11 @@ Revision history for BSON
 
 {{$NEXT}}
 
+    [!!! Incompatible Changes !!!]
+
+    - Minimum Perl version bumped up to v5.10.1 for byte-order modifiers
+      for pack and unpack.
+
 v1.2.2    2016-10-27 17:51:52-04:00 America/New_York
 
     [Changed]
