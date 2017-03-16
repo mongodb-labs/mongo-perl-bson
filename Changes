@@ -2,6 +2,8 @@ Revision history for BSON
 
 {{$NEXT}}
 
+v1.4.0    2017-03-16 18:00:04-04:00 America/New_York
+
     [!!! Incompatible Changes !!!]
 
     - Minimum Perl version bumped up to v5.10.1 for byte-order modifiers
