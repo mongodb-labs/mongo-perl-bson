@@ -10,21 +10,29 @@ use FindBin qw($Bin);
 use lib "$Bin/../lib";
 use EvergreenConfig;
 
+# Limit tasks to certain operating systems
+my $OS_FILTER =
+  { os =>
+      [ 'rhel62', 'windows64', 'suse12_z', 'ubuntu1604_arm64', 'ubuntu1604_power8' ] };
+
 sub main {
+    my $download = [ 'downloadPerl5Lib' => { target => '${repo_directory}' } ];
+
     my @tasks = (
-        pre(qw/dynamicVars cleanUp fetchSource downloadPerl5Lib/),
+        pre( qw/dynamicVars cleanUp fetchSource/, $download ),
         post(qw/cleanUp/),
-        task( build => [qw/whichPerl buildModule uploadBuildArtifacts/] ),
+        task(
+            build  => [qw/whichPerl buildModule uploadBuildArtifacts/],
+            filter => $OS_FILTER
+        ),
         task(
             test       => [qw/whichPerl downloadBuildArtifacts testModule/],
-            depends_on => 'build'
+            depends_on => 'build',
+            filter     => $OS_FILTER,
         ),
     );
 
-    print assemble_yaml(
-        timeout(600),
-        buildvariants( \@tasks ),
-    );
+    print assemble_yaml( timeout(600), buildvariants( \@tasks ), );
 
     return 0;
 }
