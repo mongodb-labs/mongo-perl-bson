@@ -7,6 +7,14 @@ Revision history for BSON
     - Minimum Perl version bumped up to v5.10.1 for byte-order modifiers
       for pack and unpack.
 
+    [Bugs]
+
+    - [PERL-694] - Tests fail on x86 (32-bit) without use64bitint perl
+
+    [New Feature]
+
+    - [PERL-751] - Support big-endian architectures
+
 v1.2.2    2016-10-27 17:51:52-04:00 America/New_York
 
     [Changed]
