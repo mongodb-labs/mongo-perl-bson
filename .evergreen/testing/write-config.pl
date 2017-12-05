@@ -32,7 +32,15 @@ sub main {
         ),
     );
 
-    print assemble_yaml( timeout(600), buildvariants( \@tasks ), );
+    # Build filter to avoid "ld" Perls on Z-series
+    my $variant_filter = sub {
+        my ($os, $ver) = @_;
+        return 0 if $os eq 'suse12_z' && $ver =~ m/ld$/;
+        return 1;
+    };
+
+
+    print assemble_yaml( timeout(600), buildvariants( \@tasks, $variant_filter ), );
 
     return 0;
 }
