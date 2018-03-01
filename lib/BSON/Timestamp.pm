@@ -70,8 +70,11 @@ sub BUILD {
 }
 
 # For backwards compatibility
-*sec = \&seconds;
-*inc = \&increment;
+{
+    no warnings 'once';
+    *sec = \&seconds;
+    *inc = \&increment;
+}
 
 =method TO_JSON
 
