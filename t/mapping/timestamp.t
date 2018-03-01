@@ -77,6 +77,18 @@ is(
     'extjson: bson_timestamp(<secs>,<inc>)'
 );
 
+# test overloading
+my @cmp_cases = (
+    [ [0,1], [0,1], 0 ],
+    [ [0,2], [0,1], 1 ],
+    [ [1,0], [0,1], 1 ],
+    [ [0,0], [0,1], -1 ],
+    [ [0,0], [1,0], -1 ],
+);
+for my $c (@cmp_cases) {
+    my ($l, $r, $exp) = @$c;
+    is( bson_timestamp(@$l) <=> bson_timestamp(@$r), $exp, "(@$l) <=> (@$r) == $exp" );
+}
 
 done_testing;
 

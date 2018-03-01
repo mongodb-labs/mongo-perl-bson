@@ -97,6 +97,17 @@ sub TO_JSON {
     Carp::croak( "The value '$_[0]' is illegal in JSON" );
 }
 
+sub _cmp {
+    my ( $l, $r ) = @_;
+    return ( $l->{seconds} <=> $r->{seconds} )
+      || ( $l->{increment} <=> $r->{increment} );
+}
+
+use overload (
+    '<=>'     => \&_cmp,
+    fallback => 1,
+);
+
 1;
 
 __END__
