@@ -138,8 +138,6 @@ buildvariants:
       perlver: 10
     run_on:
       - rhel62-test
-      - rhel62-build
-      - rhel62-large
     tasks:
       - build
       - test
@@ -152,8 +150,6 @@ buildvariants:
       perlver: 10t
     run_on:
       - rhel62-test
-      - rhel62-build
-      - rhel62-large
     tasks:
       - build
       - test
@@ -166,8 +162,6 @@ buildvariants:
       perlver: 10ld
     run_on:
       - rhel62-test
-      - rhel62-build
-      - rhel62-large
     tasks:
       - build
       - test
@@ -180,8 +174,6 @@ buildvariants:
       perlver: 12
     run_on:
       - rhel62-test
-      - rhel62-build
-      - rhel62-large
     tasks:
       - build
       - test
@@ -194,8 +186,6 @@ buildvariants:
       perlver: 12t
     run_on:
       - rhel62-test
-      - rhel62-build
-      - rhel62-large
     tasks:
       - build
       - test
@@ -208,8 +198,6 @@ buildvariants:
       perlver: 12ld
     run_on:
       - rhel62-test
-      - rhel62-build
-      - rhel62-large
     tasks:
       - build
       - test
@@ -222,8 +210,6 @@ buildvariants:
       perlver: 14
     run_on:
       - rhel62-test
-      - rhel62-build
-      - rhel62-large
     tasks:
       - build
       - test
@@ -236,8 +222,6 @@ buildvariants:
       perlver: 14t
     run_on:
       - rhel62-test
-      - rhel62-build
-      - rhel62-large
     tasks:
       - build
       - test
@@ -250,8 +234,6 @@ buildvariants:
       perlver: 14ld
     run_on:
       - rhel62-test
-      - rhel62-build
-      - rhel62-large
     tasks:
       - build
       - test
@@ -264,8 +246,6 @@ buildvariants:
       perlver: 16
     run_on:
       - rhel62-test
-      - rhel62-build
-      - rhel62-large
     tasks:
       - build
       - test
@@ -278,8 +258,6 @@ buildvariants:
       perlver: 16t
     run_on:
       - rhel62-test
-      - rhel62-build
-      - rhel62-large
     tasks:
       - build
       - test
@@ -292,8 +270,6 @@ buildvariants:
       perlver: 16ld
     run_on:
       - rhel62-test
-      - rhel62-build
-      - rhel62-large
     tasks:
       - build
       - test
@@ -306,8 +282,6 @@ buildvariants:
       perlver: 18
     run_on:
       - rhel62-test
-      - rhel62-build
-      - rhel62-large
     tasks:
       - build
       - test
@@ -320,8 +294,6 @@ buildvariants:
       perlver: 18t
     run_on:
       - rhel62-test
-      - rhel62-build
-      - rhel62-large
     tasks:
       - build
       - test
@@ -334,8 +306,6 @@ buildvariants:
       perlver: 18ld
     run_on:
       - rhel62-test
-      - rhel62-build
-      - rhel62-large
     tasks:
       - build
       - test
@@ -348,8 +318,6 @@ buildvariants:
       perlver: 20
     run_on:
       - rhel62-test
-      - rhel62-build
-      - rhel62-large
     tasks:
       - build
       - test
@@ -362,8 +330,6 @@ buildvariants:
       perlver: 20t
     run_on:
       - rhel62-test
-      - rhel62-build
-      - rhel62-large
     tasks:
       - build
       - test
@@ -376,8 +342,6 @@ buildvariants:
       perlver: 20ld
     run_on:
       - rhel62-test
-      - rhel62-build
-      - rhel62-large
     tasks:
       - build
       - test
@@ -390,8 +354,6 @@ buildvariants:
       perlver: 22
     run_on:
       - rhel62-test
-      - rhel62-build
-      - rhel62-large
     tasks:
       - build
       - test
@@ -404,8 +366,6 @@ buildvariants:
       perlver: 22t
     run_on:
       - rhel62-test
-      - rhel62-build
-      - rhel62-large
     tasks:
       - build
       - test
@@ -418,8 +378,6 @@ buildvariants:
       perlver: 22ld
     run_on:
       - rhel62-test
-      - rhel62-build
-      - rhel62-large
     tasks:
       - build
       - test
@@ -432,8 +390,6 @@ buildvariants:
       perlver: 24
     run_on:
       - rhel62-test
-      - rhel62-build
-      - rhel62-large
     tasks:
       - build
       - test
@@ -446,8 +402,6 @@ buildvariants:
       perlver: 24t
     run_on:
       - rhel62-test
-      - rhel62-build
-      - rhel62-large
     tasks:
       - build
       - test
@@ -460,8 +414,6 @@ buildvariants:
       perlver: 24ld
     run_on:
       - rhel62-test
-      - rhel62-build
-      - rhel62-large
     tasks:
       - build
       - test
@@ -474,8 +426,6 @@ buildvariants:
       perlver: 26
     run_on:
       - rhel62-test
-      - rhel62-build
-      - rhel62-large
     tasks:
       - build
       - test
@@ -488,8 +438,6 @@ buildvariants:
       perlver: 26t
     run_on:
       - rhel62-test
-      - rhel62-build
-      - rhel62-large
     tasks:
       - build
       - test
@@ -502,8 +450,6 @@ buildvariants:
       perlver: 26ld
     run_on:
       - rhel62-test
-      - rhel62-build
-      - rhel62-large
     tasks:
       - build
       - test
@@ -515,7 +461,6 @@ buildvariants:
       perlpath: /opt/perl/14/bin/perl
       perlver: 14
     run_on:
-      - suse12-zseries-build
       - suse12-zseries-test
     tasks:
       - build
@@ -530,7 +475,6 @@ buildvariants:
       perlpath: /opt/perl/14t/bin/perl
       perlver: 14t
     run_on:
-      - suse12-zseries-build
       - suse12-zseries-test
     tasks:
       - build
@@ -545,7 +489,6 @@ buildvariants:
       perlpath: /opt/perl/16/bin/perl
       perlver: 16
     run_on:
-      - suse12-zseries-build
       - suse12-zseries-test
     tasks:
       - build
@@ -560,7 +503,6 @@ buildvariants:
       perlpath: /opt/perl/16t/bin/perl
       perlver: 16t
     run_on:
-      - suse12-zseries-build
       - suse12-zseries-test
     tasks:
       - build
@@ -575,7 +517,6 @@ buildvariants:
       perlpath: /opt/perl/18/bin/perl
       perlver: 18
     run_on:
-      - suse12-zseries-build
       - suse12-zseries-test
     tasks:
       - build
@@ -590,7 +531,6 @@ buildvariants:
       perlpath: /opt/perl/18t/bin/perl
       perlver: 18t
     run_on:
-      - suse12-zseries-build
       - suse12-zseries-test
     tasks:
       - build
@@ -605,7 +545,6 @@ buildvariants:
       perlpath: /opt/perl/20/bin/perl
       perlver: 20
     run_on:
-      - suse12-zseries-build
       - suse12-zseries-test
     tasks:
       - build
@@ -620,7 +559,6 @@ buildvariants:
       perlpath: /opt/perl/20t/bin/perl
       perlver: 20t
     run_on:
-      - suse12-zseries-build
       - suse12-zseries-test
     tasks:
       - build
@@ -635,7 +573,6 @@ buildvariants:
       perlpath: /opt/perl/22/bin/perl
       perlver: 22
     run_on:
-      - suse12-zseries-build
       - suse12-zseries-test
     tasks:
       - build
@@ -650,7 +587,6 @@ buildvariants:
       perlpath: /opt/perl/22t/bin/perl
       perlver: 22t
     run_on:
-      - suse12-zseries-build
       - suse12-zseries-test
     tasks:
       - build
@@ -665,7 +601,6 @@ buildvariants:
       perlpath: /opt/perl/24/bin/perl
       perlver: 24
     run_on:
-      - suse12-zseries-build
       - suse12-zseries-test
     tasks:
       - build
@@ -680,7 +615,6 @@ buildvariants:
       perlpath: /opt/perl/24t/bin/perl
       perlver: 24t
     run_on:
-      - suse12-zseries-build
       - suse12-zseries-test
     tasks:
       - build
@@ -695,7 +629,6 @@ buildvariants:
       perlpath: /opt/perl/26/bin/perl
       perlver: 26
     run_on:
-      - suse12-zseries-build
       - suse12-zseries-test
     tasks:
       - build
@@ -710,7 +643,6 @@ buildvariants:
       perlpath: /opt/perl/26t/bin/perl
       perlver: 26t
     run_on:
-      - suse12-zseries-build
       - suse12-zseries-test
     tasks:
       - build
@@ -725,7 +657,6 @@ buildvariants:
       perlpath: /opt/perl/14/bin/perl
       perlver: 14
     run_on:
-      - ubuntu1604-power8-build
       - ubuntu1604-power8-test
     tasks:
       - build
@@ -740,7 +671,6 @@ buildvariants:
       perlpath: /opt/perl/14t/bin/perl
       perlver: 14t
     run_on:
-      - ubuntu1604-power8-build
       - ubuntu1604-power8-test
     tasks:
       - build
@@ -755,7 +685,6 @@ buildvariants:
       perlpath: /opt/perl/14ld/bin/perl
       perlver: 14ld
     run_on:
-      - ubuntu1604-power8-build
       - ubuntu1604-power8-test
     tasks:
       - build
@@ -770,7 +699,6 @@ buildvariants:
       perlpath: /opt/perl/16/bin/perl
       perlver: 16
     run_on:
-      - ubuntu1604-power8-build
       - ubuntu1604-power8-test
     tasks:
       - build
@@ -785,7 +713,6 @@ buildvariants:
       perlpath: /opt/perl/16t/bin/perl
       perlver: 16t
     run_on:
-      - ubuntu1604-power8-build
       - ubuntu1604-power8-test
     tasks:
       - build
@@ -800,7 +727,6 @@ buildvariants:
       perlpath: /opt/perl/16ld/bin/perl
       perlver: 16ld
     run_on:
-      - ubuntu1604-power8-build
       - ubuntu1604-power8-test
     tasks:
       - build
@@ -815,7 +741,6 @@ buildvariants:
       perlpath: /opt/perl/18/bin/perl
       perlver: 18
     run_on:
-      - ubuntu1604-power8-build
       - ubuntu1604-power8-test
     tasks:
       - build
@@ -830,7 +755,6 @@ buildvariants:
       perlpath: /opt/perl/18t/bin/perl
       perlver: 18t
     run_on:
-      - ubuntu1604-power8-build
       - ubuntu1604-power8-test
     tasks:
       - build
@@ -845,7 +769,6 @@ buildvariants:
       perlpath: /opt/perl/18ld/bin/perl
       perlver: 18ld
     run_on:
-      - ubuntu1604-power8-build
       - ubuntu1604-power8-test
     tasks:
       - build
@@ -860,7 +783,6 @@ buildvariants:
       perlpath: /opt/perl/20/bin/perl
       perlver: 20
     run_on:
-      - ubuntu1604-power8-build
       - ubuntu1604-power8-test
     tasks:
       - build
@@ -875,7 +797,6 @@ buildvariants:
       perlpath: /opt/perl/20t/bin/perl
       perlver: 20t
     run_on:
-      - ubuntu1604-power8-build
       - ubuntu1604-power8-test
     tasks:
       - build
@@ -890,7 +811,6 @@ buildvariants:
       perlpath: /opt/perl/20ld/bin/perl
       perlver: 20ld
     run_on:
-      - ubuntu1604-power8-build
       - ubuntu1604-power8-test
     tasks:
       - build
@@ -905,7 +825,6 @@ buildvariants:
       perlpath: /opt/perl/22/bin/perl
       perlver: 22
     run_on:
-      - ubuntu1604-power8-build
       - ubuntu1604-power8-test
     tasks:
       - build
@@ -920,7 +839,6 @@ buildvariants:
       perlpath: /opt/perl/22t/bin/perl
       perlver: 22t
     run_on:
-      - ubuntu1604-power8-build
       - ubuntu1604-power8-test
     tasks:
       - build
@@ -935,7 +853,6 @@ buildvariants:
       perlpath: /opt/perl/22ld/bin/perl
       perlver: 22ld
     run_on:
-      - ubuntu1604-power8-build
       - ubuntu1604-power8-test
     tasks:
       - build
@@ -950,7 +867,6 @@ buildvariants:
       perlpath: /opt/perl/24/bin/perl
       perlver: 24
     run_on:
-      - ubuntu1604-power8-build
       - ubuntu1604-power8-test
     tasks:
       - build
@@ -965,7 +881,6 @@ buildvariants:
       perlpath: /opt/perl/24t/bin/perl
       perlver: 24t
     run_on:
-      - ubuntu1604-power8-build
       - ubuntu1604-power8-test
     tasks:
       - build
@@ -980,7 +895,6 @@ buildvariants:
       perlpath: /opt/perl/24ld/bin/perl
       perlver: 24ld
     run_on:
-      - ubuntu1604-power8-build
       - ubuntu1604-power8-test
     tasks:
       - build
@@ -995,7 +909,6 @@ buildvariants:
       perlpath: /opt/perl/26/bin/perl
       perlver: 26
     run_on:
-      - ubuntu1604-power8-build
       - ubuntu1604-power8-test
     tasks:
       - build
@@ -1010,7 +923,6 @@ buildvariants:
       perlpath: /opt/perl/26t/bin/perl
       perlver: 26t
     run_on:
-      - ubuntu1604-power8-build
       - ubuntu1604-power8-test
     tasks:
       - build
@@ -1025,7 +937,6 @@ buildvariants:
       perlpath: /opt/perl/26ld/bin/perl
       perlver: 26ld
     run_on:
-      - ubuntu1604-power8-build
       - ubuntu1604-power8-test
     tasks:
       - build
@@ -1040,13 +951,7 @@ buildvariants:
       perlpath: /cygdrive/c/perl/14/perl/bin/perl
       perlver: 14
     run_on:
-      - windows-64-vs2010-compile
-      - windows-64-vs2010-test
-      - windows-64-vs2013-compile
-      - windows-64-vs2013-test
-      - windows-64-vs2015-compile
       - windows-64-vs2015-test
-      - windows-64-vs2015-large
     tasks:
       - build
       - test
@@ -1058,13 +963,7 @@ buildvariants:
       perlpath: /cygdrive/c/perl/16/perl/bin/perl
       perlver: 16
     run_on:
-      - windows-64-vs2010-compile
-      - windows-64-vs2010-test
-      - windows-64-vs2013-compile
-      - windows-64-vs2013-test
-      - windows-64-vs2015-compile
       - windows-64-vs2015-test
-      - windows-64-vs2015-large
     tasks:
       - build
       - test
@@ -1076,13 +975,7 @@ buildvariants:
       perlpath: /cygdrive/c/perl/18/perl/bin/perl
       perlver: 18
     run_on:
-      - windows-64-vs2010-compile
-      - windows-64-vs2010-test
-      - windows-64-vs2013-compile
-      - windows-64-vs2013-test
-      - windows-64-vs2015-compile
       - windows-64-vs2015-test
-      - windows-64-vs2015-large
     tasks:
       - build
       - test
@@ -1094,13 +987,7 @@ buildvariants:
       perlpath: /cygdrive/c/perl/20/perl/bin/perl
       perlver: 20
     run_on:
-      - windows-64-vs2010-compile
-      - windows-64-vs2010-test
-      - windows-64-vs2013-compile
-      - windows-64-vs2013-test
-      - windows-64-vs2015-compile
       - windows-64-vs2015-test
-      - windows-64-vs2015-large
     tasks:
       - build
       - test
@@ -1112,13 +999,7 @@ buildvariants:
       perlpath: /cygdrive/c/perl/22/perl/bin/perl
       perlver: 22
     run_on:
-      - windows-64-vs2010-compile
-      - windows-64-vs2010-test
-      - windows-64-vs2013-compile
-      - windows-64-vs2013-test
-      - windows-64-vs2015-compile
       - windows-64-vs2015-test
-      - windows-64-vs2015-large
     tasks:
       - build
       - test
@@ -1130,13 +1011,7 @@ buildvariants:
       perlpath: /cygdrive/c/perl/24/perl/bin/perl
       perlver: 24
     run_on:
-      - windows-64-vs2010-compile
-      - windows-64-vs2010-test
-      - windows-64-vs2013-compile
-      - windows-64-vs2013-test
-      - windows-64-vs2015-compile
       - windows-64-vs2015-test
-      - windows-64-vs2015-large
     tasks:
       - build
       - test
@@ -1148,13 +1023,7 @@ buildvariants:
       perlpath: /cygdrive/c/perl/26/perl/bin/perl
       perlver: 26
     run_on:
-      - windows-64-vs2010-compile
-      - windows-64-vs2010-test
-      - windows-64-vs2013-compile
-      - windows-64-vs2013-test
-      - windows-64-vs2015-compile
       - windows-64-vs2015-test
-      - windows-64-vs2015-large
     tasks:
       - build
       - test
