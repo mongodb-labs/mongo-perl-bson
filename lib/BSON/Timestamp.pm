@@ -112,7 +112,7 @@ use overload (
 
 __END__
 
-=for Pod::Coverage BUILDARGS sec inc
+=for Pod::Coverage BUILD BUILDARGS sec inc
 
 =head1 SYNOPSIS
 
