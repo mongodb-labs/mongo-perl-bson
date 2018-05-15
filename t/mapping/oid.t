@@ -42,6 +42,15 @@ is( BSON::OID->new(oid => $packed)->oid,
 # test overloading
 is( bson_oid($packed), $hexoid, "BSON::OID string overload" );
 
+# test comparison
+my ($oid1, $oid2) = (bson_oid(), bson_oid());
+is( $oid1 cmp $oid1, 0, "BSON::OID cmp overload (0)" );
+is( $oid1 cmp $oid2, -1, "BSON::OID cmp overload (-1)" );
+is( $oid2 cmp $oid1, 1, "BSON::OID cmp overload (1)" );
+is( $oid1 <=> $oid1, 0, "BSON::OID <=> overload (0)" );
+is( $oid1 <=> $oid2, -1, "BSON::OID <=> overload (-1)" );
+is( $oid2 <=> $oid1, 1, "BSON::OID <=> overload (1)" );
+
 # BSON::OID -> BSON::OID
 $bson = $expect = encode( { A => bson_oid($packed) } );
 $hash = decode($bson);

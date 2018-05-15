@@ -219,8 +219,16 @@ sub TO_JSON {
 *to_string = \&hex;
 *value = \&hex;
 
+sub _cmp {
+    my ($left, $right, $swap) = @_;
+    ($left, $right) = ($right, $left) if $swap;
+    return "$left" cmp "$right";
+}
+
 use overload (
     '""'     => \&hex,
+    "<=>"    => \&_cmp,
+    "cmp"    => \&_cmp,
     fallback => 1,
 );
 
@@ -249,6 +257,11 @@ ID|https://docs.mongodb.com/manual/reference/method/ObjectId/>.
 
 The string operator is overloaded so any string operations will actually use
 the 24-character hex value of the OID.  Fallback overloading is enabled.
+
+Both numeric comparison (C<< <=> >>) and string comparison (C<cmp>) are
+overloaded to do string comparison of the 24-character hex value of the
+OID.  If used with a non-BSON::OID object, be sure to provide a
+24-character hex string or the results are undefined.
 
 =head1 THREADS
 
