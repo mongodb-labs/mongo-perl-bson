@@ -2,6 +2,19 @@ Revision history for BSON
 
 {{$NEXT}}
 
+    [Bugs]
+
+    - [PERL-739] Validate Uint32 range on BSON::Timestamp components
+
+    [New Feature]
+
+    - [PERL-593] Add comparison overloading to BSON::OID  (HEAD -> master,
+      sandbox/master, origin/master)
+
+    - [PERL-688] Add create_oid class method 
+
+    - [PERL-868] Add comparison overloading to BSON::Timestamp 
+
 v1.4.0    2017-03-16 18:00:04-04:00 America/New_York
 
     [!!! Incompatible Changes !!!]
