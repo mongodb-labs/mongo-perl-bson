@@ -2,6 +2,8 @@ Revision history for BSON
 
 {{$NEXT}}
 
+v1.6.0    2018-05-15 09:41:21-04:00 America/New_York
+
     [Bugs]
 
     - [PERL-739] Validate Uint32 range on BSON::Timestamp components
