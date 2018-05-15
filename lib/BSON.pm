@@ -17,6 +17,7 @@ use Scalar::Util qw/blessed/;
 
 use Moo 2.002004; # safer generated code
 use boolean;
+use BSON::OID;
 
 use constant {
     HAS_INT64 => $Config{use64bitint},
@@ -384,6 +385,19 @@ sub clone {
 #--------------------------------------------------------------------------#
 # public class methods
 #--------------------------------------------------------------------------#
+
+=method create_oid
+
+    $oid = BSON->create_oid;
+
+This class method returns a new L<BSON::OID>.  This abstracts OID
+generation away from any specific Object ID class and makes it an interface
+on a BSON codec.  Alternative BSON codecs should define a similar class
+method that returns an Object ID of whatever type is appropriate.
+
+=cut
+
+sub create_oid { return BSON::OID->new }
 
 =method inflate_extjson
 
