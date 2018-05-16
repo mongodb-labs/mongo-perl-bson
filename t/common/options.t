@@ -72,9 +72,9 @@ subtest "max_length" => sub {
 subtest "op-char" => sub {
     my $obj = _BSON( op_char => '-' );
 
-    my $hash = { -inc => { x => 1 } };
+    my $hash   = { -inc   => { x => 1 } };
     my $expect = { '$inc' => { x => 1 } };
-    my $got =$obj->decode_one( $obj->encode_one($hash) );
+    my $got    = $obj->decode_one( $obj->encode_one($hash) );
 
     is_deeply( $got, $expect, "op-char converts to '\$'" )
       or diag explain $got;
@@ -94,7 +94,7 @@ subtest "prefer_numeric" => sub {
 };
 
 subtest "first_key" => sub {
-    my @doc = ( x => 42, y => 23, z => { a => 1, b => 2} );
+    my @doc = ( x => 42, y => 23, z => { a => 1, b => 2 } );
 
     my $obj = _BSON( ordered => 1 );
 
@@ -106,7 +106,7 @@ subtest "first_key" => sub {
 
     is( $k, 'y', "first_key put first" );
     is( $v, 32,  "first_value overrode existing value" );
-    ok( ! exists $got->{z}{_id}, "first_key doesn't propagate" );
+    ok( !exists $got->{z}{_id}, "first_key doesn't propagate" );
 
     # empty doc with first_key
     $got =
@@ -141,7 +141,7 @@ subtest "dt_type" => sub {
     SKIP: {
         eval { require DateTime };
         skip( "DateTime not installed", 1 )
-        unless $INC{'DateTime.pm'};
+          unless $INC{'DateTime.pm'};
 
         my $obj = _BSON( dt_type => "DateTime" );
         my $bson = $obj->encode_one( { A => bson_time() } );
@@ -153,7 +153,7 @@ subtest "dt_type" => sub {
     SKIP: {
         eval { require DateTime::Tiny };
         skip( "DateTime::Tiny not installed", 1 )
-        unless $INC{'DateTime/Tiny.pm'};
+          unless $INC{'DateTime/Tiny.pm'};
 
         my $obj = _BSON( dt_type => "DateTime::Tiny" );
         my $bson = $obj->encode_one( { A => bson_time() } );
@@ -165,7 +165,7 @@ subtest "dt_type" => sub {
     SKIP: {
         eval { require Time::Moment };
         skip( "Time::Moment not installed", 1 )
-        unless $INC{'Time/Moment.pm'};
+          unless $INC{'Time/Moment.pm'};
 
         my $obj = _BSON( dt_type => "Time::Moment" );
         my $bson = $obj->encode_one( { A => bson_time() } );
