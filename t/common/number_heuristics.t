@@ -61,8 +61,8 @@ my @cases = (
     [ 'String int', "42", \&w_pvonly, 'BSON::String', 'BSON::Int32' ],
     [ 'Dual int', dualvar( 42, "42" ), \&w_pviv, 'BSON::Int32', 'BSON::Int32' ],
 
-    [ 'Pure double',   3.14, \&w_nv,     'BSON::Double', 'BSON::Double' ],
-    [ 'String double', "42", \&w_pvonly, 'BSON::String', 'BSON::Int32' ],
+    [ 'Pure double',   3.14,   \&w_nv,     'BSON::Double', 'BSON::Double' ],
+    [ 'String double', "3.14", \&w_pvonly, 'BSON::String', 'BSON::Double' ],
     [ 'Dual double', dualvar( 3.14, "3.14" ), \&w_pvnv, 'BSON::Double', 'BSON::Double' ],
 );
 
@@ -71,9 +71,11 @@ for my $c (@cases) {
     ok( $type_chk->($x), "$label: SvTYPE(s)" ) or diag _dump($x);
     my $doc = { x => $x };
 
-    for my $enc ( [ "prefer_numeric=0", $pn0, $y0 ], [ "prefer_numeric=1", $pn1, $y1 ] ) {
+    for my $enc ( [ "prefer_numeric=0", $pn0, $y0 ], [ "prefer_numeric=1", $pn1, $y1 ] )
+    {
         my $rt_x = _rt( $enc->[1], $doc )->{x};
         is( ref($rt_x), $enc->[2], "$label: $enc->[0]" );
+        like( $rt_x->value, qr/\Q$x\E/, "$label: value matches $x" );
     }
 }
 
