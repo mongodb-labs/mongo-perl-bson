@@ -12,10 +12,12 @@ use B;
 use Carp;
 use Config;
 use Scalar::Util qw/blessed looks_like_number refaddr reftype/;
+use List::Util qw/first/;
 use Tie::IxHash;
 
 use BSON::Types ();
 use boolean;
+use mro;
 
 use if $] ge '5.010000', 're', 'regexp_pattern';
 
@@ -221,6 +223,12 @@ sub _encode_bson {
         my $utf8_key = $key;
         utf8::encode($utf8_key);
         my $type = ref $value;
+
+        # If the type is a subtype of BSON::*, use that instead
+        if ( blessed $value ) {
+            my $parent = first { /\ABSON::\w+\z/ } reverse @{mro::get_linear_isa($type)};
+            $type = $parent if defined $parent;
+        }
 
         # Null
         if ( !defined $value ) {
