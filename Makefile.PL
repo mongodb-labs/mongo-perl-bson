@@ -41,6 +41,7 @@ my %WriteMakefileArgs = (
   },
   "TEST_REQUIRES" => {
     "Data::Dumper" => 0,
+    "Devel::Peek" => 0,
     "ExtUtils::MakeMaker" => 0,
     "File::Spec" => 0,
     "JSON::MaybeXS" => 0,
@@ -53,7 +54,7 @@ my %WriteMakefileArgs = (
   },
   "VERSION" => "v1.6.1",
   "test" => {
-    "TESTS" => "t/*.t t/corpus/*.t t/legacy/*.t t/mapping/*.t"
+    "TESTS" => "t/*.t t/common/*.t t/corpus/*.t t/legacy/*.t t/mapping/*.t"
   }
 );
 
@@ -62,6 +63,7 @@ my %FallbackPrereqs = (
   "B" => 0,
   "Carp" => 0,
   "Data::Dumper" => 0,
+  "Devel::Peek" => 0,
   "Digest::MD5" => 0,
   "Exporter" => 0,
   "ExtUtils::MakeMaker" => 0,
