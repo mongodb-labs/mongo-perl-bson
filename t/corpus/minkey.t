@@ -6,6 +6,7 @@ use Test::More 0.96;
 use Path::Tiny;
 
 use lib 't/lib';
+use lib 't/pvtlib';
 use CleanEnv;
 use CorpusTest;
 

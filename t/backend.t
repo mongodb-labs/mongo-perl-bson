@@ -9,6 +9,7 @@ binmode( Test::More->builder->$_, ":utf8" )
   for qw/output failure_output todo_output/;
 
 use lib 't/lib';
+use lib 't/pvtlib';
 use CleanEnv;
 
 $ENV{PERL_BSON_BACKEND} = "PPSubclass";

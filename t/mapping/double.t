@@ -5,6 +5,7 @@ use warnings;
 use Test::More 0.96;
 
 use lib 't/lib';
+use lib 't/pvtlib';
 use CleanEnv;
 use TestUtils;
 

@@ -7,6 +7,7 @@ use Math::BigInt;
 use JSON::MaybeXS;
 
 use lib 't/lib';
+use lib 't/pvtlib';
 use CleanEnv;
 use TestUtils;
 
