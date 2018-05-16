@@ -14,7 +14,9 @@ use CleanEnv;
 
 use BSON;
 
-isa_ok(BSON->create_oid, 'BSON::OID');
+my $oid = BSON->create_oid;
+isa_ok($oid, 'BSON::OID');
+is($oid->_get_pid, $$ & 0xffff, "OID PID is our PID & 0xffff");
 
 done_testing;
 

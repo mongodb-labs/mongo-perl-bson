@@ -51,7 +51,7 @@ use namespace::clean -except => 'meta';
     sub _packed_oid {
         my $time = defined $_[0] ? $_[0] : time;
         return pack(
-            'Na3na3', $time, $_host, $$ % 0xFFFF,
+            'Na3na3', $time, $_host, $$ & 0xFFFF,
             substr( pack( 'N', do { lock($_inc); $_inc++; $_inc %= 0xFFFFFF }), 1, 3)
         );
     }

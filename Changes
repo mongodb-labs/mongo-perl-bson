@@ -10,6 +10,8 @@ Revision history for BSON
     - The 'epoch' method on BSON::Time was truncating to integers; it's
       now a floating point value as documented.
 
+    - Fixed PID generation within OIDs
+
 v1.6.0    2018-05-15 09:41:21-04:00 America/New_York
 
     [Bugs]
