@@ -97,7 +97,7 @@ Returns the number of seconds since the epoch (i.e. a floating-point value).
 =cut
 
 sub epoch {
-    return int( $_[0]->value / 1000 );
+    return $_[0]->value / 1000;
 }
 
 =method as_iso8601
