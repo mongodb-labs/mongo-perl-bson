@@ -163,10 +163,14 @@ has ordered => (
 
 =attr prefer_numeric
 
-If set to true, scalar values that look like a numeric value will be
-encoded as a BSON numeric type.  When false, if the scalar value was ever
-used as a string, it will be encoded as a BSON UTF-8 string, otherwise
-it will be encoded as a numeric type.
+When false, scalar values will be encoded as a number if they were
+originally a number or were ever used in a numeric context.  However, a
+string that looks like a number but was never used in a numeric context
+(e.g. "42") will be encoded as a string.
+
+If C<prefer_numeric> is set to true, the encoder will attempt to coerce
+strings that look like a number into a numeric value.  If the string
+doesn't look like a double or integer, it will be encoded as a string.
 
 B<IMPORTANT CAVEAT>: the heuristics for determining whether something is a
 string or number are less accurate on older Perls.  See L<BSON::Types>

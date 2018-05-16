@@ -403,46 +403,16 @@ sub _encode_bson {
             }
         }
 
-        ### SCALAR: numbers preferred
-
-        elsif ( $opt->{prefer_numeric} ) {
-
-            # Int heuristic based on size
-            if ( $value =~ $int_re ) {
-                if ( $value > $max_int64 || $value < $min_int64 ) {
-                    croak("BSON can only handle 8-byte integers. Key '$key' is '$value'");
-                }
-                elsif ( $value > $max_int32 || $value < $min_int32 ) {
-                    $bson .= pack( BSON_TYPE_NAME, 0x12, $utf8_key ) . _pack_int64($value);
-                }
-                else {
-                    $bson .= pack( BSON_TYPE_NAME . BSON_INT32, 0x10, $utf8_key, $value );
-                }
-            }
-
-            # Double
-            elsif ( $value =~ $doub_re ) {
-                $bson .= pack( BSON_TYPE_NAME.BSON_DOUBLE, 0x01, $utf8_key, $value );
-            }
-
-            # String
-            else {
-                utf8::encode($value);
-                $bson .= pack( BSON_TYPE_NAME.BSON_STRING, 0x02, $utf8_key, $value );
-            }
-
-        }
-
-        ### SCALAR: strings preferred
-
+        # SCALAR
         else {
+            # If a numeric value exists based on internal flags, use it;
+            # otherwise, if prefer_numeric is true and it looks like a
+            # number, then coerce to a number of the right type;
+            # otherwise, leave it as a string
 
             my $flags = B::svref_2object(\$value)->FLAGS;
-            if ( $flags & B::SVf_POK() ) {
-                utf8::encode($value);
-                $bson .= pack( BSON_TYPE_NAME.BSON_STRING, 0x02, $utf8_key, $value );
-            }
-            elsif ( $flags & B::SVf_NOK() ) {
+
+            if ( $flags & B::SVf_NOK() ) {
                 $bson .= pack( BSON_TYPE_NAME.BSON_DOUBLE, 0x01, $utf8_key, $value );
             }
             elsif ( $flags & B::SVf_IOK() ) {
@@ -456,23 +426,37 @@ sub _encode_bson {
                     $bson .= pack( BSON_TYPE_NAME . BSON_INT32, 0x10, $utf8_key, $value );
                 }
             }
-            elsif ( $] lt '5.010' && $flags & B::SVp_IOK() ) {
-                if ( $value > $max_int64 || $value < $min_int64 ) {
-                    croak("BSON can only handle 8-byte integers. Key '$key' is '$value'");
+            elsif ( $opt->{prefer_numeric} && looks_like_number($value) ) {
+                # Looks like int: type heuristic based on size
+                if ( $value =~ $int_re ) {
+                    if ( $value > $max_int64 || $value < $min_int64 ) {
+                        croak("BSON can only handle 8-byte integers. Key '$key' is '$value'");
+                    }
+                    elsif ( $value > $max_int32 || $value < $min_int32 ) {
+                        $bson .= pack( BSON_TYPE_NAME, 0x12, $utf8_key ) . _pack_int64($value);
+                    }
+                    else {
+                        $bson .= pack( BSON_TYPE_NAME . BSON_INT32, 0x10, $utf8_key, $value );
+                    }
                 }
-                elsif ( $value > $max_int32 || $value < $min_int32 ) {
-                    $bson .= pack( BSON_TYPE_NAME, 0x12, $utf8_key ) . _pack_int64($value);
+
+                # Looks like double
+                elsif ( $value =~ $doub_re ) {
+                    $bson .= pack( BSON_TYPE_NAME.BSON_DOUBLE, 0x01, $utf8_key, $value );
                 }
+
+                # looks_like_number true, but doesn't match int/double
+                # regexes, so as a last resort we leave as string
                 else {
-                    $bson .= pack( BSON_TYPE_NAME . BSON_INT32, 0x10, $utf8_key, $value );
+                    utf8::encode($value);
+                    $bson .= pack( BSON_TYPE_NAME.BSON_STRING, 0x02, $utf8_key, $value );
                 }
             }
             else {
-                # Last resort, string
+                # Not coercing or didn't look like a number
                 utf8::encode($value);
                 $bson .= pack( BSON_TYPE_NAME.BSON_STRING, 0x02, $utf8_key, $value );
             }
-
         }
     }
 

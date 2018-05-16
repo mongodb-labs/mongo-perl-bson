@@ -2,6 +2,11 @@ Revision history for BSON
 
 {{$NEXT}}
 
+    [Bugs]
+
+    - [PERL-893] Fix 'prefer_numeric' handling of dual-vars to apply
+      the heuristic only when no numeric form already exists.
+
 v1.6.0    2018-05-15 09:41:21-04:00 America/New_York
 
     [Bugs]
