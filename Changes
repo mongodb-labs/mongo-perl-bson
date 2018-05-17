@@ -2,6 +2,8 @@ Revision history for BSON
 
 {{$NEXT}}
 
+v1.6.1    2018-05-17 13:41:11-04:00 America/New_York
+
     [Bugs]
 
     - [PERL-893] Fix 'prefer_numeric' handling of dual-vars to apply
