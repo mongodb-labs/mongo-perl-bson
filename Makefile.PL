@@ -36,6 +36,7 @@ my %WriteMakefileArgs = (
     "mro" => 0,
     "namespace::clean" => 0,
     "overload" => 0,
+    "re" => 0,
     "strict" => 0,
     "threads::shared" => 0,
     "version" => 0,
@@ -51,7 +52,6 @@ my %WriteMakefileArgs = (
     "Test::Deep" => 0,
     "Test::More" => "0.96",
     "lib" => 0,
-    "re" => 0,
     "utf8" => 0
   },
   "VERSION" => "v1.6.1",
