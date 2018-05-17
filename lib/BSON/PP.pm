@@ -93,6 +93,18 @@ sub _ixhash_iterator {
     }
 }
 
+# relying on Perl's each() is prone to action-at-a-distance effects we
+# want to avoid, so we construct our own iterator for hashes
+sub _hashlike_iterator {
+    my $hashlike = shift;
+    my @keys = keys %$hashlike;
+    return sub {
+        my $k = shift @keys;
+        return unless defined $k;
+        return ($k, $hashlike->{$k});
+    }
+}
+
 # XXX could be optimized down to only one substr to trim/pad
 sub _bigint_to_int64 {
     my $bigint = shift;
@@ -184,6 +196,8 @@ sub _encode_bson {
       : $doc_type eq 'MongoDB::DBRef' ? _ixhash_iterator( $doc->_ordered )
       :                                 do { _reftype_check($doc); undef };
 
+    $iter //= _hashlike_iterator($doc);
+
     my $op_char = defined($opt->{op_char}) ? $opt->{op_char} : '';
     my $invalid =
       length( $opt->{invalid_chars} ) ? qr/[\Q$opt->{invalid_chars}\E]/ : undef;
@@ -194,7 +208,7 @@ sub _encode_bson {
     my $bson = '';
 
     my ($key, $value);
-    while ( $first_key_pending or ( $key, $value ) = $iter ? $iter->() : (each %$doc) ) {
+    while ( $first_key_pending or ( $key, $value ) = $iter->() ) {
         next if defined $first_key && $key eq $first_key;
 
         if ( $first_key_pending ) {
