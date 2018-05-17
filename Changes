@@ -7,10 +7,10 @@ Revision history for BSON
     - [PERL-893] Fix 'prefer_numeric' handling of dual-vars to apply
       the heuristic only when no numeric form already exists.
 
-    - The 'epoch' method on BSON::Time was truncating to integers; it's
-      now a floating point value as documented.
+    - [PERL-896] The 'epoch' method on BSON::Time was truncating to
+      integers; it's now a floating point value as documented.
 
-    - Fixed PID generation within OIDs
+    - [PERL-896] Fixed PID generation within OIDs
 
 v1.6.0    2018-05-15 09:41:21-04:00 America/New_York
 
