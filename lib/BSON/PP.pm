@@ -19,7 +19,7 @@ use BSON::Types ();
 use boolean;
 use mro;
 
-use if $] ge '5.010000', 're', 'regexp_pattern';
+use re 'regexp_pattern';
 
 use constant {
     HAS_INT64 => $Config{use64bitint},
