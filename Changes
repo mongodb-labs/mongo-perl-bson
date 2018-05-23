@@ -2,6 +2,11 @@ Revision history for BSON
 
 {{$NEXT}}
 
+    [Bugs]
+
+    - [PERL-641] Fix back-compatible BSON::Timestamp constructor
+      so that MongoDB::Timestamp can be an empty subclass of it.
+
 v1.6.1    2018-05-17 13:41:11-04:00 America/New_York
 
     [Bugs]
