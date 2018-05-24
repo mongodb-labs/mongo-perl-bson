@@ -2,6 +2,8 @@ Revision history for BSON
 
 {{$NEXT}}
 
+v1.6.2    2018-05-24 12:43:06-04:00 America/New_York
+
     [Bugs]
 
     - [PERL-641] Fix back-compatible BSON::Timestamp constructor
