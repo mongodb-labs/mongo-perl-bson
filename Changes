@@ -2,6 +2,12 @@ Revision history for BSON
 
 {{$NEXT}}
 
+    [Bugs]
+
+    - PERL-911 Implement 'bool' overloading for BSON::String to avoid
+      the fallback implementation relying on numification and giving
+      warnings.
+
 v1.6.2    2018-05-24 12:43:06-04:00 America/New_York
 
     [Bugs]
