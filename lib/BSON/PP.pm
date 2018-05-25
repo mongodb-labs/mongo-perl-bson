@@ -6,7 +6,7 @@ package BSON::PP;
 # ABSTRACT: Pure Perl BSON implementation
 
 use version;
-our $VERSION = 'v1.6.3';
+our $VERSION = 'v1.6.4';
 
 use B;
 use Carp;

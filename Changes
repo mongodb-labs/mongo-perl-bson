@@ -2,6 +2,8 @@ Revision history for BSON
 
 {{$NEXT}}
 
+v1.6.3    2018-05-25 13:53:32-04:00 America/New_York
+
     [Bugs]
 
     - PERL-911 Implement 'bool' overloading for BSON::String to avoid
