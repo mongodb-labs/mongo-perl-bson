@@ -58,6 +58,7 @@ sub TO_JSON { return "$_[0]->{value}" }
 
 use overload (
     # Unary
+    q{bool} => sub { !! $_[0]->{value} },
     q{""} => sub { $_[0]->{value} },
     q{0+} => sub { 0+ $_[0]->{value} },
     q{~}  => sub { ~( $_[0]->{value} ) },
