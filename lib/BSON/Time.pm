@@ -228,7 +228,8 @@ __END__
 
     use BSON::Types ':all';
 
-    bson_time( $number );
+    bson_time();        # now
+    bson_time( $secs ); # floating point seconds since epoch
 
 =head1 DESCRIPTION
 
