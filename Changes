@@ -2,6 +2,8 @@ Revision history for BSON
 
 {{$NEXT}}
 
+v1.6.4    2018-06-13 10:01:32-04:00 America/New_York
+
     [Documentation]
 
     - Clarified BSON type mapping table and BSON::Time SYNOPSIS
