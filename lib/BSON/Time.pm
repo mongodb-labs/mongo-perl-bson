@@ -97,7 +97,15 @@ Returns the number of seconds since the epoch (i.e. a floating-point value).
 =cut
 
 sub epoch {
-    return $_[0]->value / 1000;
+    my $self = shift;
+    if ( $Config{use64bitint} ) {
+        return $self->value / 1000;
+    }
+    else {
+        require Math::BigFloat;
+        my $upgrade = Math::BigFloat->new($self->value->bstr);
+        return 0 + $upgrade->bdiv(1000)->bstr;
+    }
 }
 
 =method as_iso8601
