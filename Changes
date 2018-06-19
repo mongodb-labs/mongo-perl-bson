@@ -2,6 +2,8 @@ Revision history for BSON
 
 {{$NEXT}}
 
+v1.6.5    2018-06-19 16:19:26-06:00 America/Denver
+
     [Bugs fixed]
 
     - PERL-941 Fix BSON::Time epoch conversion on perl w/o 64-bit ints

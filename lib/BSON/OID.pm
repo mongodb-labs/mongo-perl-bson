@@ -6,7 +6,7 @@ package BSON::OID;
 # ABSTRACT: BSON type wrapper for Object IDs
 
 use version;
-our $VERSION = 'v1.6.5';
+our $VERSION = 'v1.6.6';
 
 use Carp;
 use Config;
