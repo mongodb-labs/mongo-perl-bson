@@ -100,7 +100,7 @@ sub TO_JSON {
 sub _cmp {
     my ( $l, $r, $swap ) = @_;
     if ( !defined($l) || !defined($r) ) {
-        Carp::carp "Use of uninitialized value in BSON::Timestamp comparison (<=>)";
+        Carp::carp "Use of uninitialized value in BSON::Timestamp comparison (<=>); will be treated as 0,0";
     }
     $l //= { seconds => 0, increment => 0 };
     $r //= { seconds => 0, increment => 0 };
