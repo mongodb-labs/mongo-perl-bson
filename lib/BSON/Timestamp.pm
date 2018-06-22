@@ -98,9 +98,16 @@ sub TO_JSON {
 }
 
 sub _cmp {
-    my ( $l, $r ) = @_;
-    return ( $l->{seconds} <=> $r->{seconds} )
+    my ( $l, $r, $swap ) = @_;
+    if ( !defined($l) || !defined($r) ) {
+        Carp::carp "Use of uninitialized value in BSON::Timestamp comparison (<=>)";
+    }
+    $l //= { seconds => 0, increment => 0 };
+    $r //= { seconds => 0, increment => 0 };
+    ($r, $l) = ($l, $r) if $swap;
+    my $cmp = ( $l->{seconds} <=> $r->{seconds} )
       || ( $l->{increment} <=> $r->{increment} );
+    return $cmp;
 }
 
 use overload (
