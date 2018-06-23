@@ -2,6 +2,8 @@ Revision history for BSON
 
 {{$NEXT}}
 
+v1.6.6    2018-06-23 13:36:09-04:00 America/New_York
+
     [Bugs fixed]
 
     - PERL-943 Better handling of BSON::Timestamp comparison to undef

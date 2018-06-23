@@ -6,7 +6,7 @@ package BSON::MinKey;
 # ABSTRACT: BSON type wrapper for MinKey
 
 use version;
-our $VERSION = 'v1.6.6';
+our $VERSION = 'v1.6.7';
 
 use Carp;
 
