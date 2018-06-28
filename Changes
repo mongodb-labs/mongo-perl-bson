@@ -2,6 +2,11 @@ Revision history for BSON
 
 {{$NEXT}}
 
+    [Testing]
+
+    - PERL-954 Prevent deprecation warnings from use of deprecated MongoDB
+      v2.0.0 classes in test code.
+
 v1.6.6    2018-06-23 13:36:09-04:00 America/New_York
 
     [Bugs fixed]
