@@ -6,7 +6,7 @@ package BSON::String;
 # ABSTRACT: BSON type wrapper for strings
 
 use version;
-our $VERSION = 'v1.6.7';
+our $VERSION = 'v1.6.8';
 
 use Moo;
 

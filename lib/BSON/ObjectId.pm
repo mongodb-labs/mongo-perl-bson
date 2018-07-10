@@ -6,7 +6,7 @@ package BSON::ObjectId;
 # ABSTRACT: Legacy BSON type wrapper for Object IDs (DEPRECATED)
 
 use version;
-our $VERSION = 'v1.6.7';
+our $VERSION = 'v1.6.8';
 
 use Carp;
 

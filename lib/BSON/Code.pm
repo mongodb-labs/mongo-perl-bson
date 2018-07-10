@@ -6,7 +6,7 @@ package BSON::Code;
 # ABSTRACT: BSON type wrapper for Javascript code
 
 use version;
-our $VERSION = 'v1.6.7';
+our $VERSION = 'v1.6.8';
 
 use Carp ();
 
