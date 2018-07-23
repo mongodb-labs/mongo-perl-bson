@@ -38,19 +38,28 @@ sub test_corpus_file {
         return;
     }
 
-    if ( $json->{deprecated} ) {
-        $f = path( "corpus", "deprecated", $file );
-        $json = eval { decode_json( $f->slurp ) };
-        if ( my $err = $@ ) {
-            fail("deprecaed/$base failed to load");
-            diag($err);
-            return;
-        }
-    }
-
     _validity_tests($json);
     _decode_error_tests($json);
     _parse_error_tests($json);
+
+    if ( $json->{deprecated} ) {
+        subtest 'deprecated' => sub {
+            $f = path( "corpus", "deprecated", $file );
+            $json = eval { decode_json( $f->slurp ) };
+            if ( my $err = $@ ) {
+                fail("deprecaed/$base failed to load");
+                diag($err);
+                return;
+            }
+
+            _validity_tests($json);
+            _decode_error_tests($json);
+            _parse_error_tests($json);
+        };
+    }
+    else {
+        return;
+    }
 }
 
 sub _validity_tests {
@@ -66,54 +75,124 @@ sub _validity_tests {
     my $bson_type = $json->{bson_type};
 
     for my $case ( @{ $json->{valid} } ) {
-        local $Data::Dumper::Useqq = 1;
+        subtest 'case: '.$case->{description} => sub {
+            local $Data::Dumper::Useqq = 1;
 
-        my $desc = $case->{description};
-        my $wrap = $bson_type =~ /\A(?:0x01|0x10|0x12)\z/;
-        my $codec = BSON->new( prefer_numeric => 1, wrap_numbers => $wrap, ordered => 1 );
-        my $lossy = $case->{lossy};
+            my $desc = $case->{description};
+            my $wrap = $bson_type =~ /\A(?:0x01|0x10|0x12)\z/;
+            my $codec = BSON->new( prefer_numeric => 1, wrap_numbers => $wrap, ordered => 1 );
+            my $lossy = $case->{lossy};
 
-        my $B = $case->{bson};
-        my $E = $case->{extjson}; # could be undef
+            my $canonical_bson = $case->{canonical_bson} || $case->{bson};
+            my $converted_bson = $case->{converted_bson};
+            my $degenerate_bson = $case->{degenerate_bson};
 
-        my $cB = exists($case->{canonical_bson}) ? $case->{canonical_bson} : $B;
-        my $cE = exists($case->{canonical_extjson}) ? $case->{canonical_extjson} : $E;
+            $canonical_bson = pack('H*', $canonical_bson);
+            $converted_bson = pack('H*', $converted_bson)
+                if defined $converted_bson;
+            $degenerate_bson = pack('H*', $degenerate_bson)
+                if defined $degenerate_bson;
 
-        my $skip_extjson = !(defined($E) && _extjson_ok($bson_type, $E));
+            my $canonical_json = $case->{canonical_extjson};
+            my $converted_json = $case->{converted_extjson};
+            my $degenerate_json = $case->{degenerate_extjson};
+            my $relaxed_json = $case->{relaxed_extjson};
 
-        $B = pack( "H*", $B );
-        $cB = pack( "H*", $cB );
+            $canonical_json = _normalize(
+                $canonical_json,
+                '$desc: normalizing canonical extjson',
+            );
+            $converted_json = _normalize(
+                $converted_json,
+                '$desc: normalizing converted extjson',
+            );
+            $degenerate_json = _normalize(
+                $degenerate_json,
+                '$desc: normalizing degenerate extjson',
+            );
+            $relaxed_json = _normalize(
+                $relaxed_json,
+                '$desc: normalizing relaxed extjson',
+            );
 
-        $E = _normalize( $E, "$desc: normalizing E"  );
-        $cE = _normalize( $cE, "$desc: normalizing cE"  );
+            my $has_canonical_bson = defined $canonical_bson;
+            my $has_converted_bson = defined $converted_bson;
+            my $has_degenerate_bson = defined $degenerate_bson;
 
-        _bson_to_bson( $codec, $B, $cB, "$desc: B->cB" );
+            my $has_canonical_json = defined $canonical_json;
+            my $has_converted_json = defined $converted_json;
+            my $has_relaxed_json = defined $relaxed_json;
+            my $has_degenerate_json = defined $degenerate_json;
 
-        if ($B ne $cB) {
-            _bson_to_bson( $codec, $cB, $cB, "$desc: cB->cB" );
-        }
-
-        if ( ! $skip_extjson ) {
-            _bson_to_extjson( $codec, $B, $cE, "$desc: B->cE" );
-            _extjson_to_extjson( $codec, $E, $cE, "$desc: E->cE" );
-
-            if ($B ne $cB) {
-                _bson_to_extjson( $codec, $cB, $cE, "$desc: cB->cE" );
+            if ($has_canonical_bson and $has_canonical_json) {
+                _bson_to_extjson(
+                    $codec,
+                    $canonical_bson,
+                    $canonical_json,
+                    'cB -> cEJ',
+                );
             }
 
-            if ($E ne $cE) {
-                _extjson_to_extjson( $codec, $cE, $cE, "$desc: cE->cE" );
+            if ($has_canonical_bson and $has_relaxed_json) {
+                _bson_to_extjson(
+                    $codec,
+                    $canonical_bson,
+                    $relaxed_json,
+                    'cB -> rEJ',
+                    1,
+                );
             }
 
-            if ( ! $lossy ) {
-                _extjson_to_bson( $codec, $E, $cB, "$desc: E->cB" );
-
-                if ($E ne $cE) {
-                    _extjson_to_bson( $codec, $E, $cB, "$desc: cE->cB" );
+            if ($has_canonical_json and $has_canonical_bson) {
+                if (!$lossy) {
+                    _extjson_to_bson(
+                        $codec,
+                        $canonical_json,
+                        $canonical_bson,
+                        'cEJ -> cB',
+                    );
                 }
-
             }
-        }
+
+            if ($has_degenerate_bson and $has_canonical_json) {
+                _bson_to_extjson(
+                    $codec,
+                    $degenerate_bson,
+                    $canonical_json,
+                    'dB -> cEJ',
+                );
+            }
+
+            if ($has_degenerate_bson and $has_relaxed_json) {
+                _bson_to_extjson(
+                    $codec,
+                    $degenerate_bson,
+                    $relaxed_json,
+                    'dB -> rEJ',
+                    1,
+                );
+            }
+
+            if ($has_degenerate_json and $has_canonical_bson) {
+                if (!$lossy) {
+                    _extjson_to_bson(
+                        $codec,
+                        $degenerate_json,
+                        $canonical_bson,
+                        'dEJ -> cB',
+                    );
+                }
+            }
+
+            if ($has_relaxed_json) {
+                _relaxed_extjson_bson_roundtrip(
+                    $codec,
+                    $relaxed_json,
+                    'roundtrip',
+                );
+            }
+
+        };
     }
 
     return;
@@ -152,6 +231,36 @@ sub _normalize {
     return $json;
 }
 
+sub _relaxed_extjson_bson_roundtrip {
+    my ($codec, $input, $label) = @_;
+
+    my ($decoded,$bson);
+
+    try_or_fail(
+        sub { $decoded = $codec->perl_to_extjson( decode_json( $input ) ) },
+        "$label: Couldn't decode ExtJSON"
+    ) or return;
+
+    try_or_fail(
+        sub { $bson = $codec->encode_one( $decoded ) },
+        "$label: Couldn't encode BSON from BSON"
+    ) or return;
+
+    my ($got);
+
+    try_or_fail(
+        sub { $decoded = $codec->decode_one( $bson ) },
+        "$label: Couldn't decode BSON"
+    ) or return;
+
+    try_or_fail(
+        sub { $got = to_extjson( $decoded, 1 ) },
+        "$label: Couldn't encode ExtJSON from BSON"
+    ) or return;
+
+    is($got, $input, $label.': rEJ -> cB -> rEJ');
+}
+
 sub _bson_to_bson {
     my ($codec, $input, $expected, $label) = @_;
 
@@ -171,7 +280,7 @@ sub _bson_to_bson {
 }
 
 sub _bson_to_extjson {
-    my ($codec, $input, $expected, $label) = @_;
+    my ($codec, $input, $expected, $label, $relaxed) = @_;
 
     my ($decoded,$got);
 
@@ -181,7 +290,7 @@ sub _bson_to_extjson {
     ) or return;
 
     try_or_fail(
-        sub { $got = to_extjson( $decoded ) },
+        sub { $got = to_extjson( $decoded, $relaxed ) },
         "$label: Couldn't encode ExtJSON from BSON"
     ) or return;
 
@@ -194,7 +303,7 @@ sub _extjson_to_bson {
     my ($decoded,$got);
 
     try_or_fail(
-        sub { $decoded = $codec->inflate_extjson( decode_json( $input ) ) },
+        sub { $decoded = $codec->perl_to_extjson( decode_json( $input ) ) },
         "$label: Couldn't decode ExtJSON"
     ) or return;
 
@@ -207,17 +316,17 @@ sub _extjson_to_bson {
 }
 
 sub _extjson_to_extjson {
-    my ($codec, $input, $expected, $label) = @_;
+    my ($codec, $input, $expected, $label, $relaxed) = @_;
 
     my ($decoded,$got);
 
     try_or_fail(
-        sub { $decoded = $codec->inflate_extjson( decode_json( $input ) ) },
+        sub { $decoded = $codec->extjson_to_perl( decode_json( $input ) ) },
         "$label: Couldn't decode ExtJSON"
     ) or return;
 
     try_or_fail(
-        sub { $got = to_extjson( $decoded ) },
+        sub { $got = to_extjson( $decoded, $relaxed ) },
         "$label: Couldn't encode ExtJSON from BSON"
     ) or return;
 
@@ -239,6 +348,7 @@ sub _decode_error_tests {
 }
 
 my %PARSER = (
+    '0x00' => sub { bson_doc(shift) },
     '0x13' => sub { bson_decimal128(shift) },
 );
 
