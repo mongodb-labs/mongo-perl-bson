@@ -9,6 +9,7 @@ use version;
 our $VERSION = 'v1.6.8';
 
 use Carp ();
+use Tie::IxHash;
 
 use Moo;
 
@@ -31,6 +32,7 @@ has [qw/seconds increment/] => (
 use namespace::clean -except => 'meta';
 
 my $max_int32 = 2147483647;
+my $max_uint32 = 4_294_967_295;
 
 # Support back-compat 'sec' and inc' and legacy constructor shortcut
 sub BUILDARGS {
@@ -62,8 +64,8 @@ sub BUILD {
 
     for my $attr (qw/seconds increment/) {
         my $v = $self->$attr;
-        Carp::croak("BSON::Timestamp 'seconds' must be uint32")
-          unless $v >= 0 && $v <= $max_int32;
+        Carp::croak("BSON::Timestamp '$attr' must be uint32")
+          unless $v >= 0 && $v <= $max_uint32;
     }
 
     return;
@@ -91,7 +93,11 @@ can't otherwise be represented in JSON.
 
 sub TO_JSON {
     if ( $ENV{BSON_EXTJSON} ) {
-        return { '$timestamp' => { t => $_[0]->{seconds}, i => $_[0]->{increment} } };
+        my %data;
+        tie %data, 'Tie::IxHash';
+        $data{t} = int($_[0]->{seconds});
+        $data{i} = int($_[0]->{increment});
+        return { '$timestamp' => \%data };
     }
 
     Carp::croak( "The value '$_[0]' is illegal in JSON" );

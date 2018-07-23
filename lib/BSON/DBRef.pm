@@ -12,6 +12,8 @@ use Tie::IxHash;
 use Moo 2.002004;
 use namespace::clean -except => 'meta';
 
+use BSON ();
+
 =attr id
 
 Required. The C<_id> value of the referenced document. If the
@@ -130,12 +132,27 @@ sub TO_JSON {
     my $self = shift;
 
     if ( $ENV{BSON_EXTJSON} ) {
-        return {
-            '$ref' => $self->ref,
-            '$id'  => $self->id,
-            ( defined($self->db) ? ( '$db' => $self->db ) : () ),
-            %{ $self->extra },
-        };
+        my $id = $self->id;
+
+        if (ref $id) {
+            $id = $id->TO_JSON;
+        }
+        else {
+            $id = BSON->perl_to_extjson($id);
+        }
+
+        my %data;
+        tie( %data, 'Tie::IxHash' );
+        $data{'$ref'} = $self->ref;
+        $data{'$id'} = $id;
+        $data{'$db'} = $self->db
+            if defined $self->db;
+
+        my $extra = $self->extra;
+        $data{$_} = $extra->{$_}
+            for keys %$extra;
+
+        return \%data;
     }
 
     Carp::croak( "The value '$self' is illegal in JSON" );

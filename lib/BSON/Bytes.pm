@@ -9,6 +9,7 @@ use version;
 our $VERSION = 'v1.6.8';
 
 use MIME::Base64 ();
+use Tie::IxHash;
 
 use Moo;
 
@@ -50,9 +51,14 @@ format, which represents it as a document as follows:
 
 sub TO_JSON {
     return MIME::Base64::encode_base64($_[0]->{data}, "") unless $ENV{BSON_EXTJSON};
+
+    my %data;
+    tie( %data, 'Tie::IxHash' );
+    $data{base64} = MIME::Base64::encode_base64($_[0]->{data}, "");
+    $data{subType} = sprintf("%02x",$_[0]->{subtype});
+
     return {
-        '$binary' => MIME::Base64::encode_base64($_[0]->{data}, ""),
-        '$type' => sprintf("%02x",$_[0]->{subtype}),
+        '$binary' => \%data,
     };
 }
 

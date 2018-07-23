@@ -9,6 +9,7 @@ use version;
 our $VERSION = 'v1.6.8';
 
 use Carp ();
+use Tie::IxHash;
 
 use Moo;
 
@@ -94,7 +95,13 @@ can't otherwise be represented in JSON.
 
 sub TO_JSON {
     if ( $ENV{BSON_EXTJSON} ) {
-        return { '$regex' => $_[0]->{pattern}, '$options' => $_[0]->{flags} };
+        my %data;
+        tie( %data, 'Tie::IxHash' );
+        $data{pattern} = $_[0]->{pattern};
+        $data{options} = $_[0]->{flags};
+        return {
+            '$regularExpression' => \%data,
+        };
     }
 
     Carp::croak( "The value '$_[0]' is illegal in JSON" );

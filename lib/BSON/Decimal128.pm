@@ -165,7 +165,7 @@ sub _string_to_bid {
     my $s = shift;
 
     # Check special values
-    return $bidNaN    if $s =~ /\A NaN \z/ix;
+    return $bidNaN    if $s =~ /\A -? NaN \z/ix;
     return $bidPosInf if $s =~ /\A \+?Inf(?:inity)? \z/ix;
     return $bidNegInf if $s =~ /\A -Inf(?:inity)? \z/ix;
 

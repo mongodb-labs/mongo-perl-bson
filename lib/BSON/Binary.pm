@@ -46,6 +46,14 @@ sub to_s {
     return pack( 'l<C*', scalar(@data), $self->type, @data );
 }
 
+sub TO_JSON {
+    my %data;
+    tie( %data, 'Tie::IxHash' );
+    $data{base64} = $_[0]->to_s;
+    $data{subType} = $_[0]->{type};
+    return { '$binary' => \%data };
+}
+
 use overload '""' => \&to_s;
 
 1;

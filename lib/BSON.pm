@@ -13,7 +13,7 @@ our $VERSION = 'v1.6.8';
 
 use Carp;
 use Config;
-use Scalar::Util qw/blessed/;
+use Scalar::Util qw/blessed looks_like_number/;
 
 use Moo 2.002004; # safer generated code
 use boolean;
@@ -29,6 +29,8 @@ use if !HAS_INT64, "Math::BigInt";
 my $bools_re = qr/::(?:Boolean|_Bool|Bool)\z/;
 
 use namespace::clean -except => 'meta';
+
+my $max_int32 = 2147483647;
 
 # Dependency-free equivalent of what we need from Module::Runtime
 sub _try_load {
@@ -435,6 +437,269 @@ sub inflate_extjson {
     }
 
     return $hash;
+}
+
+=method perl_to_extjson
+
+    use JSON::MaybeXS;
+    my $ext = $bson->perl_to_extjson($data, \%options);
+    my $json = encode_json($ext);
+
+Takes a perl data structure and turns it into an Extended JSON
+structure. Note that the structure will still have to be serialized.
+
+Possible options are:
+
+=for :list
+* C<relaxed> A boolean indicating if relaxed extended JSON should
+be generated. If not set, the value is defaulted to the C<BSON_EXTJSON>
+environment variable.
+
+=cut
+
+my $use_win32_specials = ($^O eq 'MSWin32' && $] lt "5.022");
+
+my $is_inf = $use_win32_specials ? qr/^1.\#INF/i : qr/^inf/i;
+my $is_ninf = $use_win32_specials ? qr/^-1.\#INF/i : qr/^-inf/i;
+my $is_nan = $use_win32_specials ? qr/^-?1.\#(?:IND|QNAN)/i : qr/^-?nan/i;
+
+sub perl_to_extjson {
+    my ($class, $data, $options) = @_;
+
+    local $ENV{BSON_EXTJSON} = !$options->{relaxed}
+        if exists $options->{relaxed};
+    local $ENV{BSON_EXTJSON_RELAXED} = $options->{relaxed}
+        if exists $options->{relaxed};
+
+    if (not defined $data) {
+        return undef; ## no critic
+    }
+
+    if (blessed($data) and $data->can('TO_JSON')) {
+        my $json_data = $data->TO_JSON;
+        return $json_data;
+    }
+
+    if (not ref $data) {
+
+        if (!$ENV{BSON_EXTJSON}) {
+            return $data;
+        }
+        else {
+            if (looks_like_number($data)) {
+                if ($data =~ m{\A-?[0-9_]+\z}) {
+                    if ($data <= $max_int32) {
+                        return { '$numberInt' => "$data" };
+                    }
+                    else {
+                        return { '$numberLong' => "$data" };
+                    }
+                }
+                else {
+                    return { '$numberDouble' => 'Infinity' }
+                        if $data =~ $is_inf;
+                    return { '$numberDouble' => '-Infinity' }
+                        if $data =~ $is_ninf;
+                    return { '$numberDouble' => 'NaN' }
+                        if $data =~ $is_nan;
+                    my $value = "$data";
+                    $value = $value / 1.0;
+                    return { '$numberDouble' => "$value" };
+                }
+            }
+
+            return $data;
+        }
+    }
+
+    if (boolean::isBoolean($data)) {
+        return $data;
+    }
+
+    if (ref $data eq 'HASH') {
+        for my $key (keys %$data) {
+            my $value = $data->{$key};
+            $data->{$key} = $class->perl_to_extjson($value, $options);
+        }
+        return $data;
+    }
+    
+    if (ref $data eq 'ARRAY') {
+        for my $index (0 .. $#$data) {
+            my $value = $data->[$index];
+            $data->[$index] = $class->perl_to_extjson($value, $options);
+        }
+        return $data;
+    }
+
+    if (blessed($data) and $data->isa('JSON::PP::Boolean')) {
+        return $data;
+    }
+
+    die sprintf "Unsupported ref value (%s)", ref($data);
+}
+
+=method extjson_to_perl
+
+    use JSON::MaybeXS;
+    my $ext = decode_json($json);
+    my $data = $bson->extjson_to_perl($ext);
+
+Takes an Extended JSON data structure and inflates it into a Perl
+specific data structure. Note that you have to decode the JSON string
+manually beforehand.
+
+Canonically specified numerical values like C<{"$numberInt":"23"}> will
+be inflated into their respective C<BSON::*> types. Plain numeric values
+will be left as-is.
+
+=cut
+
+sub extjson_to_perl {
+    my ($class, $data) = @_;
+
+    if (ref $data eq 'HASH') {
+
+        if ( exists $data->{'$oid'} ) {
+            return BSON::OID->new( oid => pack( "H*", $data->{'$oid'} ) );
+        }
+
+        if ( exists $data->{'$numberInt'} ) {
+            return BSON::Int32->new( value => $data->{'$numberInt'} );
+        }
+
+        if ( exists $data->{'$numberLong'} ) {
+            if (HAS_INT64) {
+                return BSON::Int64->new( value => $data->{'$numberLong'} );
+            }
+            else {
+                return BSON::Int64->new( value => Math::BigInt->new($data->{'$numberLong'}) );
+            }
+        }
+
+        if ( exists $data->{'$binary'} ) {
+            require MIME::Base64;
+            if (exists $data->{'$type'}) {
+                return BSON::Bytes->new(
+                    data    => MIME::Base64::decode_base64($data->{'$binary'}),
+                    subtype => hex( $data->{'$type'} || 0 ),
+                );
+            }
+            else {
+                my $value = $data->{'$binary'};
+                return BSON::Bytes->new(
+                    data    => MIME::Base64::decode_base64($value->{base64}),
+                    subtype => hex( $value->{subType} || 0 ),
+                );
+            }
+        }
+
+        if ( exists $data->{'$date'} ) {
+            my $v = $data->{'$date'};
+            $v = ref($v) eq 'HASH' ? $class->extjson_to_perl($v) : _iso8601_to_epochms($v);
+            return BSON::Time->new( value => $v );
+        }
+
+        if ( exists $data->{'$minKey'} ) {
+            return BSON::MinKey->new;
+        }
+
+        if ( exists $data->{'$maxKey'} ) {
+            return BSON::MaxKey->new;
+        }
+
+        if ( exists $data->{'$timestamp'} ) {
+            return BSON::Timestamp->new(
+                seconds   => $data->{'$timestamp'}{t},
+                increment => $data->{'$timestamp'}{i},
+            );
+        }
+
+        if ( exists $data->{'$regex'} and not ref $data->{'$regex'}) {
+            return BSON::Regex->new(
+                pattern => $data->{'$regex'},
+                ( exists $data->{'$options'} ? ( flags => $data->{'$options'} ) : () ),
+            );
+        }
+
+        if ( exists $data->{'$regularExpression'} ) {
+            my $value = $data->{'$regularExpression'};
+            return BSON::Regex->new(
+                pattern => $value->{pattern},
+                ( exists $value->{options} ? ( flags => $value->{options} ) : () ),
+            );
+        }
+
+        if ( exists $data->{'$code'} ) {
+            return BSON::Code->new(
+                code => $data->{'$code'},
+                ( exists $data->{'$scope'}
+                    ? ( scope => $class->extjson_to_perl($data->{'$scope'}) )
+                    : ()
+                ),
+            );
+        }
+
+        if ( exists $data->{'$undefined'} ) {
+            return undef; ## no critic
+        }
+
+        if ( exists $data->{'$dbPointer'} ) {
+            my $data = $data->{'$dbPointer'};
+            my $id = $data->{'$id'};
+            $id = $class->extjson_to_perl($id) if ref($id) eq 'HASH';
+            return BSON::DBPointer->new(
+                '$ref' => $data->{'$ref'},
+                '$id' => $id,
+            );
+        }
+
+        if ( exists $data->{'$ref'} ) {
+            my $id = delete $data->{'$id'};
+            $id = $class->extjson_to_perl($id) if ref($id) eq 'HASH';
+            return BSON::DBRef->new(
+                '$ref' => delete $data->{'$ref'},
+                '$id' => $id,
+                '$db' => delete $data->{'$db'},
+                %$data, # extra
+            );
+        }
+
+        if ( exists $data->{'$numberDecimal'} ) {
+            return BSON::Decimal128->new( value => $data->{'$numberDecimal'} );
+        }
+
+        # Following extended JSON is non-standard
+
+        if ( exists $data->{'$numberDouble'} ) {
+            if ( $data->{'$numberDouble'} eq '-0' && $] lt '5.014' && ! HAS_LD ) {
+                $data->{'$numberDouble'} = '-0.0';
+            }
+            return BSON::Double->new( value => $data->{'$numberDouble'} );
+        }
+
+        if ( exists $data->{'$symbol'} ) {
+            return BSON::Symbol->new(value => $data->{'$symbol'});
+        }
+
+        for my $key (keys %$data) {
+            my $value = $data->{$key};
+            $data->{$key} = $class->extjson_to_perl($value);
+        }
+        return $data;
+    }
+    
+    if (ref $data eq 'ARRAY') {
+        for my $index (0 .. $#$data) {
+            my $value = $data->[$index];
+            $data->[$index] = ref($value)
+                ? $class->extjson_to_perl($value)
+                : $value;
+        }
+        return $data;
+    }
+
+    return $data;
 }
 
 #--------------------------------------------------------------------------#
