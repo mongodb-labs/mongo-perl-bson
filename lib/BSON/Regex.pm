@@ -94,7 +94,12 @@ can't otherwise be represented in JSON.
 
 sub TO_JSON {
     if ( $ENV{BSON_EXTJSON} ) {
-        return { '$regex' => $_[0]->{pattern}, '$options' => $_[0]->{flags} };
+        return {
+            '$regularExpression' => {
+                pattern => $_[0]->{pattern},
+                options => $_[0]->{flags},
+            },
+        };
     }
 
     Carp::croak( "The value '$_[0]' is illegal in JSON" );

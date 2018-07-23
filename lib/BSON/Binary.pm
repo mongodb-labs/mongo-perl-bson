@@ -46,6 +46,13 @@ sub to_s {
     return pack( 'l<C*', scalar(@data), $self->type, @data );
 }
 
+sub TO_JSON {
+    return { '$binary' => {
+        base64 => $_[0]->to_s,
+        subType => $_[0]->{type},
+    } };
+}
+
 use overload '""' => \&to_s;
 
 1;

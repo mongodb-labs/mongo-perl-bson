@@ -132,7 +132,7 @@ sub TO_JSON {
     if ( $ENV{BSON_EXTJSON} ) {
         return {
             '$ref' => $self->ref,
-            '$id'  => $self->id,
+            '$id'  => { '$oid' => $self->id },
             ( defined($self->db) ? ( '$db' => $self->db ) : () ),
             %{ $self->extra },
         };

@@ -222,8 +222,16 @@ format, which represents it as a document as follows:
 =cut
 
 sub TO_JSON {
-    return $_[0]->as_iso8601 unless $ENV{BSON_EXTJSON};
-    return { '$date' => { '$numberLong' => "$_[0]->{value}"} };
+    return { '$date' => { '$numberLong' => "$_[0]->{value}"} }
+        if $ENV{BSON_EXTJSON};
+    my $year = (gmtime($_[0]->epoch))[5];
+    $year += 1900;
+    if ($year >= 1970 and $year <= 9999) {
+        return { '$date' => $_[0]->as_iso8601 };
+    }
+    else {
+        return { '$date' => { '$numberLong' => "$_[0]->{value}" } };
+    }
 }
 
 1;

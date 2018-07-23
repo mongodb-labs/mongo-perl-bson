@@ -49,6 +49,8 @@ use BSON::Regex;        # bson_regex
 use BSON::String;       # bson_string
 use BSON::Time;         # bson_time
 use BSON::Timestamp;    # bson_timestamp
+use BSON::Symbol;
+use BSON::DBPointer;
 
 # deprecated, but load anyway
 use BSON::Bool;
