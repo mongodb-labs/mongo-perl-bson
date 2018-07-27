@@ -125,11 +125,13 @@ sub _validity_tests {
             my $has_degenerate_json = defined $degenerate_json;
 
             if ($has_canonical_bson and $has_canonical_json) {
+                local $ENV{BSON_EXTJSON} = 1;
                 _bson_to_extjson(
                     $codec,
                     $canonical_bson,
                     $canonical_json,
                     'cB -> cEJ',
+                    0,
                 );
             }
 
@@ -237,7 +239,7 @@ sub _relaxed_extjson_bson_roundtrip {
     my ($decoded,$bson);
 
     try_or_fail(
-        sub { $decoded = $codec->perl_to_extjson( decode_json( $input ) ) },
+        sub { $decoded = $codec->extjson_to_perl( decode_json( $input ) ) },
         "$label: Couldn't decode ExtJSON"
     ) or return;
 
@@ -300,10 +302,17 @@ sub _bson_to_extjson {
 sub _extjson_to_bson {
     my ($codec, $input, $expected, $label) = @_;
 
+    my $edata = $codec->decode_one($expected);
+
     my ($decoded,$got);
 
+    local $ENV{BSON_EXTJSON} = 1;
     try_or_fail(
-        sub { $decoded = $codec->perl_to_extjson( decode_json( $input ) ) },
+        sub {
+            my $json = decode_json($input);
+            $json = $codec->extjson_to_perl($json);
+            $decoded = $json;
+        },
         "$label: Couldn't decode ExtJSON"
     ) or return;
 
@@ -311,6 +320,8 @@ sub _extjson_to_bson {
         sub { $got = $codec->encode_one( $decoded ) },
         "$label: Couldn't encode BSON from BSON"
     ) or return;
+
+    my $data = $codec->decode_one($got);
 
     return bytes_are( $got, $expected, $label );
 }
