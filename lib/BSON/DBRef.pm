@@ -130,9 +130,12 @@ sub TO_JSON {
     my $self = shift;
 
     if ( $ENV{BSON_EXTJSON} ) {
+        my $id = $self->id;
+        $id = { '$numberInt' => "$id" }
+            unless ref $id;
         return {
             '$ref' => $self->ref,
-            '$id'  => { '$oid' => $self->id },
+            '$id'  => $id,
             ( defined($self->db) ? ( '$db' => $self->db ) : () ),
             %{ $self->extra },
         };
