@@ -467,6 +467,10 @@ sub perl_to_extjson {
         return undef;
     }
 
+    if (blessed($data) and $data->can('TO_JSON')) {
+        return $data->TO_JSON;
+    }
+
     if (not ref $data) {
 
         if (!$ENV{BSON_EXTJSON}) {
@@ -502,6 +506,9 @@ sub perl_to_extjson {
     }
 
     if (ref $data eq 'HASH') {
+        if (exists $data->{'$type'}) {
+            return $data;
+        }
         for my $key (keys %$data) {
             my $value = $data->{$key};
             $data->{$key} = $class->perl_to_extjson($value, $options);
@@ -515,10 +522,6 @@ sub perl_to_extjson {
             $data->[$index] = $class->perl_to_extjson($value, $options);
         }
         return $data;
-    }
-
-    if (blessed($data) and $data->can('TO_JSON')) {
-        return $data->TO_JSON;
     }
 
     if (blessed($data) and $data->isa('JSON::PP::Boolean')) {
@@ -634,13 +637,18 @@ sub extjson_to_perl {
             my $hash = $hash->{'$dbPointer'};
             my $id = $hash->{'$id'};
             $id = BSON->extjson_to_perl($id) if ref($id) eq 'HASH';
-            return BSON::DBRef->new( '$ref' => $hash->{'$ref'}, '$id' => $id );
+            return BSON::DBPointer->new( '$ref' => $hash->{'$ref'}, '$id' => $id );
         }
 
         if ( exists $hash->{'$ref'} ) {
-            my $id = $hash->{'$id'};
+            my $id = delete $hash->{'$id'};
             $id = BSON->extjson_to_perl($id) if ref($id) eq 'HASH';
-            return BSON::DBRef->new( '$ref' => $hash->{'$ref'}, '$id' => $id );
+            return BSON::DBRef->new(
+                '$ref' => delete $hash->{'$ref'},
+                '$id' => $id,
+                '$db' => delete $hash->{'$db'},
+                %$hash, # extra
+            );
         }
 
         if ( exists $hash->{'$numberDecimal'} ) {
@@ -657,7 +665,7 @@ sub extjson_to_perl {
         }
 
         if ( exists $hash->{'$symbol'} ) {
-            return BSON::Symbol->new($hash->{'$symbol'});
+            return BSON::Symbol->new(value => $hash->{'$symbol'});
         }
 
         for my $key (keys %$hash) {
