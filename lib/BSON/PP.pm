@@ -264,7 +264,7 @@ sub _encode_bson {
             }
 
             # special-cased deprecated DBPointer
-            if ($type eq 'BSON::DBPointer') {
+            elsif ($type eq 'BSON::DBPointer') {
                 $bson .= pack( BSON_TYPE_NAME, 0x03, $utf8_key )
                     . _encode_bson({ '$id' => $value->{id}, '$ref' => $value->{'ref'} }, $opt);
             }
