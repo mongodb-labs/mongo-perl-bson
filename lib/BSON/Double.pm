@@ -51,15 +51,16 @@ my $illegal = $^O eq 'MSWin32' && $] lt "5.022" ? qr/^$win32_specials/ : qr/^$un
 sub TO_JSON {
     my $copy = "$_[0]->{value}"; # avoid changing value to PVNV
 
+    return { '$numberDouble' => 'Infinity' }
+        if $copy eq 'Inf';
+    return { '$numberDouble' => '-Infinity' }
+        if $copy eq '-Inf';
+    return { '$numberDouble' => 'NaN' }
+        if $copy eq 'NaN';
+
     if ($ENV{BSON_EXTJSON}) {
         my $value = $_[0]->{value}/1.0;
-        return { '$numberDouble' => 'Infinity' }
-            if $value eq 'Inf';
-        return { '$numberDouble' => '-Infinity' }
-            if $value eq '-Inf';
-        return { '$numberDouble' => 'NaN' }
-            if $value eq 'NaN';
-        return { '$numberDouble' => sprintf '%.20G', $value/1.0 };
+        return { '$numberDouble' => "$value" };
     }
 
     croak( "The value '$copy' is illegal in JSON" )

@@ -493,7 +493,9 @@ sub perl_to_extjson {
                         if $data eq '-Inf';
                     return { '$numberDouble' => 'NaN' }
                         if $data eq 'NaN';
-                    return { '$numberDouble' => "$data" };
+                    my $value = "$data";
+                    $value = $value / 1.0;
+                    return { '$numberDouble' => "$value" };
                 }
             }
 
@@ -507,7 +509,7 @@ sub perl_to_extjson {
 
     if (ref $data eq 'HASH') {
         if (exists $data->{'$type'}) {
-            return $data;
+            return { '$type' => $class->perl_to_extjson($data->{'$type'}, $options) };
         }
         for my $key (keys %$data) {
             my $value = $data->{$key};
@@ -636,13 +638,13 @@ sub extjson_to_perl {
         if ( exists $hash->{'$dbPointer'} ) {
             my $hash = $hash->{'$dbPointer'};
             my $id = $hash->{'$id'};
-            $id = BSON->extjson_to_perl($id) if ref($id) eq 'HASH';
+            $id = $class->extjson_to_perl($id) if ref($id) eq 'HASH';
             return BSON::DBPointer->new( '$ref' => $hash->{'$ref'}, '$id' => $id );
         }
 
         if ( exists $hash->{'$ref'} ) {
             my $id = delete $hash->{'$id'};
-            $id = BSON->extjson_to_perl($id) if ref($id) eq 'HASH';
+            $id = $class->extjson_to_perl($id) if ref($id) eq 'HASH';
             return BSON::DBRef->new(
                 '$ref' => delete $hash->{'$ref'},
                 '$id' => $id,

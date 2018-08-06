@@ -31,6 +31,7 @@ has [qw/seconds increment/] => (
 use namespace::clean -except => 'meta';
 
 my $max_int32 = 2147483647;
+my $max_uint32 = 4_294_967_295;
 
 # Support back-compat 'sec' and inc' and legacy constructor shortcut
 sub BUILDARGS {
@@ -62,8 +63,8 @@ sub BUILD {
 
     for my $attr (qw/seconds increment/) {
         my $v = $self->$attr;
-        Carp::croak("BSON::Timestamp 'seconds' must be uint32")
-          unless $v >= 0 && $v <= $max_int32;
+        Carp::croak("BSON::Timestamp '$attr' must be uint32")
+          unless $v >= 0 && $v <= $max_uint32;
     }
 
     return;

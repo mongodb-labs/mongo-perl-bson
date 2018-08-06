@@ -51,6 +51,7 @@ use constant {
     BSON_REGEX => "Z*Z*",
     BSON_JSCODE => "",
     BSON_INT32 => "l<",
+    BSON_UINT32 => "L<",
     BSON_INT64 => "q<",
     BSON_8BYTES => "a8",
     BSON_16BYTES => "a16",
@@ -240,8 +241,10 @@ sub _encode_bson {
 
         # If the type is a subtype of BSON::*, use that instead
         if ( blessed $value ) {
-            my $parent = first { /\ABSON::\w+\z/ } reverse @{mro::get_linear_isa($type)};
-            $type = $parent if defined $parent;
+            if ($type !~ /\ABSON::\w+\z/) {
+                my $parent = first { /\ABSON::\w+\z/ } reverse @{mro::get_linear_isa($type)};
+                $type = $parent if defined $parent;
+            }
         }
 
         # Null
@@ -258,6 +261,12 @@ sub _encode_bson {
                 tie( my %h, 'Tie::IxHash' );
                 %h = map { $i++ => $_ } @$value;
                 $bson .= pack( BSON_TYPE_NAME, 0x04, $utf8_key ) . _encode_bson( \%h, $opt );
+            }
+
+            # special-cased deprecated DBPointer
+            if ($type eq 'BSON::DBPointer') {
+                $bson .= pack( BSON_TYPE_NAME, 0x03, $utf8_key )
+                    . _encode_bson({ '$id' => $value->{id}, '$ref' => $value->{'ref'} }, $opt);
             }
 
             # Document
@@ -753,7 +762,7 @@ sub _decode_bson {
 
         # Timestamp
         elsif ( $type == 0x11 ) {
-            ( my $sec, my $inc, $bson ) = unpack( BSON_INT32.BSON_INT32.BSON_REMAINING, $bson );
+            ( my $sec, my $inc, $bson ) = unpack( BSON_UINT32.BSON_UINT32.BSON_REMAINING, $bson );
             $value = BSON::Timestamp->new( $inc, $sec );
         }
 
