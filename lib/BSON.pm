@@ -459,6 +459,8 @@ environment variable.
 
 sub perl_to_extjson {
     my ($class, $data, $options) = @_;
+    use Data::Dump 'pp';
+    pp '->perl_to_extjson', $data;
 
     local $ENV{BSON_EXTJSON} = !$options->{relaxed}
         if exists $options->{relaxed};
@@ -468,7 +470,11 @@ sub perl_to_extjson {
     }
 
     if (blessed($data) and $data->can('TO_JSON')) {
-        return $data->TO_JSON;
+        warn "BLESSED ".blessed($data)."\n";
+        my $json_data = $data->TO_JSON;
+        warn "TEST", JSON::MaybeXS::encode_json([$json_data]);
+        pp 'JSONDATA', $json_data;
+        return $json_data;
     }
 
     if (not ref $data) {
@@ -508,13 +514,17 @@ sub perl_to_extjson {
     }
 
     if (ref $data eq 'HASH') {
+        use Data::Dump 'pp';
+        pp 'PERL TO EXTJSON HASH', $data;
         if (exists $data->{'$type'}) {
             return { '$type' => $class->perl_to_extjson($data->{'$type'}, $options) };
         }
         for my $key (keys %$data) {
+            warn "perl -> extjson: $key";
             my $value = $data->{$key};
             $data->{$key} = $class->perl_to_extjson($value, $options);
         }
+        pp 'PERL TO EXTJSON DONE', $data;
         return $data;
     }
     
@@ -550,6 +560,8 @@ sub extjson_to_perl {
 
     if (ref $data eq 'HASH') {
         my $hash = $data;
+        use Data::Dump 'pp';
+        pp 'EXTJSON TO PERL HASH', $hash;
 
         if ( exists $hash->{'$oid'} ) {
             return BSON::OID->new( oid => pack( "H*", $hash->{'$oid'} ) );
@@ -671,6 +683,7 @@ sub extjson_to_perl {
         }
 
         for my $key (keys %$hash) {
+            warn "extjson -> perl: $key";
             my $value = $hash->{$key};
             $hash->{$key} = $class->extjson_to_perl($value);
         }

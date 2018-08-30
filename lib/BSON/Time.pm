@@ -222,7 +222,7 @@ format, which represents it as a document as follows:
 =cut
 
 sub TO_JSON {
-    return { '$date' => { '$numberLong' => "$_[0]->{value}"} }
+    warn "EXT", return { '$date' => { '$numberLong' => "$_[0]->{value}"} }
         if $ENV{BSON_EXTJSON};
     my $year = (gmtime($_[0]->epoch))[5];
     $year += 1900;
@@ -230,6 +230,7 @@ sub TO_JSON {
         return { '$date' => $_[0]->as_iso8601 };
     }
     else {
+        warn "NORMAL";
         return { '$date' => { '$numberLong' => "$_[0]->{value}" } };
     }
 }

@@ -7,10 +7,14 @@ use B;
 use Carp qw/croak/;
 use Config;
 use JSON::MaybeXS;
+use JSON::PP;
 
 use base 'Exporter';
-our @EXPORT =
-  qw/sv_type packed_is bytes_are to_extjson to_myjson try_or_fail INT64 INT32 FLOAT/;
+our @EXPORT = qw/
+    sv_type packed_is bytes_are to_extjson to_myjson try_or_fail
+    normalize_json
+    INT64 INT32 FLOAT
+/;
 
 use constant {
     INT64 => 'q<',
@@ -26,10 +30,17 @@ my $json_codec = JSON::MaybeXS->new(
     convert_blessed => 1,
 );
 
+sub normalize_json {
+    my $decoded = $json_codec->decode(shift);
+    use Data::Dump 'pp';
+    pp 'NORMALIZED', $decoded;
+    return $json_codec->encode($decoded);
+}
+
 sub to_extjson {
-    return $json_codec->encode(+{%{ BSON->perl_to_extjson($_[0], {
+    return $json_codec->encode(BSON->perl_to_extjson($_[0], {
         relaxed => $_[1],
-    }) }} );
+    }));
 }
 
 sub to_myjson {

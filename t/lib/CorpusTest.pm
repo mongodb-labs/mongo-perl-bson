@@ -4,18 +4,21 @@ use warnings;
 use Test::More 0.96;
 use Test::Deep qw/!blessed/;
 
+use JSON::PP ();
+BEGIN { $ENV{PERL_JSON_BACKEND} = 'JSON::PP' };
+
 use BSON;
 use BSON::Types ':all';
 use Config;
 use Path::Tiny 0.054; # better basename
-use JSON::MaybeXS;
 use Data::Dumper;
+use Sub::Override;
 
 # from t/lib
 use TestUtils;
 
 use constant {
-    IS_JSON_PP => ref( JSON::MaybeXS->new ) eq 'JSON::PP'
+    IS_JSON_PP => ref( JSON::PP->new ) eq 'JSON::PP'
 };
 
 use base 'Exporter';
@@ -23,6 +26,24 @@ our @EXPORT = qw/test_corpus_file/;
 
 binmode( Test::More->builder->$_, ":utf8" )
   for qw/output failure_output todo_output/;
+
+$ENV{BSON_TEST_SORT_HASH} = 1;
+
+my $orig = JSON::PP->can("object")
+    or die "Unable to find JSON::PP::object to override";
+#my $override = Sub::Override->new('JSON::PP::object' => sub {
+#    tie my %hash, 'Tie::IxHash';
+#    die "TIED";
+#    return $orig->(\%hash);
+#});
+#*JSON::PP::object = sub {
+#    warn "TIED";
+#    tie my %hash, 'Tie::IxHash';
+#    my $value = $orig->(\%hash);
+#    use Data::Dump 'pp';
+#    pp $value;
+#    return $value;
+#};
 
 my $JSON = JSON::MaybeXS->new(ascii => 1);
 
@@ -78,6 +99,8 @@ sub _validity_tests {
     my $deprecated = $json->{deprecated};
 
     for my $case ( @{ $json->{valid} } ) {
+#        next unless $case->{description}
+#            eq 'Regular expression as value of $regex query operator with $options';
         subtest 'case: '.$case->{description} => sub {
             local $Data::Dumper::Useqq = 1;
 
@@ -207,6 +230,7 @@ sub _validity_tests {
             }
 
             if (!$deprecated and $has_relaxed_json) {
+                warn "ROUNDTRIP";
                 _relaxed_extjson_bson_roundtrip(
                     $codec,
                     $relaxed_json,
@@ -258,6 +282,7 @@ sub _relaxed_extjson_bson_roundtrip {
 
     my ($decoded,$bson);
 
+    warn "INPUT $input\n";
     try_or_fail(
         sub { $decoded = $codec->extjson_to_perl( decode_json( $input ) ) },
         "$label: Couldn't decode ExtJSON"
@@ -279,6 +304,7 @@ sub _relaxed_extjson_bson_roundtrip {
         sub { $got = to_extjson( $decoded, 1 ) },
         "$label: Couldn't encode ExtJSON from BSON"
     ) or return;
+    warn "GOT $got";
 
     is($got, $input, $label.': rEJ -> cB -> rEJ');
 }
@@ -310,38 +336,66 @@ sub _bson_to_extjson {
         sub { $decoded = $codec->decode_one( $input ) },
         "$label: Couldn't decode BSON"
     ) or return;
+    
+    use Data::Dump 'pp';
+    pp 'DECODED', $decoded;
 
     try_or_fail(
         sub { $got = to_extjson( $decoded, $relaxed ) },
         "$label: Couldn't encode ExtJSON from BSON"
     ) or return;
+    
+    use Data::Dump 'pp';
+    pp 'GOT', $got;
+
+    $got = normalize_json($got);
+    $expected = normalize_json($expected);
 
     return is($got, $expected, $label);
 }
 
 sub _extjson_to_bson {
     my ($codec, $input, $expected, $label) = @_;
+    warn "*** extjson_to_bson";
 
+    $input = normalize_json($input);
     my $edata = $codec->decode_one($expected);
+    
+    use Data::Dump 'pp';
+    pp 'EDATA', $edata;
+    warn "INPUT $input";
 
     my ($decoded,$got);
 
     local $ENV{BSON_EXTJSON} = 1;
     try_or_fail(
         sub {
-            my $json = decode_json($input);
+#            my $json = decode_json($input);
+            my $json = $JSON->decode($input);
+#            my $json = JSON::PP::decode_json($input);
+            use Data::Dump 'pp';
+            pp 'JSON', $json;
             $json = $codec->extjson_to_perl($json);
+            pp 'PERL', $json;
             $decoded = $json;
         },
         "$label: Couldn't decode ExtJSON"
     ) or return;
+    
+    use Data::Dump 'pp';
+    pp 'DECODED', $decoded;
 
     try_or_fail(
         sub { $got = $codec->encode_one( $decoded ) },
         "$label: Couldn't encode BSON from BSON"
     ) or return;
+    pp 'DECODED', $got;
 
     my $data = $codec->decode_one($got);
+
+    my $unordered_codec = BSON->new( prefer_numeric => 1, wrap_numbers => 1);
+    $expected = $codec->encode_one($unordered_codec->decode_one($expected));
+    $got = $codec->encode_one($unordered_codec->decode_one($got));
 
     return bytes_are( $got, $expected, $label );
 }

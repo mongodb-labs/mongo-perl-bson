@@ -94,11 +94,12 @@ can't otherwise be represented in JSON.
 
 sub TO_JSON {
     if ( $ENV{BSON_EXTJSON} ) {
+        my %data;
+        tie( %data, 'Tie::IxHash' );
+        $data{pattern} = $_[0]->{pattern};
+        $data{options} = $_[0]->{flags};
         return {
-            '$regularExpression' => {
-                pattern => $_[0]->{pattern},
-                options => $_[0]->{flags},
-            },
+            '$regularExpression' => \%data,
         };
     }
 
