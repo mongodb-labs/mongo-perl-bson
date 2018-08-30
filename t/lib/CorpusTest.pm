@@ -64,6 +64,11 @@ sub test_corpus_file {
         return;
     }
 
+    subtest 'JSON::PP Tie::IxHash injection' => sub {
+        my $data = $JSON_PP->decode('{"x":23}');
+        ok defined(tied %$data), 'JSON::PP returns tied objects';
+    };
+
     _validity_tests($json);
     _decode_error_tests($json);
     _parse_error_tests($json);
