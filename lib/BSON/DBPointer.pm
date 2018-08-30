@@ -13,12 +13,19 @@ sub TO_JSON {
     my $self = shift;
 
     if ( $ENV{BSON_EXTJSON} ) {
-        return { '$dbPointer' => {
-            '$ref' => $self->ref,
-            '$id'  => { '$oid' => $self->id },
-            ( defined($self->db) ? ( '$db' => $self->db ) : () ),
-            %{ $self->extra },
-        } };
+
+        my %data;
+        tie( %data, 'Tie::IxHash' );
+        $data{'$ref'} = $self->ref;
+        $data{'$id'} = { '$oid' => $self->id };
+        $data{'$db'} = $self->db
+            if defined $self->db;
+
+        my $extra = $self->extra;
+        $data{$_} = $extra->{$_}
+            for keys %$extra;
+
+        return { '$dbPointer' => \%data };
     }
 
     Carp::croak( "The value '$self' is illegal in JSON" );

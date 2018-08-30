@@ -131,14 +131,22 @@ sub TO_JSON {
 
     if ( $ENV{BSON_EXTJSON} ) {
         my $id = $self->id;
-        $id = { '$numberInt' => "$id" }
-            unless ref $id;
-        return {
-            '$ref' => $self->ref,
-            '$id'  => $id,
-            ( defined($self->db) ? ( '$db' => $self->db ) : () ),
-            %{ $self->extra },
-        };
+        $id = ref($id)
+            ? $id->TO_JSON
+            : { '$numberInt' => "$id" };
+
+        my %data;
+        tie( %data, 'Tie::IxHash' );
+        $data{'$ref'} = $self->ref;
+        $data{'$id'} = $id;
+        $data{'$db'} = $self->db
+            if defined $self->db;
+
+        my $extra = $self->extra;
+        $data{$_} = $extra->{$_}
+            for keys %$extra;
+
+        return \%data;
     }
 
     Carp::croak( "The value '$self' is illegal in JSON" );

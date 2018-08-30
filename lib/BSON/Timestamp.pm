@@ -92,7 +92,11 @@ can't otherwise be represented in JSON.
 
 sub TO_JSON {
     if ( $ENV{BSON_EXTJSON} ) {
-        return { '$timestamp' => { t => $_[0]->{seconds}, i => $_[0]->{increment} } };
+        my %data;
+        tie %data, 'Tie::IxHash';
+        $data{t} = int($_[0]->{seconds});
+        $data{i} = int($_[0]->{increment});
+        return { '$timestamp' => \%data };
     }
 
     Carp::croak( "The value '$_[0]' is illegal in JSON" );

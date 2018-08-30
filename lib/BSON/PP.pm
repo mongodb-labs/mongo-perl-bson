@@ -90,7 +90,6 @@ sub _ixhash_iterator {
     return sub {
         my $k = $started ? $ixhash->NEXTKEY : do { $started++; $ixhash->FIRSTKEY };
         return unless defined $k;
-        warn "IXHASH KEY $k";
         return ($k, $ixhash->FETCH($k));
     }
 }
@@ -99,15 +98,12 @@ sub _ixhash_iterator {
 # want to avoid, so we construct our own iterator for hashes
 sub _hashlike_iterator {
     my $hashlike = shift;
-    use Data::Dump 'pp';
-    pp 'HASHLIKE', $hashlike;
     my @keys = keys %$hashlike;
-    warn "SORTED", @keys = sort @keys
+    @keys = sort @keys
         if $ENV{BSON_TEST_SORT_HASH};
     return sub {
         my $k = shift @keys;
         return unless defined $k;
-        warn "HASHLIKE KEY $k";
         return ($k, $hashlike->{$k});
     }
 }
@@ -271,8 +267,12 @@ sub _encode_bson {
 
             # special-cased deprecated DBPointer
             elsif ($type eq 'BSON::DBPointer') {
+                my %data;
+                tie %data, 'Tie::IxHash';
+                $data{'$ref'} = $value->{'ref'};
+                $data{'$id'} = $value->{id};
                 $bson .= pack( BSON_TYPE_NAME, 0x03, $utf8_key )
-                    . _encode_bson({ '$id' => $value->{id}, '$ref' => $value->{'ref'} }, $opt);
+                    . _encode_bson(\%data, $opt);
             }
 
             # Document
@@ -542,8 +542,6 @@ sub __dump_bson {
 
 sub _decode_bson {
     my ($bson, $opt) = @_;
-    use Data::Dump 'pp';
-    pp 'DECODE OPT', $opt;
     if ( !defined $bson ) {
         croak("Decode argument must not be undef");
     }
@@ -562,7 +560,6 @@ sub _decode_bson {
     my ($type, $key, $value);
     while ($bson) {
         ( $type, $key, $bson ) = unpack( BSON_TYPE_NAME.BSON_REMAINING, $bson );
-        warn "BSON KEY $key";
         utf8::decode($key);
 
         # Check type and truncation

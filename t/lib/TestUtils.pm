@@ -7,7 +7,8 @@ use B;
 use Carp qw/croak/;
 use Config;
 use JSON::MaybeXS;
-use JSON::PP;
+use JSON::PP ();
+use JSON::XS ();
 
 use base 'Exporter';
 our @EXPORT = qw/
@@ -22,29 +23,37 @@ use constant {
     FLOAT => 'd<',
 };
 
-my $json_codec = JSON::MaybeXS->new(
+my $json_codec_pp = JSON::PP->new(
+#my $json_codec = JSON::MaybeXS->new(
     ascii => 1,
     pretty => 0,
-    canonical => 1,
+    #canonical => 1,
+    allow_blessed => 1,
+    convert_blessed => 1,
+);
+
+my $json_codec_xs = JSON::MaybeXS->new(
+#my $json_codec = JSON::MaybeXS->new(
+    ascii => 1,
+    pretty => 0,
+    #canonical => 1,
     allow_blessed => 1,
     convert_blessed => 1,
 );
 
 sub normalize_json {
-    my $decoded = $json_codec->decode(shift);
-    use Data::Dump 'pp';
-    pp 'NORMALIZED', $decoded;
-    return $json_codec->encode($decoded);
+    return shift; # DISABLED
+    my $decoded = $json_codec_pp->decode(shift);
+    return $json_codec_xs->encode($decoded);
 }
 
 sub to_extjson {
-    return $json_codec->encode(BSON->perl_to_extjson($_[0], {
-        relaxed => $_[1],
-    }));
+    my $data = BSON->perl_to_extjson($_[0], { relaxed => $_[1] });
+    return $json_codec_xs->encode($data);
 }
 
 sub to_myjson {
-    return $json_codec->encode( shift );
+    return $json_codec_xs->encode( shift );
 }
 
 sub sv_type {

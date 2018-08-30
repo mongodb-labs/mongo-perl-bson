@@ -47,10 +47,11 @@ sub to_s {
 }
 
 sub TO_JSON {
-    return { '$binary' => {
-        base64 => $_[0]->to_s,
-        subType => $_[0]->{type},
-    } };
+    my %data;
+    tie( %data, 'Tie::IxHash' );
+    $data{base64} = $_[0]->to_s;
+    $data{subType} = $_[0]->{type};
+    return { '$binary' => \%data };
 }
 
 use overload '""' => \&to_s;

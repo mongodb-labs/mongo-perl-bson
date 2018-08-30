@@ -82,14 +82,12 @@ can't otherwise be represented in JSON.
 sub TO_JSON {
     require BSON;
     if ( $ENV{BSON_EXTJSON} ) {
-        return {
-            '$code' => $_[0]->{code},
-            ( defined $_[0]->{scope}
-                ? ( '$scope' => BSON->perl_to_extjson($_[0]->{scope}) )
-#                ? ( '$scope' => $_[0]->{scope} )
-                : ()
-            ),
-        };
+        my %data;
+        tie( %data, 'Tie::IxHash' );
+        $data{'$code'} = $_[0]->{code};
+        $data{'$scope'} = BSON->perl_to_extjson($_[0]->{scope})
+            if defined $_[0]->{scope};
+        return \%data;
     }
 
     Carp::croak( "The value '$_[0]' is illegal in JSON" );
