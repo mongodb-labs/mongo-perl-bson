@@ -5,6 +5,7 @@ use warnings;
 package BSON::DBPointer;
 
 use Moo 2.002004;
+use Tie::IxHash;
 use namespace::clean -except => 'meta';
 
 extends 'BSON::DBRef';

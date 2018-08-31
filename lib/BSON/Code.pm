@@ -9,6 +9,7 @@ use version;
 our $VERSION = 'v1.6.8';
 
 use Carp ();
+use Tie::IxHash;
 
 use Moo;
 
