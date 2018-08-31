@@ -6,7 +6,6 @@ use Test::Deep qw/!blessed/;
 
 use JSON::PP ();
 use JSON::XS ();
-#BEGIN { $ENV{PERL_JSON_BACKEND} = 'JSON::PP' };
 
 use BSON;
 use BSON::Types ':all';
@@ -18,7 +17,7 @@ use Data::Dumper;
 use TestUtils;
 
 use constant {
-    IS_JSON_PP => ref( JSON::PP->new ) eq 'JSON::PP'
+    IS_JSON_PP => ref( JSON::MaybeXS->new ) eq 'JSON::PP'
 };
 
 use base 'Exporter';
@@ -27,6 +26,7 @@ our @EXPORT = qw/test_corpus_file/;
 binmode( Test::More->builder->$_, ":utf8" )
   for qw/output failure_output todo_output/;
 
+# overridden to allow Tie::IxHash hashes to be created by JSON::PP
 my $orig = JSON::PP->can("object")
     or die "Unable to find JSON::PP::object to override";
 do {
@@ -107,13 +107,11 @@ sub _validity_tests {
     my $deprecated = $json->{deprecated};
 
     for my $case ( @{ $json->{valid} } ) {
-#        next unless $case->{description}
-#            eq 'Regular expression as value of $regex query operator with $options';
         subtest 'case: '.$case->{description} => sub {
             local $Data::Dumper::Useqq = 1;
 
             my $desc = $case->{description};
-            ok 1, 'noop';
+            ok 1, 'noop'; # ensure there's a success for empty groups
             my $wrap = $bson_type =~ /\A(?:0x00|0x01|0x10|0x12)\z/;
             my $codec = BSON->new( prefer_numeric => 1, wrap_numbers => $wrap, ordered => 1 );
             my $lossy = $case->{lossy};
@@ -357,7 +355,6 @@ sub _bson_to_extjson {
 sub _extjson_to_bson {
     my ($codec, $input, $expected, $label) = @_;
 
-    $input = normalize_json($input);
     my $edata = $codec->decode_one($expected);
 
     my ($decoded,$got);
@@ -365,9 +362,7 @@ sub _extjson_to_bson {
     local $ENV{BSON_EXTJSON} = 1;
     try_or_fail(
         sub {
-#            my $json = decode_json($input);
             my $json = $JSON_PP->decode($input);
-#            my $json = JSON::PP::decode_json($input);
             $json = $codec->extjson_to_perl($json);
             $decoded = $json;
         },
@@ -380,10 +375,6 @@ sub _extjson_to_bson {
     ) or return;
 
     my $data = $codec->decode_one($got);
-
-    #my $unordered_codec = BSON->new( prefer_numeric => 1, wrap_numbers => 1);
-    #$expected = $codec->encode_one($unordered_codec->decode_one($expected));
-    #$got = $codec->encode_one($unordered_codec->decode_one($got));
 
     return bytes_are( $got, $expected, $label );
 }

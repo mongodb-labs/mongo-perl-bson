@@ -24,25 +24,20 @@ use constant {
 };
 
 my $json_codec_pp = JSON::PP->new(
-#my $json_codec = JSON::MaybeXS->new(
     ascii => 1,
     pretty => 0,
-    #canonical => 1,
     allow_blessed => 1,
     convert_blessed => 1,
 );
 
 my $json_codec_xs = JSON::MaybeXS->new(
-#my $json_codec = JSON::MaybeXS->new(
     ascii => 1,
     pretty => 0,
-    #canonical => 1,
     allow_blessed => 1,
     convert_blessed => 1,
 );
 
 sub normalize_json {
-    return shift; # DISABLED
     my $decoded = $json_codec_pp->decode(shift);
     return $json_codec_xs->encode($decoded);
 }
