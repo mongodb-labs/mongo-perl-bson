@@ -541,7 +541,7 @@ sub perl_to_extjson {
     my $data = $bson->extjson_to_perl($ext);
 
 Takes an Extended JSON data structure and inflates it into a Perl
-specific data structure. Not that you have to decode the JSON string
+specific data structure. Note that you have to decode the JSON string
 manually beforehand.
 
 =cut
