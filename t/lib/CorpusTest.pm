@@ -227,6 +227,7 @@ sub _validity_tests_non_deprecated {
             sub {
                 my ($got) = @_;
                 $$got =~ s{e\+018}{e\+18}g;
+                $$got =~ s{("\$numberDouble"):"-0"}{$1:"0"}g;
             },
         );
     };
