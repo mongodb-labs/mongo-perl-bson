@@ -517,9 +517,6 @@ sub perl_to_extjson {
     }
 
     if (ref $data eq 'HASH') {
-        if (exists $data->{'$type'}) {
-            return { '$type' => $class->perl_to_extjson($data->{'$type'}, $options) };
-        }
         for my $key (keys %$data) {
             my $value = $data->{$key};
             $data->{$key} = $class->perl_to_extjson($value, $options);
@@ -562,35 +559,34 @@ sub extjson_to_perl {
     my ($class, $data) = @_;
 
     if (ref $data eq 'HASH') {
-        my $hash = $data;
 
-        if ( exists $hash->{'$oid'} ) {
-            return BSON::OID->new( oid => pack( "H*", $hash->{'$oid'} ) );
+        if ( exists $data->{'$oid'} ) {
+            return BSON::OID->new( oid => pack( "H*", $data->{'$oid'} ) );
         }
 
-        if ( exists $hash->{'$numberInt'} ) {
-            return BSON::Int32->new( value => $hash->{'$numberInt'} );
+        if ( exists $data->{'$numberInt'} ) {
+            return BSON::Int32->new( value => $data->{'$numberInt'} );
         }
 
-        if ( exists $hash->{'$numberLong'} ) {
+        if ( exists $data->{'$numberLong'} ) {
             if (HAS_INT64) {
-                return BSON::Int64->new( value => $hash->{'$numberLong'} );
+                return BSON::Int64->new( value => $data->{'$numberLong'} );
             }
             else {
-                return BSON::Int64->new( value => Math::BigInt->new($hash->{'$numberLong'}) );
+                return BSON::Int64->new( value => Math::BigInt->new($data->{'$numberLong'}) );
             }
         }
 
-        if ( exists $hash->{'$binary'} ) {
+        if ( exists $data->{'$binary'} ) {
             require MIME::Base64;
-            if (exists $hash->{'$type'}) {
+            if (exists $data->{'$type'}) {
                 return BSON::Bytes->new(
-                    data    => MIME::Base64::decode_base64($hash->{'$binary'}),
-                    subtype => hex( $hash->{'$type'} || 0 ),
+                    data    => MIME::Base64::decode_base64($data->{'$binary'}),
+                    subtype => hex( $data->{'$type'} || 0 ),
                 );
             }
             else {
-                my $value = $hash->{'$binary'};
+                my $value = $data->{'$binary'};
                 return BSON::Bytes->new(
                     data    => MIME::Base64::decode_base64($value->{base64}),
                     subtype => hex( $value->{subType} || 0 ),
@@ -598,99 +594,99 @@ sub extjson_to_perl {
             }
         }
 
-        if ( exists $hash->{'$date'} ) {
-            my $v = $hash->{'$date'};
+        if ( exists $data->{'$date'} ) {
+            my $v = $data->{'$date'};
             $v = ref($v) eq 'HASH' ? $class->extjson_to_perl($v) : _iso8601_to_epochms($v);
             return BSON::Time->new( value => $v );
         }
 
-        if ( exists $hash->{'$minKey'} ) {
+        if ( exists $data->{'$minKey'} ) {
             return BSON::MinKey->new;
         }
 
-        if ( exists $hash->{'$maxKey'} ) {
+        if ( exists $data->{'$maxKey'} ) {
             return BSON::MaxKey->new;
         }
 
-        if ( exists $hash->{'$timestamp'} ) {
+        if ( exists $data->{'$timestamp'} ) {
             return BSON::Timestamp->new(
-                seconds   => $hash->{'$timestamp'}{t},
-                increment => $hash->{'$timestamp'}{i},
+                seconds   => $data->{'$timestamp'}{t},
+                increment => $data->{'$timestamp'}{i},
             );
         }
 
-        if ( exists $hash->{'$regex'} and not ref $hash->{'$regex'}) {
+        if ( exists $data->{'$regex'} and not ref $data->{'$regex'}) {
             return BSON::Regex->new(
-                pattern => $hash->{'$regex'},
-                ( exists $hash->{'$options'} ? ( flags => $hash->{'$options'} ) : () ),
+                pattern => $data->{'$regex'},
+                ( exists $data->{'$options'} ? ( flags => $data->{'$options'} ) : () ),
             );
         }
 
-        if ( exists $hash->{'$regularExpression'} ) {
-            my $value = $hash->{'$regularExpression'};
+        if ( exists $data->{'$regularExpression'} ) {
+            my $value = $data->{'$regularExpression'};
             return BSON::Regex->new(
                 pattern => $value->{pattern},
                 ( exists $value->{options} ? ( flags => $value->{options} ) : () ),
             );
         }
 
-        if ( exists $hash->{'$code'} ) {
+        if ( exists $data->{'$code'} ) {
             return BSON::Code->new(
-                code => $hash->{'$code'},
-                ( exists $hash->{'$scope'}
-                    ? ( scope => $class->extjson_to_perl($hash->{'$scope'}) )
+                code => $data->{'$code'},
+                ( exists $data->{'$scope'}
+                    ? ( scope => $class->extjson_to_perl($data->{'$scope'}) )
                     : ()
                 ),
             );
         }
 
-        if ( exists $hash->{'$undefined'} ) {
+        if ( exists $data->{'$undefined'} ) {
             return undef; ## no critic
         }
 
-        if ( exists $hash->{'$dbPointer'} ) {
-            my $hash = $hash->{'$dbPointer'};
-            my $id = $hash->{'$id'};
+        if ( exists $data->{'$dbPointer'} ) {
+            my $data = $data->{'$dbPointer'};
+            my $id = $data->{'$id'};
             $id = $class->extjson_to_perl($id) if ref($id) eq 'HASH';
             return BSON::DBPointer->new(
-                '$ref' => $hash->{'$ref'},
+                '$ref' => $data->{'$ref'},
                 '$id' => $id,
             );
         }
 
-        if ( exists $hash->{'$ref'} ) {
-            my $id = delete $hash->{'$id'};
+        if ( exists $data->{'$ref'} ) {
+            my $id = delete $data->{'$id'};
             $id = $class->extjson_to_perl($id) if ref($id) eq 'HASH';
             return BSON::DBRef->new(
-                '$ref' => delete $hash->{'$ref'},
+                '$ref' => delete $data->{'$ref'},
                 '$id' => $id,
-                '$db' => delete $hash->{'$db'},
-                %$hash, # extra
+                '$db' => delete $data->{'$db'},
+                %$data, # extra
             );
         }
 
-        if ( exists $hash->{'$numberDecimal'} ) {
-            return BSON::Decimal128->new( value => $hash->{'$numberDecimal'} );
+        if ( exists $data->{'$numberDecimal'} ) {
+            return BSON::Decimal128->new( value => $data->{'$numberDecimal'} );
         }
 
         # Following extended JSON is non-standard
 
-        if ( exists $hash->{'$numberDouble'} ) {
-            if ( $hash->{'$numberDouble'} eq '-0' && $] lt '5.014' && ! HAS_LD ) {
-                $hash->{'$numberDouble'} = '-0.0';
+        if ( exists $data->{'$numberDouble'} ) {
+            if ( $data->{'$numberDouble'} eq '-0' && $] lt '5.014' && ! HAS_LD ) {
+                $data->{'$numberDouble'} = '-0.0';
             }
-            return BSON::Double->new( value => $hash->{'$numberDouble'} );
+            return BSON::Double->new( value => $data->{'$numberDouble'} );
         }
 
-        if ( exists $hash->{'$symbol'} ) {
-            return BSON::Symbol->new(value => $hash->{'$symbol'});
+        if ( exists $data->{'$symbol'} ) {
+            return BSON::Symbol->new(value => $data->{'$symbol'});
         }
 
-        for my $key (keys %$hash) {
-            my $value = $hash->{$key};
-            $hash->{$key} = $class->extjson_to_perl($value);
+        for my $key (keys %$data) {
+            my $value = $data->{$key};
+            $data->{$key} = $class->extjson_to_perl($value);
         }
-        return $hash;
+        return $data;
     }
     
     if (ref $data eq 'ARRAY') {
