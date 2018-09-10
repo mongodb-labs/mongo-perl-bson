@@ -462,6 +462,8 @@ sub perl_to_extjson {
 
     local $ENV{BSON_EXTJSON} = !$options->{relaxed}
         if exists $options->{relaxed};
+    local $ENV{BSON_EXTJSON_RELAXED} = $options->{relaxed}
+        if exists $options->{relaxed};
 
     if (not defined $data) {
         return undef;
