@@ -442,8 +442,8 @@ sub inflate_extjson {
 =method perl_to_extjson
 
     use JSON::MaybeXS;
-    my $ext = $bson->perl_to_extjson($data);
-    my $json = encode_json($ext, \%options);
+    my $ext = $bson->perl_to_extjson($data, \%options);
+    my $json = encode_json($ext);
 
 Takes a perl data structure and turns it into an Extended JSON
 structure. Note that the structure will still have to be serialized.
@@ -543,6 +543,10 @@ sub perl_to_extjson {
 Takes an Extended JSON data structure and inflates it into a Perl
 specific data structure. Note that you have to decode the JSON string
 manually beforehand.
+
+Canonically specified numerical values like C<{"$numberInt":"23"}> will
+be inflated into their respective C<BSON::*> types. Plain numeric values
+will be left as-is.
 
 =cut
 
