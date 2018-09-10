@@ -57,6 +57,8 @@ sub test_corpus_file {
     my $f = path( "corpus", $file );
     my $base = $f->basename;
 
+    $ENV{BSON_EXTJSON} = 1;
+
     my $json = eval { decode_json( $f->slurp ) };
     if ( my $err = $@ ) {
         fail("$base failed to load");
@@ -72,25 +74,6 @@ sub test_corpus_file {
     _validity_tests($json);
     _decode_error_tests($json);
     _parse_error_tests($json);
-
-    if ( $json->{deprecated} ) {
-        subtest 'deprecated' => sub {
-            $f = path( "corpus", "deprecated", $file );
-            $json = eval { decode_json( $f->slurp ) };
-            if ( my $err = $@ ) {
-                fail("deprecaed/$base failed to load");
-                diag($err);
-                return;
-            }
-
-            _validity_tests($json);
-            _decode_error_tests($json);
-            _parse_error_tests($json);
-        };
-    }
-    else {
-        return;
-    }
 }
 
 sub _validity_tests {
@@ -110,13 +93,11 @@ sub _validity_tests {
         subtest 'case: '.$case->{description} => sub {
             local $Data::Dumper::Useqq = 1;
 
-            my $desc = $case->{description};
-            ok 1, 'noop'; # ensure there's a success for empty groups
             my $wrap = $bson_type =~ /\A(?:0x00|0x01|0x10|0x12)\z/;
             my $codec = BSON->new( prefer_numeric => 1, wrap_numbers => $wrap, ordered => 1 );
             my $lossy = $case->{lossy};
 
-            my $canonical_bson = $case->{canonical_bson} || $case->{bson};
+            my $canonical_bson = $case->{canonical_bson};
             my $converted_bson = $case->{converted_bson};
             my $degenerate_bson = $case->{degenerate_bson};
 
@@ -148,109 +129,144 @@ sub _validity_tests {
                 '$desc: normalizing relaxed extjson',
             );
 
-            my $has_canonical_bson = defined $canonical_bson;
-            my $has_converted_bson = defined $converted_bson;
-            my $has_degenerate_bson = defined $degenerate_bson;
+            my $spec = {
+                canonical_bson => $canonical_bson,
+                converted_bson => $converted_bson,
+                degenerate_bson => $degenerate_bson,
+                canonical_json => $canonical_json,
+                converted_json => $converted_json,
+                degenerate_json => $degenerate_json,
+                relaxed_json => $relaxed_json,
+                lossy => $lossy,
+            };
 
-            my $has_canonical_json = defined $canonical_json;
-            my $has_converted_json = defined $converted_json;
-            my $has_relaxed_json = defined $relaxed_json;
-            my $has_degenerate_json = defined $degenerate_json;
-
-            if (!$deprecated and $has_canonical_bson and $has_canonical_json) {
-                local $ENV{BSON_EXTJSON} = 1;
-
-                # localized variable
-                my $canonical_json = $canonical_json;
-
-                # fixes for digit tests
-                $canonical_json =~ s{("\$numberDouble"):"-1.0"}{$1:"-1"}g;
-                $canonical_json =~ s{("\$numberDouble"):"1.0"}{$1:"1"}g;
-                $canonical_json =~ s{("\$numberDouble"):"-0.0"}{$1:"0"}g;
-                $canonical_json =~ s{("\$numberDouble"):"0.0"}{$1:"0"}g;
-                $canonical_json =~ s{-1\.23456789012345677E\+18}{-1.23456789012346e+18}g;
-                $canonical_json =~ s{1\.23456789012345677E\+18}{1.23456789012346e+18}g;
-
-                _bson_to_extjson(
-                    $codec,
-                    $canonical_bson,
-                    $canonical_json,
-                    'cB -> cEJ',
-                    0,
-                );
+            if (!$deprecated) {
+                _validity_tests_non_deprecated($codec, $spec);
             }
 
-            if (!$deprecated and $has_canonical_bson and $has_relaxed_json) {
-                my $relaxed_json = $relaxed_json;
-                $relaxed_json =~ s{:-1234567890123456768\}}{:-1.23456789012346e+18\}}g;
-                $relaxed_json =~ s{:1234567890123456768\}}{:1.23456789012346e+18\}}g;
-                _bson_to_extjson(
-                    $codec,
-                    $canonical_bson,
-                    $relaxed_json,
-                    'cB -> rEJ',
-                    1,
-                );
-            }
-
-            if ($has_canonical_json and $has_canonical_bson) {
-                if (!$lossy) {
-                    _extjson_to_bson(
-                        $codec,
-                        $canonical_json,
-                        ($deprecated && $has_converted_bson)
-                            ? $converted_bson
-                            : $canonical_bson,
-                        'cEJ -> cB',
-                    );
-                }
-            }
-
-            if (!$deprecated and $has_degenerate_bson and $has_canonical_json) {
-                _bson_to_extjson(
-                    $codec,
-                    $degenerate_bson,
-                    $canonical_json,
-                    'dB -> cEJ',
-                );
-            }
-
-            if (!$deprecated and $has_degenerate_bson and $has_relaxed_json) {
-                _bson_to_extjson(
-                    $codec,
-                    $degenerate_bson,
-                    $relaxed_json,
-                    'dB -> rEJ',
-                    1,
-                );
-            }
-
-            if ($has_degenerate_json and $has_canonical_bson) {
-                if (!$lossy) {
-                    _extjson_to_bson(
-                        $codec,
-                        $degenerate_json,
-                        ($deprecated && $has_converted_bson)
-                            ? $converted_bson
-                            : $canonical_bson,
-                        'dEJ -> cB',
-                    );
-                }
-            }
-
-            if (!$deprecated and $has_relaxed_json) {
-                $relaxed_json =~ s{\{"d":-0\}}{\{"d":0\}}g;
-                _relaxed_extjson_bson_roundtrip(
-                    $codec,
-                    $relaxed_json,
-                    'roundtrip',
-                );
-            }
-
+            _validity_tests_all($codec, $spec, $deprecated);
         };
     }
 
     return;
+}
+
+# deprecated and non-deprecated
+sub _validity_tests_all {
+    my ($codec, $spec, $deprecated) = @_;
+
+    my ($canonical_bson, $degenerate_bson, $converted_bson)
+        = @{$spec}{qw( canonical_bson degenerate_bson converted_bson )};
+
+    my ($canonical_json, $degenerate_json, $relaxed_json)
+        = @{$spec}{qw( canonical_json degenerate_json relaxed_json )};
+
+    my $lossy = $spec->{lossy};
+
+    _bson_to_bson(
+        $codec,
+        $canonical_bson,
+        defined($converted_bson) ? $converted_bson : $canonical_bson,
+        'cB/B -> cB',
+    );
+
+    if (!$lossy) {
+        _extjson_to_bson(
+            $codec,
+            $canonical_json,
+            ($deprecated && defined $converted_bson)
+                ? $converted_bson
+                : $canonical_bson,
+            'cEJ -> cB',
+        );
+    }
+
+    if (defined $degenerate_json) {
+        if (!$lossy) {
+            _extjson_to_bson(
+                $codec,
+                $degenerate_json,
+                ($deprecated && defined $converted_bson)
+                    ? $converted_bson
+                    : $canonical_bson,
+                'dEJ -> cB',
+            );
+        }
+    }
+}
+
+sub _validity_tests_non_deprecated {
+    my ($codec, $spec) = @_;
+
+    my ($canonical_bson, $degenerate_bson)
+        = @{$spec}{qw( canonical_bson degenerate_bson )};
+
+    my ($canonical_json, $degenerate_json, $relaxed_json)
+        = @{$spec}{qw( canonical_json degenerate_json relaxed_json )};
+
+    # limited scope for adjusted json data
+    do {
+
+        # localized variable
+        my $canonical_json = $canonical_json;
+
+        # fixes for digit tests
+        $canonical_json =~ s{("\$numberDouble"):"-1.0"}{$1:"-1"}g;
+        $canonical_json =~ s{("\$numberDouble"):"1.0"}{$1:"1"}g;
+        $canonical_json =~ s{("\$numberDouble"):"-0.0"}{$1:"0"}g;
+        $canonical_json =~ s{("\$numberDouble"):"0.0"}{$1:"0"}g;
+        $canonical_json =~ s{-1\.23456789012345677E\+18}{-1.23456789012346e+18}g;
+        $canonical_json =~ s{1\.23456789012345677E\+18}{1.23456789012346e+18}g;
+
+        _bson_to_extjson(
+            $codec,
+            $canonical_bson,
+            $canonical_json,
+            'cB -> cEJ',
+            0,
+        );
+    };
+
+    if (defined $relaxed_json) {
+        my $relaxed_json = $relaxed_json;
+        $relaxed_json =~ s{:-1234567890123456768\}}{:-1.23456789012346e+18\}}g;
+        $relaxed_json =~ s{:1234567890123456768\}}{:1.23456789012346e+18\}}g;
+        _bson_to_extjson(
+            $codec,
+            $canonical_bson,
+            $relaxed_json,
+            'cB -> rEJ',
+            1,
+        );
+    }
+
+    if (defined $relaxed_json) {
+        $relaxed_json =~ s{\{"d":-0\}}{\{"d":0\}}g;
+        _relaxed_extjson_bson_roundtrip(
+            $codec,
+            $relaxed_json,
+            'roundtrip',
+        );
+    }
+
+    if (defined $degenerate_bson) {
+        _bson_to_extjson(
+            $codec,
+            $degenerate_bson,
+            $canonical_json,
+            'dB -> cEJ',
+        );
+    }
+
+    if (defined $degenerate_bson and defined $relaxed_json) {
+        _bson_to_extjson(
+            $codec,
+            $degenerate_bson,
+            $relaxed_json,
+            'dB -> rEJ',
+            1,
+        );
+    }
 }
 
 # this handle special cases that just don't work will in perl
@@ -355,8 +371,6 @@ sub _bson_to_extjson {
 sub _extjson_to_bson {
     my ($codec, $input, $expected, $label) = @_;
 
-    my $edata = $codec->decode_one($expected);
-
     my ($decoded,$got);
 
     local $ENV{BSON_EXTJSON} = 1;
@@ -373,8 +387,6 @@ sub _extjson_to_bson {
         sub { $got = $codec->encode_one( $decoded ) },
         "$label: Couldn't encode BSON from BSON"
     ) or return;
-
-    my $data = $codec->decode_one($got);
 
     return bytes_are( $got, $expected, $label );
 }
