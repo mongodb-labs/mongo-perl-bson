@@ -236,6 +236,7 @@ sub _validity_tests_non_deprecated {
         $relaxed_json =~ s{:-1234567890123456768\}}{:-1.23456789012346e+18\}}g;
         $relaxed_json =~ s{:1234567890123456768\}}{:1.23456789012346e+18\}}g;
         $relaxed_json =~ s[{"d":-0.0}][{"d":0.0}]g;
+        $relaxed_json =~ s[{"d":-0}][{"d":0}]g;
         _bson_to_extjson(
             $codec,
             $canonical_bson,
@@ -246,6 +247,7 @@ sub _validity_tests_non_deprecated {
                 my ($got) = @_;
                 $$got =~ s{e\+018}{e\+18}g;
                 $$got =~ s[{"d":-0.0}][{"d":0.0}]g;
+                $$got =~ s[{"d":-0}][{"d":0}]g;
             },
         );
     }
