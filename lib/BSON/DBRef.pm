@@ -12,6 +12,8 @@ use Tie::IxHash;
 use Moo 2.002004;
 use namespace::clean -except => 'meta';
 
+use BSON ();
+
 =attr id
 
 Required. The C<_id> value of the referenced document. If the
@@ -131,9 +133,13 @@ sub TO_JSON {
 
     if ( $ENV{BSON_EXTJSON} ) {
         my $id = $self->id;
-        $id = ref($id)
-            ? $id->TO_JSON
-            : { '$numberInt' => "$id" };
+
+        if (ref $id) {
+            $id = $id->TO_JSON;
+        }
+        else {
+            $id = BSON->perl_to_extjson($id);
+        }
 
         my %data;
         tie( %data, 'Tie::IxHash' );
