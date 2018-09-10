@@ -8,7 +8,7 @@ use Carp qw/croak/;
 use Config;
 use JSON::MaybeXS;
 use JSON::PP ();
-use JSON::XS ();
+use Cpanel::JSON::XS ();
 
 use base 'Exporter';
 our @EXPORT = qw/
@@ -23,19 +23,17 @@ use constant {
     FLOAT => 'd<',
 };
 
-my $json_codec_pp = JSON::PP->new(
-    ascii => 1,
-    pretty => 0,
-    allow_blessed => 1,
-    convert_blessed => 1,
-);
+my $json_codec_pp = JSON::PP
+    ->new
+    ->ascii
+    ->allow_blessed
+    ->convert_blessed;
 
-my $json_codec_xs = JSON::MaybeXS->new(
-    ascii => 1,
-    pretty => 0,
-    allow_blessed => 1,
-    convert_blessed => 1,
-);
+my $json_codec_xs = Cpanel::JSON::XS
+    ->new
+    ->ascii
+    ->allow_blessed
+    ->convert_blessed;
 
 sub normalize_json {
     my $decoded = $json_codec_pp->decode(shift);

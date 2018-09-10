@@ -5,7 +5,7 @@ use Test::More 0.96;
 use Test::Deep qw/!blessed/;
 
 use JSON::PP ();
-use JSON::XS ();
+use Cpanel::JSON::XS ();
 
 use BSON;
 use BSON::Types ':all';
@@ -38,17 +38,17 @@ do {
     };
 };
 
-my $JSON_PP = JSON::PP->new(
-    ascii => 1,
-    allow_blessed => 1,
-    convert_blessed => 1,
-);
+my $JSON_PP = JSON::PP
+    ->new
+    ->ascii
+    ->allow_blessed
+    ->convert_blessed;
 
-my $JSON_XS = JSON::MaybeXS->new(
-    ascii => 1,
-    allow_blessed => 1,
-    convert_blessed => 1,
-);
+my $JSON_XS = Cpanel::JSON::XS
+    ->new
+    ->ascii
+    ->allow_blessed
+    ->convert_blessed;
 
 sub test_corpus_file {
     my ($file) = @_;
