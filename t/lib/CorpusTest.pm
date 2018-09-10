@@ -224,6 +224,10 @@ sub _validity_tests_non_deprecated {
             $canonical_json,
             'cB -> cEJ',
             0,
+            sub {
+                my ($got) = @_;
+                $$got =~ s{e\+018}{e\+18}g;
+            },
         );
     };
 
@@ -231,12 +235,18 @@ sub _validity_tests_non_deprecated {
         my $relaxed_json = $relaxed_json;
         $relaxed_json =~ s{:-1234567890123456768\}}{:-1.23456789012346e+18\}}g;
         $relaxed_json =~ s{:1234567890123456768\}}{:1.23456789012346e+18\}}g;
+        $relaxed_json =~ s[{"d":-0.0}][{"d":0.0}]g;
         _bson_to_extjson(
             $codec,
             $canonical_bson,
             $relaxed_json,
             'cB -> rEJ',
             1,
+            sub {
+                my ($got) = @_;
+                $$got =~ s{e\+018}{e\+18}g;
+                $$got =~ s[{"d":-0.0}][{"d":0.0}]g;
+            },
         );
     }
 
@@ -351,7 +361,7 @@ sub _bson_to_bson {
 }
 
 sub _bson_to_extjson {
-    my ($codec, $input, $expected, $label, $relaxed) = @_;
+    my ($codec, $input, $expected, $label, $relaxed, $adjust) = @_;
 
     my ($decoded,$got);
 
@@ -364,6 +374,9 @@ sub _bson_to_extjson {
         sub { $got = to_extjson( $decoded, $relaxed ) },
         "$label: Couldn't encode ExtJSON from BSON"
     ) or return;
+
+    $adjust->(\$got)
+        if defined $adjust;
 
     return is($got, $expected, $label);
 }
