@@ -457,6 +457,7 @@ sub _normalize_numbers {
 
     $value =~ s{"0.0"}{"0"}g;
     $value =~ s{"-0.0"}{"0"}g;
+    $value =~ s{"-0"}{"0"}g;
     $value =~ s{"1.0"}{"1"}g;
     $value =~ s{"-1.0"}{"-1"}g;
 
