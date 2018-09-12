@@ -81,8 +81,10 @@ will be returned as a Math::BigInt object, which will
 fail to serialize unless a C<TO_JSON> method is defined
 for that or in package C<universal>.
 
-If the C<BSON_EXTJSON> option is true, it will instead
-be compatible with MongoDB's L<extended JSON|https://docs.mongodb.org/manual/reference/mongodb-extended-json/>
+If the C<BSON_EXTJSON> environment variable is true and the
+C<BSON_EXTJSON_RELAXED> environment variable is false, returns a hashref
+compatible with
+MongoDB's L<extended JSON|https://github.com/mongodb/specifications/blob/master/source/extended-json.rst>
 format, which represents it as a document as follows:
 
     {"$numberLong" : "223372036854775807"}
@@ -90,7 +92,7 @@ format, which represents it as a document as follows:
 =cut
 
 sub TO_JSON {
-    return int($_[0]->{value}) unless $ENV{BSON_EXTJSON};
+    return int($_[0]->{value}) if ! $ENV{BSON_EXTJSON} || $ENV{BSON_EXTJSON_RELAXED};
     return { '$numberLong' => "$_[0]->{value}" };
 }
 

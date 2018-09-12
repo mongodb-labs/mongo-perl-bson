@@ -406,17 +406,12 @@ method that returns an Object ID of whatever type is appropriate.
 
 sub create_oid { return BSON::OID->new }
 
-=method inflate_extjson
+=method inflate_extjson (DEPRECATED)
 
-    use JSON::MaybeXS;
-    $data = decode_json( $json_string );
-    $bson->inflate_extjson( $data );
+This legacy method does not follow the L<MongoDB Extended JSON|https://github.com/mongodb/specifications/blob/master/source/extended-json.rst>
+specification.
 
-Given a hash reference, this method walks the hash, replacing any
-L<MongoDB extended JSON|https://docs.mongodb.org/manual/reference/mongodb-extended-json/>
-items with BSON type-wrapper equivalents.  Additionally, any JSON
-boolean objects (e.g. C<JSON::PP::Boolean>) will be replaced with
-L<boolean.pm|boolean> true or false values.
+Use L</extjson_to_perl> instead.
 
 =cut
 
@@ -442,18 +437,19 @@ sub inflate_extjson {
 =method perl_to_extjson
 
     use JSON::MaybeXS;
-    my $ext = $bson->perl_to_extjson($data, \%options);
+    my $ext = BSON->perl_to_extjson($data, \%options);
     my $json = encode_json($ext);
 
-Takes a perl data structure and turns it into an Extended JSON
+Takes a perl data structure (i.e. hashref) and turns it into an
+L<MongoDB Extended JSON|https://github.com/mongodb/specifications/blob/master/source/extended-json.rst>
 structure. Note that the structure will still have to be serialized.
 
 Possible options are:
 
 =for :list
-* C<relaxed> A boolean indicating if relaxed extended JSON should
-be generated. If not set, the value is defaulted to the C<BSON_EXTJSON>
-environment variable.
+* C<relaxed> A boolean indicating if "relaxed extended JSON" should
+be generated. If not set, the default value is taken from the
+C<BSON_EXTJSON_RELAXED> environment variable.
 
 =cut
 
@@ -466,10 +462,9 @@ my $is_nan = $use_win32_specials ? qr/^-?1.\#(?:IND|QNAN)/i : qr/^-?nan/i;
 sub perl_to_extjson {
     my ($class, $data, $options) = @_;
 
-    local $ENV{BSON_EXTJSON} = !$options->{relaxed}
-        if exists $options->{relaxed};
-    local $ENV{BSON_EXTJSON_RELAXED} = $options->{relaxed}
-        if exists $options->{relaxed};
+    local $ENV{BSON_EXTJSON} = 1;
+    local $ENV{BSON_EXTJSON_RELAXED} = $ENV{BSON_EXTJSON_RELAXED};
+    $ENV{BSON_EXTJSON_RELAXED} = $options->{relaxed};
 
     if (not defined $data) {
         return undef; ## no critic
@@ -482,34 +477,33 @@ sub perl_to_extjson {
 
     if (not ref $data) {
 
-        if (!$ENV{BSON_EXTJSON}) {
-            return $data;
-        }
-        else {
-            if (looks_like_number($data)) {
-                if ($data =~ m{\A-?[0-9_]+\z}) {
-                    if ($data <= $max_int32) {
-                        return { '$numberInt' => "$data" };
-                    }
-                    else {
-                        return { '$numberLong' => "$data" };
-                    }
-                }
-                else {
-                    return { '$numberDouble' => 'Infinity' }
-                        if $data =~ $is_inf;
-                    return { '$numberDouble' => '-Infinity' }
-                        if $data =~ $is_ninf;
-                    return { '$numberDouble' => 'NaN' }
-                        if $data =~ $is_nan;
-                    my $value = "$data";
-                    $value = $value / 1.0;
-                    return { '$numberDouble' => "$value" };
-                }
+        if (looks_like_number($data)) {
+            if ($ENV{BSON_EXTJSON_RELAXED}) {
+                return $data;
             }
 
-            return $data;
+            if ($data =~ m{\A-?[0-9_]+\z}) {
+                if ($data <= $max_int32) {
+                    return { '$numberInt' => "$data" };
+                }
+                else {
+                    return { '$numberLong' => "$data" };
+                }
+            }
+            else {
+                return { '$numberDouble' => 'Infinity' }
+                    if $data =~ $is_inf;
+                return { '$numberDouble' => '-Infinity' }
+                    if $data =~ $is_ninf;
+                return { '$numberDouble' => 'NaN' }
+                    if $data =~ $is_nan;
+                my $value = "$data";
+                $value = $value / 1.0;
+                return { '$numberDouble' => "$value" };
+            }
         }
+
+        return $data;
     }
 
     if (boolean::isBoolean($data)) {
@@ -523,7 +517,7 @@ sub perl_to_extjson {
         }
         return $data;
     }
-    
+
     if (ref $data eq 'ARRAY') {
         for my $index (0 .. $#$data) {
             my $value = $data->[$index];
@@ -545,18 +539,22 @@ sub perl_to_extjson {
     my $ext = decode_json($json);
     my $data = $bson->extjson_to_perl($ext);
 
-Takes an Extended JSON data structure and inflates it into a Perl
-specific data structure. Note that you have to decode the JSON string
-manually beforehand.
+Takes an
+L<MongoDB Extended JSON|https://github.com/mongodb/specifications/blob/master/source/extended-json.rst>
+data structure and inflates it into a Perl data structure. Note that
+you have to decode the JSON string manually beforehand.
 
 Canonically specified numerical values like C<{"$numberInt":"23"}> will
-be inflated into their respective C<BSON::*> types. Plain numeric values
-will be left as-is.
+be inflated into their respective C<BSON::*> wrapper types. Plain numeric
+values will be left as-is.
 
 =cut
 
 sub extjson_to_perl {
     my ($class, $data) = @_;
+    # top level keys are never extended JSON elements, so we wrap the
+    # _extjson_to_perl inflater so it applies only to values, not the
+    # original data structure
     for my $key (keys %$data) {
         my $value = $data->{$key};
         $data->{$key} = $class->_extjson_to_perl($value);
@@ -697,7 +695,7 @@ sub _extjson_to_perl {
         }
         return $data;
     }
-    
+
     if (ref $data eq 'ARRAY') {
         for my $index (0 .. $#$data) {
             my $value = $data->[$index];
@@ -1113,6 +1111,11 @@ Threads are never recommended in Perl, but this module is thread safe.
   as a module name.  The module will be loaded and used as the BSON
   backend implementation.  It must implement the same API as
   C<BSON::PP>.
+* BSON_EXTJSON - if set, serializing BSON type wrappers via C<TO_JSON>
+  will produce Extended JSON v2 output.
+* BSON_EXTJSON_RELAXED - if producing Extended JSON output, if this
+  is true, values will use the "Relaxed" form of Extended JSON, which
+  sacrifices type round-tripping for improved human readability.
 
 =head1 SEMANTIC VERSIONING SCHEME
 

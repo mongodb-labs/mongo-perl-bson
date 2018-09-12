@@ -203,7 +203,7 @@ sub _get_pid {
 Returns a string for this OID, with the OID given as 24 hex digits.
 
 If the C<BSON_EXTJSON> option is true, it will instead be compatible with
-MongoDB's L<extended JSON|https://docs.mongodb.org/manual/reference/mongodb-extended-json/>
+MongoDB's L<extended JSON|https://github.com/mongodb/specifications/blob/master/source/extended-json.rst>
 format, which represents it as a document as follows:
 
     {"$oid" : "012345678901234567890123"}

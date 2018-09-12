@@ -39,8 +39,18 @@ sub BUILD {
 
 =method TO_JSON
 
-Returns a double, unless the value is 'Inf', '-Inf' or 'NaN'
-(which are illegal in JSON), in which case an exception is thrown.
+Returns a double.
+
+If the C<BSON_EXTJSON> environment variable is true and the
+C<BSON_EXTJSON_RELAXED> environment variable is false, returns a hashref
+compatible with
+MongoDB's L<extended JSON|https://github.com/mongodb/specifications/blob/master/source/extended-json.rst>
+format, which represents it as a document as follows:
+
+    {"$numberDouble" : "42.0"}
+
+If C<BSON_EXTJSON> is false and the value is 'Inf', '-Inf' or 'NaN'
+(which are illegal in regular JSON), then an exception is thrown.
 
 =cut
 
@@ -57,7 +67,7 @@ my $is_nan = $use_win32_specials ? qr/^-?1.\#(?:IND|QNAN)/i : qr/^-?nan/i;
 sub TO_JSON {
     my $copy = "$_[0]->{value}"; # avoid changing value to PVNV
 
-    if ($ENV{BSON_EXTJSON_RELAXED}) {
+    if ($ENV{BSON_EXTJSON} && $ENV{BSON_EXTJSON_RELAXED}) {
 
         return { '$numberDouble' => 'Infinity' }
             if $copy =~ $is_inf;
@@ -67,7 +77,7 @@ sub TO_JSON {
             if $copy =~ $is_nan;
     }
 
-    if ($ENV{BSON_EXTJSON}) {
+    if ($ENV{BSON_EXTJSON} && !$ENV{BSON_EXTJSON_RELAXED}) {
 
         return { '$numberDouble' => 'Infinity' }
             if $copy =~ $is_inf;

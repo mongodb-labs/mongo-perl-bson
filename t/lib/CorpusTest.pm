@@ -69,8 +69,6 @@ sub test_corpus_file {
     my $f = path( "corpus", $file );
     my $base = $f->basename;
 
-    $ENV{BSON_EXTJSON} = 1;
-
     my $json = eval { decode_json( $f->slurp ) };
     if ( my $err = $@ ) {
         fail("$base failed to load");
@@ -94,9 +92,6 @@ sub _validity_tests {
 
     # suppress caching that throws off Test::Deep
     local $BSON::Types::NoCache = 1;
-
-    # aggressively force ext-json representation, even for int32 and double
-    local $ENV{BSON_EXTJSON_FORCE} = 1;
 
     my $bson_type = $json->{bson_type};
     my $deprecated = $json->{deprecated};

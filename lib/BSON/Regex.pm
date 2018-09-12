@@ -83,10 +83,10 @@ sub try_compile {
 =method TO_JSON
 
 If the C<BSON_EXTJSON> option is true, returns a hashref compatible with
-MongoDB's L<extended JSON|https://docs.mongodb.org/manual/reference/mongodb-extended-json/>
+MongoDB's L<extended JSON|https://github.com/mongodb/specifications/blob/master/source/extended-json.rst>
 format, which represents it as a document as follows:
 
-    {"$regex" : "<pattern>", "$options" : "<flags>"}
+    {"$regularExpression" : { pattern: "<pattern>", "options" : "<flags>"} }
 
 If the C<BSON_EXTJSON> option is false, an error is thrown, as this value
 can't otherwise be represented in JSON.

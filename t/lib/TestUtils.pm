@@ -52,7 +52,6 @@ sub normalize_json {
 }
 
 sub to_extjson {
-    local $ENV{BSON_EXTJSON} = 1;
     my $data = BSON->perl_to_extjson($_[0], { relaxed => $_[1] });
     return $json_codec->encode($data);
 }

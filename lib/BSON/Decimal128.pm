@@ -252,7 +252,7 @@ sub _string_to_bid {
 Returns the value as a string.
 
 If the C<BSON_EXTJSON> option is true, it will instead
-be compatible with MongoDB's L<extended JSON|https://docs.mongodb.org/manual/reference/mongodb-extended-json/>
+be compatible with MongoDB's L<extended JSON|https://github.com/mongodb/specifications/blob/master/source/extended-json.rst>
 format, which represents it as a document as follows:
 
     {"$numberDecimal" : "2.23372036854775807E+57"}

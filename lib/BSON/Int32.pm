@@ -39,11 +39,18 @@ sub BUILD {
 
 Returns the value as an integer.
 
+If the C<BSON_EXTJSON> environment variable is true and the
+C<BSON_EXTJSON_RELAXED> environment variable is false, returns a hashref
+compatible with
+MongoDB's L<extended JSON|https://github.com/mongodb/specifications/blob/master/source/extended-json.rst>
+format, which represents it as a document as follows:
+
+    {"$numberInt" : "42"}
+
 =cut
 
-# BSON_EXTJSON_FORCE is for testing; not needed for normal operation
 sub TO_JSON {
-    return int($_[0]->{value}) unless $ENV{BSON_EXTJSON};
+    return int($_[0]->{value}) if ! $ENV{BSON_EXTJSON} || $ENV{BSON_EXTJSON_RELAXED};
     return { '$numberInt' => "$_[0]->{value}" };
 }
 
