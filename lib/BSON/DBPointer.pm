@@ -4,6 +4,8 @@ use warnings;
 
 package BSON::DBPointer;
 
+our $VERSION = 'v1.6.8';
+
 use Moo 2.002004;
 use Tie::IxHash;
 use namespace::clean -except => 'meta';
