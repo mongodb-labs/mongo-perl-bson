@@ -469,6 +469,10 @@ sub _normalize_numbers {
     $value =~ s[-1234567890123456768][-1234567890...]g;
     $value =~ s[1234567890123456768][1234567890...]g;
 
+    # Power8 specific normalization
+    $value =~ s[-1234567890123456770][-1234567890...]g;
+    $value =~ s[1234567890123456770][1234567890...]g;
+
     return $value;
 }
 
