@@ -451,7 +451,7 @@ structure. Note that the structure will still have to be serialized.
 Possible options are:
 
 =for :list
-* C<relaxed> A boolean indicating wether relaxed extended JSON should
+* C<relaxed> A boolean indicating if relaxed extended JSON should
 be generated. If not set, the value is defaulted to the C<BSON_EXTJSON>
 environment variable.
 
@@ -472,7 +472,7 @@ sub perl_to_extjson {
         if exists $options->{relaxed};
 
     if (not defined $data) {
-        return undef;
+        return undef; ## no critic
     }
 
     if (blessed($data) and $data->can('TO_JSON')) {
