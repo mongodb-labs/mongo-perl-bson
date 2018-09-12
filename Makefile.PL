@@ -49,7 +49,6 @@ my %WriteMakefileArgs = (
     "ExtUtils::MakeMaker" => 0,
     "File::Spec" => 0,
     "JSON::MaybeXS" => 0,
-    "Cpanel::JSON::XS" => 0,
     "Path::Tiny" => "0.054",
     "Test::Deep" => 0,
     "Test::More" => "0.96",
