@@ -461,7 +461,7 @@ my $use_win32_specials = ($^O eq 'MSWin32' && $] lt "5.022");
 
 my $is_inf = $use_win32_specials ? qr/^1.\#INF/i : qr/^inf/i;
 my $is_ninf = $use_win32_specials ? qr/^-1.\#INF/i : qr/^-inf/i;
-my $is_nan = $use_win32_specials ? qr/^-?1.\#IND/i : qr/^-?nan/i;
+my $is_nan = $use_win32_specials ? qr/^-?1.\#(?:IND|QNAN)/i : qr/^-?nan/i;
 
 sub perl_to_extjson {
     my ($class, $data, $options) = @_;

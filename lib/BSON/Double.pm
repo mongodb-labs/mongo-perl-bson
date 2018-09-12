@@ -52,7 +52,7 @@ my $illegal = $use_win32_specials ? qr/^$win32_specials/ : qr/^$unix_specials/;
 
 my $is_inf = $use_win32_specials ? qr/^1.\#INF/i : qr/^inf/i;
 my $is_ninf = $use_win32_specials ? qr/^-1.\#INF/i : qr/^-inf/i;
-my $is_nan = $use_win32_specials ? qr/^-?1.\#IND/i : qr/^-?nan/i;
+my $is_nan = $use_win32_specials ? qr/^-?1.\#(?:IND|QNAN)/i : qr/^-?nan/i;
 
 sub TO_JSON {
     my $copy = "$_[0]->{value}"; # avoid changing value to PVNV
