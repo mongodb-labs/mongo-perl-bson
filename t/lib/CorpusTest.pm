@@ -23,7 +23,7 @@ BEGIN {
         unless JSON::PP::USE_B();
 }
 
-use JSON::PP;
+use JSON::PP 2.97001;
 
 use BSON;
 use BSON::Types ':all';
