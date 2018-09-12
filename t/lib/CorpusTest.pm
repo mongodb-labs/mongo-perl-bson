@@ -4,6 +4,7 @@ use warnings;
 use Test::More 0.96;
 use Test::Deep qw/!blessed/;
 
+# Hijack the JSON::PP::USE_B constant to enable svtype detection
 BEGIN {
     no warnings 'redefine';
 
