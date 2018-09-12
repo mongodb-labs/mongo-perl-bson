@@ -557,6 +557,15 @@ will be left as-is.
 
 sub extjson_to_perl {
     my ($class, $data) = @_;
+    for my $key (keys %$data) {
+        my $value = $data->{$key};
+        $data->{$key} = $class->_extjson_to_perl($value);
+    }
+    return $data;
+}
+
+sub _extjson_to_perl {
+    my ($class, $data) = @_;
 
     if (ref $data eq 'HASH') {
 
@@ -596,7 +605,7 @@ sub extjson_to_perl {
 
         if ( exists $data->{'$date'} ) {
             my $v = $data->{'$date'};
-            $v = ref($v) eq 'HASH' ? $class->extjson_to_perl($v) : _iso8601_to_epochms($v);
+            $v = ref($v) eq 'HASH' ? $class->_extjson_to_perl($v) : _iso8601_to_epochms($v);
             return BSON::Time->new( value => $v );
         }
 
@@ -634,7 +643,7 @@ sub extjson_to_perl {
             return BSON::Code->new(
                 code => $data->{'$code'},
                 ( exists $data->{'$scope'}
-                    ? ( scope => $class->extjson_to_perl($data->{'$scope'}) )
+                    ? ( scope => $class->_extjson_to_perl($data->{'$scope'}) )
                     : ()
                 ),
             );
@@ -647,7 +656,7 @@ sub extjson_to_perl {
         if ( exists $data->{'$dbPointer'} ) {
             my $data = $data->{'$dbPointer'};
             my $id = $data->{'$id'};
-            $id = $class->extjson_to_perl($id) if ref($id) eq 'HASH';
+            $id = $class->_extjson_to_perl($id) if ref($id) eq 'HASH';
             return BSON::DBPointer->new(
                 '$ref' => $data->{'$ref'},
                 '$id' => $id,
@@ -656,7 +665,7 @@ sub extjson_to_perl {
 
         if ( exists $data->{'$ref'} ) {
             my $id = delete $data->{'$id'};
-            $id = $class->extjson_to_perl($id) if ref($id) eq 'HASH';
+            $id = $class->_extjson_to_perl($id) if ref($id) eq 'HASH';
             return BSON::DBRef->new(
                 '$ref' => delete $data->{'$ref'},
                 '$id' => $id,
@@ -684,7 +693,7 @@ sub extjson_to_perl {
 
         for my $key (keys %$data) {
             my $value = $data->{$key};
-            $data->{$key} = $class->extjson_to_perl($value);
+            $data->{$key} = $class->_extjson_to_perl($value);
         }
         return $data;
     }
@@ -693,7 +702,7 @@ sub extjson_to_perl {
         for my $index (0 .. $#$data) {
             my $value = $data->[$index];
             $data->[$index] = ref($value)
-                ? $class->extjson_to_perl($value)
+                ? $class->_extjson_to_perl($value)
                 : $value;
         }
         return $data;
