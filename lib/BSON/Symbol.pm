@@ -9,8 +9,4 @@ use namespace::clean -except => 'meta';
 
 extends 'BSON::String';
 
-sub TO_JSON {
-    return { '$symbol' => $_[0]->{value} };
-}
-
 1;
