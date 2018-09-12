@@ -4,8 +4,25 @@ use warnings;
 use Test::More 0.96;
 use Test::Deep qw/!blessed/;
 
-use JSON::PP ();
-use Cpanel::JSON::XS ();
+BEGIN {
+    no warnings 'redefine';
+
+    require constant;
+    my $orig = constant->can('import');
+    local *constant::import = sub {
+        if ($_[1] eq 'USE_B') {
+            pop(@_);
+            push(@_, 1)
+        }
+        goto &$orig;
+    };
+
+    require JSON::PP;
+    die "TOO LATE"
+        unless JSON::PP::USE_B();
+}
+
+use JSON::PP;
 
 use BSON;
 use BSON::Types ':all';
@@ -17,7 +34,7 @@ use Data::Dumper;
 use TestUtils;
 
 use constant {
-    IS_JSON_PP => ref( JSON::MaybeXS->new ) eq 'JSON::PP'
+    IS_JSON_PP => 1,
 };
 
 use base 'Exporter';
@@ -38,13 +55,7 @@ do {
     };
 };
 
-my $JSON_PP = JSON::PP
-    ->new
-    ->ascii
-    ->allow_blessed
-    ->convert_blessed;
-
-my $JSON_XS = Cpanel::JSON::XS
+my $JSON = JSON::PP
     ->new
     ->ascii
     ->allow_blessed
@@ -67,7 +78,7 @@ sub test_corpus_file {
     }
 
     subtest 'JSON::PP Tie::IxHash injection' => sub {
-        my $data = $JSON_PP->decode('{"x":23}');
+        my $data = $JSON->decode('{"x":23}');
         ok defined(tied %$data), 'JSON::PP returns tied objects';
     };
 
@@ -307,7 +318,7 @@ sub _normalize {
 
     try_or_fail(
         sub {
-            $json = to_myjson( $JSON_PP->decode( $json ) );
+            $json = to_myjson( $JSON->decode( $json ) );
         },
         $desc
     ) or next;
@@ -321,7 +332,7 @@ sub _relaxed_extjson_bson_roundtrip {
     my ($decoded,$bson);
 
     try_or_fail(
-        sub { $decoded = $codec->extjson_to_perl( $JSON_PP->decode( $input ) ) },
+        sub { $decoded = $codec->extjson_to_perl( $JSON->decode( $input ) ) },
         "$label: Couldn't decode ExtJSON"
     ) or return;
 
@@ -392,7 +403,7 @@ sub _extjson_to_bson {
     local $ENV{BSON_EXTJSON} = 1;
     try_or_fail(
         sub {
-            my $json = $JSON_PP->decode($input);
+            my $json = $JSON->decode($input);
             $json = $codec->extjson_to_perl($json);
             $decoded = $json;
         },
@@ -413,7 +424,7 @@ sub _extjson_to_extjson {
     my ($decoded,$got);
 
     try_or_fail(
-        sub { $decoded = $codec->extjson_to_perl( $JSON_PP->decode( $input ) ) },
+        sub { $decoded = $codec->extjson_to_perl( $JSON->decode( $input ) ) },
         "$label: Couldn't decode ExtJSON"
     ) or return;
 

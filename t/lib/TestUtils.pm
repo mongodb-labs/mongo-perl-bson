@@ -3,12 +3,28 @@ use strict;
 use warnings;
 use Test::More 0.96;
 
+BEGIN {
+    no warnings 'redefine';
+
+    require constant;
+    my $orig = constant->can('import');
+    local *constant::import = sub {
+        if ($_[1] eq 'USE_B') {
+            pop(@_);
+            push(@_, 1)
+        }
+        goto &$orig;
+    };
+
+    require JSON::PP;
+    die "TOO LATE"
+        unless JSON::PP::USE_B();
+}
+
 use B;
 use Carp qw/croak/;
 use Config;
-use JSON::MaybeXS;
 use JSON::PP ();
-use Cpanel::JSON::XS ();
 
 use base 'Exporter';
 our @EXPORT = qw/
@@ -23,32 +39,26 @@ use constant {
     FLOAT => 'd<',
 };
 
-my $json_codec_pp = JSON::PP
-    ->new
-    ->ascii
-    ->allow_blessed
-    ->convert_blessed;
-
-my $json_codec_xs = Cpanel::JSON::XS
+my $json_codec = JSON::PP
     ->new
     ->ascii
     ->allow_blessed
     ->convert_blessed;
 
 sub normalize_json {
-    my $decoded = $json_codec_pp->decode(shift);
-    return $json_codec_xs->encode($decoded);
+    my $decoded = $json_codec->decode(shift);
+    return $json_codec->encode($decoded);
 }
 
 sub to_extjson {
     local $ENV{BSON_EXTJSON} = 1;
     my $data = BSON->perl_to_extjson($_[0], { relaxed => $_[1] });
-    return $json_codec_xs->encode($data);
+    return $json_codec->encode($data);
 }
 
 sub to_myjson {
     local $ENV{BSON_EXTJSON} = 0;
-    return $json_codec_xs->encode( shift );
+    return $json_codec->encode( shift );
 }
 
 sub sv_type {
