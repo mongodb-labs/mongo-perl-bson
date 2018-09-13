@@ -6,7 +6,7 @@ package BSON::Timestamp;
 # ABSTRACT: BSON type wrapper for timestamps
 
 use version;
-our $VERSION = 'v1.6.8';
+our $VERSION = 'v1.8.1';
 
 use Carp ();
 use Tie::IxHash;
