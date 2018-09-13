@@ -52,13 +52,14 @@ my %WriteMakefileArgs = (
     "JSON::PP" => "2.97001",
     "Path::Tiny" => "0.054",
     "Test::Deep" => 0,
+    "Test::Fatal" => 0,
     "Test::More" => "0.96",
     "lib" => 0,
     "utf8" => 0
   },
   "VERSION" => "v1.6.8",
   "test" => {
-    "TESTS" => "t/*.t t/common/*.t t/corpus/*.t t/legacy/*.t t/mapping/*.t"
+    "TESTS" => "t/*.t t/common/*.t t/corpus/*.t t/legacy/*.t t/mapping/*.t t/regression/*.t"
   }
 );
 
@@ -83,6 +84,7 @@ my %FallbackPrereqs = (
   "Scalar::Util" => 0,
   "Sys::Hostname" => 0,
   "Test::Deep" => 0,
+  "Test::Fatal" => 0,
   "Test::More" => "0.96",
   "Tie::IxHash" => 0,
   "Time::HiRes" => 0,
