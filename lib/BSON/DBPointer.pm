@@ -3,6 +3,7 @@ use strict;
 use warnings;
 
 package BSON::DBPointer;
+# ABSTRACT: Legacy BSON type wrapper for DBPointer data (DEPRECATED)
 
 our $VERSION = 'v1.6.8';
 
@@ -44,3 +45,15 @@ sub TO_JSON {
 }
 
 1;
+
+__END__
+
+=head1 DESCRIPTION
+
+This module wraps the deprecated BSON "DBPointer" type.
+
+You are strongly encouraged to use L<BSON::DBRef> instead.
+
+=cut
+
+# vim: set ts=4 sts=4 sw=4 et tw=75:

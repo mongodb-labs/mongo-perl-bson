@@ -60,7 +60,7 @@ use overload '""' => \&to_s;
 
 __END__
 
-=for Pod::Coverage new data type subtype to_s
+=for Pod::Coverage new data type subtype to_s TO_JSON
 
 =head1 DESCRIPTION
 
