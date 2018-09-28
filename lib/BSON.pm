@@ -530,6 +530,15 @@ sub perl_to_extjson {
         return $data;
     }
 
+    if (
+        blessed($data) and (
+            $data->isa('Math::BigInt') or
+            $data->isa('Math::BigFloat')
+        )
+    ) {
+        return $data;
+    }
+
     die sprintf "Unsupported ref value (%s)", ref($data);
 }
 
