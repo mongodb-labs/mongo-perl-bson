@@ -53,10 +53,27 @@ use BSON::Types ':all';
     like( $@, qr/Can't encode non-container of type 'Some::Object'/, "encoding hash-type object is fatal" );
 }
 
+{
+    my %hundred_hash;
+    create_nest(\%hundred_hash,101);
+    eval { encode( \%hundred_hash ) };
+    my $err = $@ || "Unknown Error";
+    if ( index($err, "circular reference detected at") != -1 ) {
+        like( $err,
+            qr/circular reference detected at/,
+            "Perl has a hard limit of 100 levels of recursion with warnings"
+        );
+    } else {
+        like( $err,
+            qr/Exceeded max object depth of/,
+            "Hit the specified max depth of documents in BSON_MAX_DEPTH"
+        ) or diag($err);
+    }
+}
+
 
 done_testing;
 
 # COPYRIGHT
 #
 # vim: set ts=4 sts=4 sw=4 et tw=75:
-

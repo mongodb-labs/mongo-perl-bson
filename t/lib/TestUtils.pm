@@ -122,6 +122,30 @@ sub try_or_fail {
     return 1;
 }
 
+# Based on Deep::Hash::Utils nest
+sub create_nest {
+    my ($hr, $num) = @_;
+    my $key = 1;
+	$hr->{$key} ||= {};
+	my $ref = $hr->{$key};
+
+    my @numbers;
+    for (my $i = 1; $i <= $num; $i++) {
+        push @numbers, $i;
+    }
+
+	while ($key = shift @numbers) {
+		$hr = $ref;
+		if (@numbers > 1) {
+			$hr->{$key} ||= {};
+			$ref = $hr->{$key};
+		} else {
+			$hr->{$key} = shift;
+		}
+	}
+	return $hr;
+}
+
 
 1;
 # COPYRIGHT

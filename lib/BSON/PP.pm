@@ -62,6 +62,7 @@ use constant {
     BSON_OBJECTID => 'a12',
     BSON_BINARY_TYPE => 'C',
     BSON_CSTRING => 'Z*',
+    BSON_MAX_DEPTH => 100,
 };
 
 sub _printable {
@@ -183,6 +184,12 @@ sub _encode_bson {
 
     my $refaddr = refaddr($doc);
     die "circular reference detected" if $opt->{_circular}{$refaddr}++;
+
+    $opt->{_depth} = 0 unless defined $opt->{_depth};
+    $opt->{_depth}++;
+    if ($opt->{_depth} > BSON_MAX_DEPTH) {
+        croak "Exceeded max object depth of ". BSON_MAX_DEPTH;
+    }
 
     my $doc_type = ref($doc);
 
@@ -498,6 +505,7 @@ sub _encode_bson {
     }
 
     delete $opt->{_circular}{$refaddr};
+    $opt->{_depth}--;
 
     return pack( BSON_INT32, length($bson) + 5 ) . $bson . "\0";
 }
@@ -544,6 +552,11 @@ sub _decode_bson {
     my ($bson, $opt) = @_;
     if ( !defined $bson ) {
         croak("Decode argument must not be undef");
+    }
+    $opt->{_depth} = 0 unless defined $opt->{_depth};
+    $opt->{_depth}++;
+    if ($opt->{_depth} > BSON_MAX_DEPTH) {
+        croak "Exceeded max object depth of ". BSON_MAX_DEPTH;
     }
     my $blen= length($bson);
     my $len = unpack( BSON_INT32, $bson );
@@ -812,6 +825,7 @@ sub _decode_bson {
             $hash{$key} = $value;
         }
     }
+    $opt->{_depth}--;
     return $opt->{_decode_array} ? \@array : \%hash;
 }
 
