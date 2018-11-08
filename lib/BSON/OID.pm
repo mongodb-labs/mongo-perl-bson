@@ -225,6 +225,15 @@ sub _cmp {
     return "$left" cmp "$right";
 }
 
+# Legacy MongoDB driver tests check for a PID matching $$, but the new OID
+# no longer has an embedded PID.  To avoid breaking legacy tests, we make
+# this return the masked PID.
+sub _get_pid { return $$ & 0xFFFF }
+
+# Legacy BSON::XS tests expect to find a _generate_oid, so we provide
+# one for back-compatibility.
+sub _generate_oid { _packed_oid() };
+
 use overload (
     '""'     => \&hex,
     "<=>"    => \&_cmp,
