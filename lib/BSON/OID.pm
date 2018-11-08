@@ -75,22 +75,12 @@ use namespace::clean -except => 'meta';
         return pack('Na8', $time, $fill);
     }
     #>>>
-
-    # see if we have XS OID generation
-    BEGIN {
-        if ( $INC{'BSON/XS.pm'} && BSON::XS->can('_generate_oid') ) {
-            *_generate_oid = \&BSON::XS::_generate_oid;
-        }
-        else {
-            *_generate_oid = \&_packed_oid;
-        }
-    }
 }
 
 sub BUILD {
     my ($self) = @_;
 
-    $self->{oid} = _generate_oid() unless defined $self->{oid};
+    $self->{oid} = _packed_oid() unless defined $self->{oid};
     croak "Invalid 'oid' field: OIDs must be 12 bytes"
       unless length( $self->oid ) == 12;
     return;
