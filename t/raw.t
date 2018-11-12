@@ -4,13 +4,13 @@ use warnings;
 
 use Test::More 0.96;
 use Math::BigInt;
-use JSON::MaybeXS;
 
 use lib 't/lib';
 use lib 't/pvtlib';
 use CleanEnv;
 use TestUtils;
 use Tie::IxHash;
+use JSON::MaybeXS;
 
 use BSON qw/encode decode/;
 use BSON::Raw;
