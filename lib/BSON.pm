@@ -921,7 +921,7 @@ sub _iso8601_to_epochms {
         my $frac = $s - int($s);
         my $epoch = Time::Local::timegm(int($s), $m, $h, $D, $M, $Y) - $zone_offset;
         $epoch = HAS_INT64 ? 1000 * $epoch : Math::BigInt->new($epoch) * 1000;
-        $epoch += int($frac * 1000);
+        $epoch += HAS_INT64 ? $frac * 1000 : Math::BigFloat->new($frac) * 1000;
         return $epoch;
     }
     else {
