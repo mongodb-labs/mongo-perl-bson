@@ -1,6 +1,7 @@
 use 5.010001;
 use strict;
 use warnings;
+no warnings 'recursion';
 
 package BSON::PP;
 # ABSTRACT: Pure Perl BSON implementation
