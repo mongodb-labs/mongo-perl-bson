@@ -461,6 +461,8 @@ sub _encode_bson {
                 $bson .= pack( BSON_TYPE_NAME.BSON_DOUBLE, 0x01, $utf8_key, $value );
             }
             elsif ( $flags & B::SVf_IOK() ) {
+                # Force numeric; fixes dual-vars comparison bug on old Win32s
+                $value = 0+$value;
                 if ( $value > $max_int64 || $value < $min_int64 ) {
                     croak("BSON can only handle 8-byte integers. Key '$key' is '$value'");
                 }
