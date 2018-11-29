@@ -32,7 +32,7 @@ use namespace::clean -except => 'meta';
 sub _get_first_key {
   my ($self) = @_;
 
-  return undef if length( $self->bson ) <= 5;
+  return undef if length( $self->bson ) <= 5; ## no critic
 
   my ( undef, undef, $key ) = unpack( "lCZ*", $self->bson );
   return $key;
