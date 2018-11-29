@@ -537,8 +537,8 @@ my %FIELD_SIZES = (
     0xFF => 0,
 );
 
-my $ERR_UNSUPPORTED = "Unsupported BSON type 0x%x for key '%s'.  Are you using the latest driver version?";
-my $ERR_TRUNCATED = "Premature end of BSON field '%s' (type 0x%x)";
+my $ERR_UNSUPPORTED = "unsupported BSON type \\x%X for key '%s'.  Are you using the latest version of BSON.pm?";
+my $ERR_TRUNCATED = "premature end of BSON field '%s' (type 0x%x)";
 my $ERR_LENGTH = "BSON field '%s' (type 0x%x) has invalid length: wanted %d, got %d";
 my $ERR_MISSING_NULL = "BSON field '%s' (type 0x%x) missing null terminator";
 my $ERR_BAD_UTF8 = "BSON field '%s' (type 0x%x) contains invalid UTF-8";
@@ -818,7 +818,9 @@ sub _decode_bson {
 
         # ???
         else {
-            croak "Unsupported type $type";
+            # Should have already been caught in the minimum length check,
+            # but just in case not:
+            croak( sprintf( $ERR_UNSUPPORTED, $type, $key ) );
         }
 
         if ( $opt->{_decode_array} ) {

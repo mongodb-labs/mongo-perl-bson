@@ -23,6 +23,18 @@ use BSON::Types ':all';
 }
 
 {
+    my $bson = encode( { a => 1.1 } );
+    # swap the type byte to an unknown one
+    substr($bson,4,1,"\xEE");
+    eval { decode($bson) };
+    like(
+        $@,
+        qr/unsupported BSON type \\xEE for key 'a'\.  Are you using the latest version/,
+        "decoding unknown type is fatal"
+    );
+}
+
+{
     no warnings 'once';
     my $glob = *foo;
     eval { encode( \$glob ) };
