@@ -2,6 +2,8 @@ Revision history for BSON
 
 {{$NEXT}}
 
+v1.10.0   2018-11-29 11:10:19-05:00 America/New_York
+
     [Bugs fixed]
 
     - PERL-1009 BSON 1.8.1 fails on bleadperl with -Duselongdouble

@@ -6,7 +6,7 @@ package BSON::Regex;
 # ABSTRACT: BSON type wrapper for regular expressions
 
 use version;
-our $VERSION = 'v1.8.2';
+our $VERSION = 'v1.10.1';
 
 use Carp ();
 use Tie::IxHash;
