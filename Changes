@@ -2,6 +2,11 @@ Revision history for BSON
 
 {{$NEXT}}
 
+    [Bugs fixed]
+
+    - PERL-1043 Max depth limits miscounted BSON::Raw, triggering
+      exceptions when there shouldn't be one.
+
 v1.10.0   2018-11-29 11:10:19-05:00 America/New_York
 
     [Bugs fixed]
