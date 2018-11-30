@@ -194,10 +194,17 @@ sub _encode_bson {
 
     my $doc_type = ref($doc);
 
-    return $doc->bson
-      if $doc_type eq 'BSON::Raw' || $doc_type eq 'MongoDB::BSON::_EncodedDoc';
+    if ( $doc_type eq 'BSON::Raw' || $doc_type eq 'MongoDB::BSON::_EncodedDoc' ) {
+        delete $opt->{_circular}{$refaddr};
+        $opt->{_depth}--;
+        return $doc->bson;
+    }
 
-    return $$doc if $doc_type eq 'MongoDB::BSON::Raw';
+    if ( $doc_type eq 'MongoDB::BSON::Raw' ) {
+        delete $opt->{_circular}{$refaddr};
+        $opt->{_depth}--;
+        return $$doc;
+    }
 
     my $iter =
         $doc_type eq 'HASH'           ? undef
