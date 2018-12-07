@@ -2,6 +2,10 @@ Revision history for BSON
 
 {{$NEXT}}
 
+    [Bugs fixed]
+
+    - PERL-1045 Fixed module name typo in fork-protection code.
+
 v1.10.1   2018-11-30 00:33:12-05:00 America/New_York
 
     [Bugs fixed]
