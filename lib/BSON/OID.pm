@@ -62,7 +62,7 @@ use namespace::clean -except => 'meta';
     #<<<
     sub _packed_oid {
         my $time = defined $_[0] ? $_[0] : time;
-        $_random = Crypt::Urandom::urandom($_RANDOM_SIZE) if $$ != $_pid;
+        $_random = Crypt::URandom::urandom($_RANDOM_SIZE) if $$ != $_pid;
         return pack(
             'Na5a3',
             $time,
