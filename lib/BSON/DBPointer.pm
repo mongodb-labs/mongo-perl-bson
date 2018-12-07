@@ -5,7 +5,7 @@ use warnings;
 package BSON::DBPointer;
 # ABSTRACT: Legacy BSON type wrapper for DBPointer data (DEPRECATED)
 
-our $VERSION = 'v1.10.2';
+our $VERSION = 'v1.10.3';
 
 use Moo 2.002004;
 use Tie::IxHash;
