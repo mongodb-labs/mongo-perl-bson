@@ -273,7 +273,7 @@ sub _encode_bson {
         elsif ( length $type ) {
 
             # Array
-            if ( $type eq 'ARRAY' ) {
+            if ( $type eq 'ARRAY' || $type eq 'BSON::Array' ) {
                 my $i = 0;
                 tie( my %h, 'Tie::IxHash' );
                 %h = map { $i++ => $_ } @$value;

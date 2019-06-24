@@ -300,7 +300,7 @@ sub encode_one {
     }
 
     $document = BSON::Doc->new(@$document)
-      if $type eq 'ARRAY';
+        if $type eq 'ARRAY';
 
     my $merged_opts = { %$self, ( $options ? %$options : () ) };
 

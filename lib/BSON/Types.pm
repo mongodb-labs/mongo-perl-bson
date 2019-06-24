@@ -16,6 +16,7 @@ our @EXPORT_OK = qw(
     bson_dbref
     bson_decimal128
     bson_doc
+    bson_array
     bson_double
     bson_int32
     bson_int64
@@ -38,6 +39,7 @@ use BSON::Code;         # bson_code
 use BSON::DBRef;        # bson_dbref
 use BSON::Decimal128;   # bson_decimal128
 use BSON::Doc;          # bson_doc
+use BSON::Array;        # bson_array
 use BSON::Double;       # bson_double
 use BSON::Int32;        # bson_int32
 use BSON::Int64;        # bson_int64
@@ -133,6 +135,19 @@ of the provided key-value pairs.
 
 sub bson_doc {
     return BSON::Doc->new( @_ );
+}
+
+=func bson_array
+
+    $doc = bson_array(...);
+
+This function returns a L<BSON::Array> object, which preserves the order
+of the provided list of elements.
+
+=cut
+
+sub bson_array {
+    return BSON::Array->new( @_ );
 }
 
 =func bson_double
