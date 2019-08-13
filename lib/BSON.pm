@@ -935,6 +935,17 @@ __END__
 
 =for Pod::Coverage BUILD
 
+=begin :prelude
+
+=head1 END OF LIFE NOTICE
+
+Version v1.12.0 is the final feature release of the MongoDB BSON
+library.  The library is now in a 12-month "sunset" period and will
+receive security patches and critical bug fixes only.  The BSON
+library will be end-of-life and unsupported on August 13, 2020.
+
+=end :prelude
+
 =head1 SYNOPSIS
 
     use BSON;
