@@ -6,7 +6,7 @@ use 5.010001;
 use ExtUtils::MakeMaker 6.17;
 
 my %WriteMakefileArgs = (
-  "ABSTRACT" => "BSON serialization and deserialization",
+  "ABSTRACT" => "BSON serialization and deserialization (EOL)",
   "AUTHOR" => "David Golden <david\@mongodb.com>, Stefan G. <minimalist\@lavabit.com>",
   "CONFIGURE_REQUIRES" => {
     "ExtUtils::MakeMaker" => "6.17"

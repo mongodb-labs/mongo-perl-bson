@@ -3,7 +3,7 @@ use strict;
 use warnings;
 
 package BSON;
-# ABSTRACT: BSON serialization and deserialization
+# ABSTRACT: BSON serialization and deserialization (EOL)
 
 use base 'Exporter';
 our @EXPORT_OK = qw/encode decode/;
@@ -939,10 +939,20 @@ __END__
 
 =head1 END OF LIFE NOTICE
 
-Version v1.12.0 is the final feature release of the MongoDB BSON
-library.  The library is now in a 12-month "sunset" period and will
-receive security patches and critical bug fixes only.  The BSON
-library will be end-of-life and unsupported on August 13, 2020.
+Version v1.12.0 was the final feature release of the MongoDB BSON library
+and version v1.12.2 is the final patch release.
+
+B<As of August 13, 2020, the MongoDB Perl driver and related libraries have
+reached end of life and are no longer supported by MongoDB.> See the
+L<August 2019 deprecation
+notice|https://www.mongodb.com/blog/post/the-mongodb-perl-driver-is-being-deprecated>
+for rationale.
+
+If members of the community wish to continue development, they are welcome
+to fork the code under the terms of the Apache 2 license and release it
+under a new namespace.  Specifications and test files for MongoDB drivers
+and libraries are published in an open repository:
+L<mongodb/specifications|https://github.com/mongodb/specifications/tree/master/source>.
 
 =end :prelude
 
